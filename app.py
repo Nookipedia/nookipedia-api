@@ -374,7 +374,7 @@ def get_nh_fish_all():
     if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
         fields = 'name,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12'
     else:
-        fields = 'url,name,number,image_url,catchphrase,catchphrase2,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,time,location,shadow_size,rarity,total_catch,sell_nook,sell_cj,tank_width,tank_length'
+        fields = 'url,name,number,image_url,catchphrase,catchphrase2,catchphrase3,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,time,location,shadow_size,rarity,total_catch,sell_nook,sell_cj,tank_width,tank_length'
 
     return get_critter_list(limit, tables, fields)
 
@@ -384,7 +384,7 @@ def get_nh_fish(fish):
     authorize(DB_KEYS, request)
     fish = fish.replace('_', ' ')
     tables = 'nh_fish'
-    fields = 'url,name,number,image_url,catchphrase,catchphrase2,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,time,location,shadow_size,rarity,total_catch,sell_nook,sell_cj,tank_width,tank_length'
+    fields = 'url,name,number,image_url,catchphrase,catchphrase2,catchphrase3,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,time,location,shadow_size,rarity,total_catch,sell_nook,sell_cj,tank_width,tank_length'
     where = 'name="' + fish + '"'
     params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where }
 

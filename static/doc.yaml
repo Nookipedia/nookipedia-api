@@ -20,7 +20,7 @@ info:
     scraped information directly from the wiki, this new edition of the API
     pulls data from a structured and constrained database, resulting in
     higher-quality data, better searching, and support for filtering.
-  version: 1.0.0
+  version: 1.0.1
 servers:
   - url: 'https://api.nookipedia.com/'
 paths:
@@ -553,6 +553,14 @@ components:
             the critter under certain conditions (such as catching a squid when
             it is raining). Note that the vast majority of critters do not have
             a second catchphrase.
+        catchphrase3:
+          type: string
+          example: ''
+          description: >-
+            An alternative catchphrase that the player may say after catching
+            the critter under certain conditions (such as catching a squid when
+            it is raining). Note that the vast majority of critters do not have
+            a third catchphrase.
         time:
           type: string
           example: 4 PM – 9 AM
