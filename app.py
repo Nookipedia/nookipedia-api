@@ -19,7 +19,7 @@ import flask_monitoringdashboard as dashboard
 
 # GET CONFIG:
 config = configparser.ConfigParser()
-config.read('/api/config.ini')
+config.read('config.ini')
 
 # SET CONSTANTS:
 BASE_URL_WIKI = config.get('APP', 'BASE_URL_WIKI')
