@@ -1,0 +1,899 @@
+openapi: 3.0.0
+info:
+  title: Nookipedia
+  description: >-
+    The Nookipedia API provides endpoints for retrieving Animal Crossing data
+    pulled from the [Nookipedia wiki](https://nookipedia.com/wiki/Main_Page). A
+    couple of the key benefits of using the Nookipedia API is access to data
+    spanning the entire *Animal Crossing* series, as well as information that is
+    constantly updated and expanding as editors work on the wiki.<br><br>This
+    API launched in July 2020 and is under active development. At the moment, we
+    currently have endpoints to retrieve information about *Animal Crossing: New
+    Horizons* bugs, fish, and sea creatures. Coming very soon is data on all
+    *Animal Crossing* villagers. In the horizon are endpoints for *New Horizons*
+    furniture and clothing, as well as critters from previous
+    games.<br><br>Access to the Nookipedia API requires obtaining a key. This is
+    so we can manage our scale and provide better support for our users. To
+    request access to the API, please fill out [this
+    form](https://forms.gle/wLwtXLerKhfDrRLY8).<br><br>This API is 'version 2'
+    of our [original API](https://nookipedia.com/api/). While the previous API
+    scraped information directly from the wiki, this new edition of the API
+    pulls data from a structured and constrained database, resulting in
+    higher-quality data, better searching, and support for filtering.
+  version: 1.0.0
+servers:
+  - url: 'https://api.nookipedia.com/'
+paths:
+  /nh/fish:
+    get:
+      summary: All New Horizons fish
+      description: >-
+        Get a list of all fish and their details in *Animal Crossing: New
+        Horizons*. Note that while cached, this endpoint will be very
+        responsive; however, hitting the endpoint in between cache refreshes can
+        result in a response time of 5 to 15 seconds.
+      parameters:
+        - in: header
+          name: X-API-KEY
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: >-
+            Your UUID secret key, granted to you by the Nookipedia team.
+            Required for accessing the API.
+        - in: header
+          name: Accept-Version
+          required: true
+          schema:
+            type: string
+          description: >-
+            The version of the API you are calling, written as `1.0.0`. This
+            header is required as good practice, but is not currently utilized
+            by the API as there is only one version at the moment.
+        - in: query
+          name: month
+          required: false
+          schema:
+            type: string
+          description: >-
+            Retrive only the fish that are available in a specific month. Value
+            may be the month's name (`jan`, `january`), the integer representing
+            the number (`01`, `1`), or `current` for the current month. When
+            `current` is specified, the return body will be an object with two
+            arrays inside, one called `north` and the other `south` containing
+            the fish available in each respective hemisphere. Note that the
+            current month is calculated based off the API server's time, so it
+            may be slightly off for you at the beginning or end of the month.
+        - in: query
+          name: excludedetails
+          required: false
+          schema:
+            type: string
+          description: >-
+            When set to `true`, only fish names are returned. Instead of an
+            array of objects with all details, the return will be an array of
+            strings. This is particularly useful when used with the `month`
+            filter, for users who want just a list of fish in a given month but
+            not all their respective details.
+        - in: query
+          name: thumbsize
+          required: false
+          schema:
+            type: integer
+          description: >-
+            Specify the desired width of returned image URLs. When unspecified,
+            the linked image(s) returned by the API will be full-resolution.
+            Note that images can only be reduced in size; specifying a width
+            greater than than the maximum size will return the default full-size
+            image URL. This parameter is generally not recommended unless you
+            absolutely need it, as each returned thumbnail link with a custom
+            size requires an additional network call, which can result in a long
+            response time if calling this endpoint in between cache refreshes.
+      responses:
+        '200':
+          description: A JSON array of fish
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NHFish'
+        '401':
+          description: Failed to authenticate user from `X-API-KEY`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '500':
+          description: There was an error fetching the requested data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error500'
+  '/nh/fish/{fish}':
+    get:
+      summary: Single New Horizons fish
+      description: Optional extended description in CommonMark or HTML.
+      parameters:
+        - in: path
+          name: fish
+          required: true
+          schema:
+            type: string
+          description: The name of the fish you wish to retrieve information about.
+        - in: header
+          name: X-API-KEY
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: >-
+            Your UUID secret key, granted to you by the Nookipedia team.
+            Required for accessing the API.
+        - in: header
+          name: Accept-Version
+          required: true
+          schema:
+            type: string
+          description: >-
+            The version of the API you are calling, written as `1.0.0`. This
+            header is required as good practice, but is not currently utilized
+            by the API as there is only one version at the moment.
+        - in: query
+          name: thumbsize
+          required: false
+          schema:
+            type: integer
+          description: >-
+            Specify the desired width of returned image URLs. When unspecified,
+            the linked image(s) returned by the API will be full-resolution.
+            Note that images can only be reduced in size; specifying a width
+            greater than than the maximum size will return the default full-size
+            image URL.
+      responses:
+        '200':
+          description: A JSON object describing the fish.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NHFish'
+        '401':
+          description: Failed to authenticate user from `X-API-KEY`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '404':
+          description: Could not find the specified fish.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error404'
+        '500':
+          description: There was an error fetching the requested data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error500'
+  /nh/bugs:
+    get:
+      summary: All New Horizons bugs
+      description: >-
+        Get a list of all bugs and their details in *Animal Crossing: New
+        Horizons*. Note that while cached, this endpoint will be very
+        responsive; however, hitting the endpoint in between cache refreshes can
+        result in a response time of 5 to 15 seconds.
+      parameters:
+        - in: header
+          name: X-API-KEY
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: >-
+            Your UUID secret key, granted to you by the Nookipedia team.
+            Required for accessing the API.
+        - in: header
+          name: Accept-Version
+          required: true
+          schema:
+            type: string
+          description: >-
+            The version of the API you are calling, written as `1.0.0`. This
+            header is required as good practice, but is not currently utilized
+            by the API as there is only one version at the moment.
+        - in: query
+          name: month
+          required: false
+          schema:
+            type: string
+          description: >-
+            Retrive only the bug that are available in a specific month. Value
+            may be the month's name (`jan`, `january`), the integer representing
+            the number (`01`, `1`), or `current` for the current month. When
+            `current` is specified, the return body will be an object with two
+            arrays inside, one called `north` and the other `south` containing
+            the bug available in each respective hemisphere. Note that the
+            current month is calculated based off the API server's time, so it
+            may be slightly off for you at the beginning or end of the month.
+        - in: query
+          name: excludedetails
+          required: false
+          schema:
+            type: string
+          description: >-
+            When set to `true`, only bug names are returned. Instead of an array
+            of objects with all details, the return will be an array of strings.
+            This is particularly useful when used with the `month` filter, for
+            users who want just a list of bugs in a given month but not all
+            their respective details.
+        - in: query
+          name: thumbsize
+          required: false
+          schema:
+            type: integer
+          description: >-
+            Specify the desired width of returned image URLs. When unspecified,
+            the linked image(s) returned by the API will be full-resolution.
+            Note that images can only be reduced in size; specifying a width
+            greater than than the maximum size will return the default full-size
+            image URL. This parameter is generally not recommended unless you
+            absolutely need it, as each returned thumbnail link with a custom
+            size requires an additional network call, which can result in a long
+            response time if calling this endpoint in between cache refreshes.
+      responses:
+        '200':
+          description: A JSON array of bug
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NHBug'
+        '401':
+          description: Failed to authenticate user from `X-API-KEY`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '500':
+          description: There was an error fetching the requested data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error500'
+  '/nh/bugs/{bug}':
+    get:
+      summary: Single New Horizons bug
+      description: Optional extended description in CommonMark or HTML.
+      parameters:
+        - in: path
+          name: bug
+          required: true
+          schema:
+            type: string
+          description: The name of the bug you wish to retrieve information about.
+        - in: header
+          name: X-API-KEY
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: >-
+            Your UUID secret key, granted to you by the Nookipedia team.
+            Required for accessing the API.
+        - in: header
+          name: Accept-Version
+          required: true
+          schema:
+            type: string
+          description: >-
+            The version of the API you are calling, written as `1.0.0`. This
+            header is required as good practice, but is not currently utilized
+            by the API as there is only one version at the moment.
+        - in: query
+          name: thumbsize
+          required: false
+          schema:
+            type: integer
+          description: >-
+            Specify the desired width of returned image URLs. When unspecified,
+            the linked image(s) returned by the API will be full-resolution.
+            Note that images can only be reduced in size; specifying a width
+            greater than than the maximum size will return the default full-size
+            image URL.
+      responses:
+        '200':
+          description: A JSON object describing the bug.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NHBug'
+        '401':
+          description: Failed to authenticate user from `X-API-KEY`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '404':
+          description: Could not find the specified bug.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error404'
+        '500':
+          description: There was an error fetching the requested data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error500'
+  /nh/sea:
+    get:
+      summary: All NH sea creatures
+      description: >-
+        Get a list of all sea creatures and their details in *Animal Crossing:
+        New Horizons*. Note that while cached, this endpoint will be very
+        responsive; however, hitting the endpoint in between cache refreshes can
+        result in a response time of 5 to 15 seconds.
+      parameters:
+        - in: header
+          name: X-API-KEY
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: >-
+            Your UUID secret key, granted to you by the Nookipedia team.
+            Required for accessing the API.
+        - in: header
+          name: Accept-Version
+          required: true
+          schema:
+            type: string
+          description: >-
+            The version of the API you are calling, written as `1.0.0`. This
+            header is required as good practice, but is not currently utilized
+            by the API as there is only one version at the moment.
+        - in: query
+          name: month
+          required: false
+          schema:
+            type: string
+          description: >-
+            Retrive only the sea creature that are available in a specific
+            month. Value may be the month's name (`jan`, `january`), the integer
+            representing the number (`01`, `1`), or `current` for the current
+            month. When `current` is specified, the return body will be an
+            object with two arrays inside, one called `north` and the other
+            `south` containing the sea creature available in each respective
+            hemisphere. Note that the current month is calculated based off the
+            API server's time, so it may be slightly off for you at the
+            beginning or end of the month.
+        - in: query
+          name: excludedetails
+          required: false
+          schema:
+            type: string
+          description: >-
+            When set to `true`, only sea creature names are returned. Instead of
+            an array of objects with all details, the return will be an array of
+            strings. This is particularly useful when used with the `month`
+            filter, for users who want just a list of sea creatures in a given
+            month but not all their respective details.
+        - in: query
+          name: thumbsize
+          required: false
+          schema:
+            type: integer
+          description: >-
+            Specify the desired width of returned image URLs. When unspecified,
+            the linked image(s) returned by the API will be full-resolution.
+            Note that images can only be reduced in size; specifying a width
+            greater than than the maximum size will return the default full-size
+            image URL. This parameter is generally not recommended unless you
+            absolutely need it, as each returned thumbnail link with a custom
+            size requires an additional network call, which can result in a long
+            response time if calling this endpoint in between cache refreshes.
+      responses:
+        '200':
+          description: A JSON array of sea creature
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NHSeaCreature'
+        '401':
+          description: Failed to authenticate user from `X-API-KEY`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '500':
+          description: There was an error fetching the requested data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error500'
+  '/nh/sea/{sea_creature}':
+    get:
+      summary: Single NH sea creature
+      description: Optional extended description in CommonMark or HTML.
+      parameters:
+        - in: path
+          name: sea_creature
+          required: true
+          schema:
+            type: string
+          description: The name of the sea creature you wish to retrieve information about.
+        - in: header
+          name: X-API-KEY
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: >-
+            Your UUID secret key, granted to you by the Nookipedia team.
+            Required for accessing the API.
+        - in: header
+          name: Accept-Version
+          required: true
+          schema:
+            type: string
+          description: >-
+            The version of the API you are calling, written as `1.0.0`. This
+            header is required as good practice, but is not currently utilized
+            by the API as there is only one version at the moment.
+        - in: query
+          name: thumbsize
+          required: false
+          schema:
+            type: integer
+          description: >-
+            Specify the desired width of returned image URLs. When unspecified,
+            the linked image(s) returned by the API will be full-resolution.
+            Note that images can only be reduced in size; specifying a width
+            greater than than the maximum size will return the default full-size
+            image URL.
+      responses:
+        '200':
+          description: A JSON object describing the sea creature.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NHSeaCreature'
+        '401':
+          description: Failed to authenticate user from `X-API-KEY`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '404':
+          description: Could not find the specified sea creature.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error404'
+        '500':
+          description: There was an error fetching the requested data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error500'
+components:
+  schemas:
+    Error401:
+      type: object
+      properties:
+        title:
+          type: string
+          example: Failed to validate UUID.
+          description: A brief title describing the error.
+        details:
+          type: string
+          example: Provided month filter currentd was not recognized as a valid month.
+          description: 'UUID is either missing or invalid; or, unspecified server occured.'
+    Error404:
+      type: object
+      properties:
+        title:
+          type: string
+          example: No data was found for the given query.
+          description: A brief title describing the error.
+        details:
+          type: string
+          example: >-
+            MediaWiki Cargo request succeeded by nothing was returned for the
+            parameters: {}
+          description: 'UUID is either missing or invalid; or, unspecified server occured.'
+    Error500:
+      type: object
+      properties:
+        title:
+          type: string
+          example: Failed to identify the provided month filter.
+          description: A brief title describing the error.
+        details:
+          type: string
+          example: Provided month filter currentd was not recognized as a valid month.
+          description: >-
+            A more in-depth description of the issue, including parameters
+            and/or error text when available.
+    NHFish:
+      type: object
+      properties:
+        url:
+          type: string
+          example: 'https://nookipedia.com/wiki/Cherry Salmon'
+          description: Link to the respective Nookipedia article.
+        name:
+          type: string
+          example: Cherry Salmon
+          description: Name of the fish.
+        number:
+          type: string
+          example: '27'
+          description: 'In-game fish number, marking position in the Critterpedia.'
+        image:
+          type: string
+          example: 'https://dodo.ac/np/images/d/db/Cherry_Salmon_NH_Icon.png'
+          description: Image of the fish. dodo.ac is Nookipedia's CDN server.
+        catchphrase:
+          type: string
+          example: >-
+            I caught a cherry salmon! It's the perfect topper for a marlin
+            sundae!
+          description: The catchphrase the player says after catching the fish.
+        catchphrase2:
+          type: string
+          example: ''
+          description: >-
+            An alternative catchphrase that the player may say after catching
+            the critter under certain conditions (such as catching a squid when
+            it is raining). Note that the vast majority of critters do not have
+            a second catchphrase.
+        time:
+          type: string
+          example: 4 PM – 9 AM
+          description: >-
+            The time(s) the fish is available. If all day, string will be `"All
+            day"`.
+        location:
+          type: string
+          example: River (clifftop)
+          description: Short descriptor of where the fish can be found.
+        shadow_size:
+          type: string
+          example: Small
+          enum:
+            - X-Small
+            - Small
+            - Medium
+            - Medium w/Fin
+            - Large
+            - Large w/Fin
+            - X-Large
+            - XX-Large
+            - Long
+          description: The size of the fish's shadow.
+        rarity:
+          type: string
+          example: Uncommon
+          description: >-
+            How rare the fish is. Note that this field is currently empty for
+            most fish as we do not yet know how exactly fish rarities are
+            calculated in the game code.
+        total_catch:
+          type: string
+          example: '100'
+          description: >-
+            The total number of fish the player has to have caught before this
+            fish will start spawning.
+        sell_nook:
+          type: string
+          example: '1000'
+          description: The number of Bells the fish can be sold to Nook's store for.
+        sell_cj:
+          type: string
+          example: '1500'
+          description: >-
+            The number of Bells the fish can be sold to C.J. for. This value is
+            always 1.5x that of `sell_nook`.
+        tank_width:
+          type: string
+          example: '1'
+          description: The width of the tank when the fish is placed as a furniture item.
+        tank_length:
+          type: string
+          example: '1'
+          description: The length of the tank when the fish is placed as a furniture item.
+        n_availability:
+          type: string
+          example: Mar – Jun; Sep – Nov
+          description: >-
+            The months the fish is available for in the Northern hemisphere. If
+            all year, value will be `"All year"`.
+        s_availability:
+          type: string
+          example: Mar – May; Sep – Dec
+          description: >-
+            The months the fish is available for in the Southern hemisphere. If
+            all year, value will be `"All year"`.
+        n_availability_array:
+          type: array
+          items:
+            type: string
+          example:
+            - '3'
+            - '4'
+            - '5'
+            - '6'
+            - '9'
+            - '10'
+            - '11'
+          description: >-
+            An array of string integers representing the months the fish is
+            available in the Northern hemisphere.
+        s_availability_array:
+          type: array
+          items:
+            type: string
+          example:
+            - '3'
+            - '4'
+            - '5'
+            - '9'
+            - '10'
+            - '11'
+            - '12'
+          description: >-
+            An array of string integers representing the months the fish is
+            available in the Southern hemisphere.
+    NHBug:
+      type: object
+      properties:
+        url:
+          type: string
+          example: 'https://nookipedia.com/wiki/Grasshopper'
+          description: Link to the respective Nookipedia article.
+        name:
+          type: string
+          example: Grasshopper
+          description: Name of the bug.
+        number:
+          type: string
+          example: '19'
+          description: 'In-game bug number, marking position in the Critterpedia.'
+        image:
+          type: string
+          example: 'https://dodo.ac/np/images/3/37/Grasshopper_NH_Icon.png'
+          description: Image of the bug. dodo.ac is Nookipedia's CDN server.
+        catchphrase:
+          type: string
+          example: I caught a grasshopper! They're a grass act!
+          description: The catchphrase the player says after catching the bug.
+        catchphrase2:
+          type: string
+          example: ''
+          description: >-
+            An alternative catchphrase that the player may say after catching
+            the critter under certain conditions (such as catching a squid when
+            it is raining). Note that the vast majority of critters do not have
+            a second catchphrase.
+        time:
+          type: string
+          example: 8 AM – 5 PM
+          description: >-
+            The time(s) the bug is available. If all day, string will be `"All
+            day"`.
+        location:
+          type: string
+          example: On the ground
+          description: Short descriptor of where the bug can be found.
+        rarity:
+          type: string
+          example: Uncommon
+          description: >-
+            How rare the bug is. Note that this field is currently empty for
+            most bugs as we do not yet know how exactly bug rarities are
+            calculated in the game code.
+        total_catch:
+          type: string
+          example: '0'
+          description: >-
+            The total number of bug the player has to have caught before this
+            bug will start spawning.
+        sell_nook:
+          type: string
+          example: '160'
+          description: The number of Bells the bug can be sold to Nook's store for.
+        sell_flick:
+          type: string
+          example: '240'
+          description: >-
+            The number of Bells the bug can be sold to Flick for. This value is
+            always 1.5x that of `sell_nook`.
+        tank_width:
+          type: string
+          example: '1'
+          description: The width of the tank when the bug is placed as a furniture item.
+        tank_length:
+          type: string
+          example: '1'
+          description: The length of the tank when the bug is placed as a furniture item.
+        n_availability:
+          type: string
+          example: Jul – Sep
+          description: >-
+            The months the bug is available for in the Northern hemisphere. If
+            all year, value will be `"All year"`.
+        s_availability:
+          type: string
+          example: Jan – Mar
+          description: >-
+            The months the bug is available for in the Southern hemisphere. If
+            all year, value will be `"All year"`.
+        n_availability_array:
+          type: array
+          items:
+            type: string
+          example:
+            - '7'
+            - '8'
+            - '9'
+          description: >-
+            An array of string integers representing the months the bug is
+            available in the Northern hemisphere.
+        s_availability_array:
+          type: array
+          items:
+            type: string
+          example:
+            - '1'
+            - '2'
+            - '3'
+          description: >-
+            An array of string integers representing the months the bug is
+            available in the Southern hemisphere.
+    NHSeaCreature:
+      type: object
+      properties:
+        url:
+          type: string
+          example: 'https://nookipedia.com/wiki/Octopus_(fish)'
+          description: Link to the respective Nookipedia article.
+        name:
+          type: string
+          example: Octopus
+          description: Name of the sea creature.
+        number:
+          type: string
+          example: '20'
+          description: 'In-game sea creature number, marking position in the Critterpedia.'
+        image:
+          type: string
+          example: 'https://dodo.ac/np/images/5/58/Octopus_NH_Icon.png'
+          description: Image of the sea creature. dodo.ac is Nookipedia's CDN server.
+        catchphrase:
+          type: string
+          example: I got an octopus! It can give four hugs at once!
+          description: The catchphrase the player says after catching the sea creature.
+        catchphrase2:
+          type: string
+          example: ''
+          description: >-
+            An alternative catchphrase that the player may say after catching
+            the critter under certain conditions (such as catching a squid when
+            it is raining). Note that the vast majority of critters do not have
+            a second catchphrase.
+        time:
+          type: string
+          example: All day
+          description: >-
+            The time(s) the sea creature is available. If all day, string will
+            be `"All day"`.
+        shadow_size:
+          type: string
+          example: Medium
+          description: Short descriptor of where the sea creature can be found.
+          enum:
+            - X-Small
+            - Small
+            - Medium
+            - Large
+            - X-Large
+        shadow_movement:
+          type: string
+          example: Slow
+          description: Short descriptor of where the sea creature can be found.
+          enum:
+            - Stationary
+            - Very slow
+            - Slow
+            - Medium
+            - Fast
+            - Very fast
+        rarity:
+          type: string
+          example: Uncommon
+          description: >-
+            How rare the sea creature is. Note that this field is currently
+            empty for most sea creatures as we do not yet know how exactly sea
+            creature rarities are calculated in the game code.
+        total_catch:
+          type: string
+          example: '0'
+          description: >-
+            The total number of sea creatures the player has to have caught
+            before this sea creature will start spawning.
+        sell_nook:
+          type: string
+          example: '160'
+          description: >-
+            The number of Bells the sea creature can be sold to Nook's store
+            for.
+        tank_width:
+          type: string
+          example: '1'
+          description: >-
+            The width of the tank when the sea creature is placed as a furniture
+            item.
+        tank_length:
+          type: string
+          example: '1'
+          description: >-
+            The length of the tank when the sea creature is placed as a
+            furniture item.
+        n_availability:
+          type: string
+          example: Jul – Sep
+          description: >-
+            The months the sea creature is available for in the Northern
+            hemisphere. If all year, value will be `"All year"`.
+        s_availability:
+          type: string
+          example: Jan – Mar
+          description: >-
+            The months the sea creature is available for in the Southern
+            hemisphere. If all year, value will be `"All year"`.
+        n_availability_array:
+          type: array
+          items:
+            type: string
+          example:
+            - '1'
+            - '2'
+            - '3'
+            - '4'
+            - '5'
+            - '6'
+            - '7'
+            - '8'
+            - '9'
+            - '10'
+            - '11'
+            - '12'
+          description: >-
+            An array of string integers representing the months the sea creature
+            is available in the Northern hemisphere.
+        s_availability_array:
+          type: array
+          items:
+            type: string
+          example:
+            - '1'
+            - '2'
+            - '3'
+            - '4'
+            - '5'
+            - '6'
+            - '7'
+            - '8'
+            - '9'
+            - '10'
+            - '11'
+            - '12'
+          description: >-
+            An array of string integers representing the months the sea creature
+            is available in the Southern hemisphere.

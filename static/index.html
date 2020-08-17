@@ -1,0 +1,107 @@
+<!DOCTYPE html> 
+<html lang="en">
+  <head>
+    <title>Nookipedia API</title>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="An API for data about the Animal Crossing series, provided by the Nookipedia wiki">
+    <meta name="keywords" content="animal crossing, api, nookipedia, wiki">
+    <meta name="author" content="Nookipedia">
+
+    <link href="static/css/fontawesome.min.css" rel="stylesheet">
+    <link href="static/css/brands.min.css" rel="stylesheet">
+    <link href="static/css/style.css" rel="stylesheet">
+
+    <!-- Piwik -->
+    <script type="text/javascript">
+      var _paq = _paq || [];
+      // tracker methods like "setCustomDimension" should be called before "trackPageView"
+      _paq.push(['trackPageView']);
+      _paq.push(['enableLinkTracking']);
+      (function() {
+          var u="//piwik.nookipedia.com/";
+          _paq.push(['setTrackerUrl', u+'piwik.php']);
+          _paq.push(['setSiteId', '2']);
+          var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+          g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
+      })();
+    </script>
+    <noscript><p><img src="//piwik.nookipedia.com/piwik.php?idsite=2&rec=1" style="border:0;" alt="" /></p></noscript>
+    <!-- End Piwik -->
+  </head>
+  <body>
+    <h1>Nookipedia API</h1>
+    <p>
+      This free RESTful service provides endpoints for retrieving Animal Crossing data pulled from the <a href="https://nookipedia.com/wiki/Main_Page" target="_blank">Nookipedia wiki</a>, the largest community-driven encyclopedia about the series. Built from the ground up using Python, Flask, and nginx, the key benefit of using this API is access to clean structured data spanning the entire Animal Crossing series, pulled from information that is constantly updated and expanding as editors work on the wiki.
+    </p>
+    <div class="center">
+      <a href="/doc"><button class="button green">Documentation</button></a>
+      <a href="https://forms.gle/PeNmGLhJVqoq8Vqk9" target="_blank"><button class="button green">Apply for Access Key</button></a>
+      <a href="https://discord.gg/5Sfg3CT" target="_blank"><button class="button green">Join our Discord</button></a>
+    </div>
+    <p>
+      Access to the Nookipedia API requires obtaining a key, so that we can reliably manage our scale and provide better support for our users. To request access to the API, please fill out <a href="https://forms.gle/PeNmGLhJVqoq8Vqk9" target="_blank">this form</a>.
+    </p>
+    <p>
+      Nookipedia's text content is released under a <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank">CC BY-SA 3.0</a> license. Our data is free to use for any purpose; we simply ask that you provide attribution to Nookipedia, and a link back when possible. All images are property of their respective owners.
+    </p>
+    <p>
+      Available endpoints:
+      <ul>
+          <li>New Horizons bugs</li>
+          <li>New Horizons fish</li>
+          <li>New Horizons sea creatures</li>
+      </ul>
+    </p>
+    <p>
+      Coming up next:
+      <ul>
+        <li>Villagers (from the whole series)</li>
+        <li>New Horizons items</li>
+        <li>Today's events (the current day's birthday and events)</li>
+      </ul>  
+    </p>
+    <p>
+      Note: This API is the successor to our <a href="https://nookipedia.com/api/" target="_blank">original API</a>. While the previous API scraped information directly from the wiki, this new edition of the API pulls data from a structured and constrained database, resulting in more structured data, better search matching, and support for filtering.
+    </p>
+
+    <h2>Support</h2>
+    <p>
+      We're happy to support you and your application however we can. The quickest way to get support is through our <a href="https://discord.gg/5Sfg3CT" target="_blank">Discord server</a>, where we have a designated channel just for Nookipedia staff and API users to support each other and share their work.
+    </p>
+    <p>
+      We can also provide support on-wiki on the <a href="https://nookipedia.com/wiki/Nookipedia_talk:Development" target="_blank">development talk page<a>.
+    </p>
+
+    <h2>Additional Resources</h2>
+    <p>
+      This API is not the only way to pull information from the Nookipedia wiki. See our <a href="https://nookipedia.com/wiki/Nookipedia:Development" target="_blank">development page</a> for more information.
+    </p>
+
+    <h2>Projects</h2>
+    <p>
+      <i>Coming soon</i>
+    </p>
+
+    <h2>Acknowledgements</h2>
+    <p>
+      <ul>
+        <li>Nookipedia's editors, who work tirelessly to document the Animal Crossing series</li>
+        <li>The <a href="https://nookipedia.com/wiki/Community:ACNH_Spreadsheet" target="_blank">ACNH Spreadsheet project</a> (<a href="https://docs.google.com/spreadsheets/d/13d_LAJPlxMa_DubPTuirkIV4DERBMXbrWQsmSh8ReK4/edit" target="_blank">Spreadsheet</a> - <a href="https://docs.google.com/spreadsheets/d/1GwUuCKgJC61qWEjWyeG3nVjkHesszRL6XbPA_dHfLoI/edit" target="_blank">Translations</a>) for providing some of the data in this API</li>
+        <li>Our API users, whose support and inspiring projects make building this project a worthwhile effort!</li>
+      </ul>
+    </p>
+
+    <br><br>
+
+    <div class="center">
+      <a href="https://www.facebook.com/nookipedia"><i class="fab fa-facebook fa-2x"></i></a>
+      <a href="https://twitter.com/nookipedia"><i class="fab fa-twitter fa-2x"></i></a>
+      <a href="https://instagram.com/nookipedia"><i class="fab fa-instagram fa-2x"></i></a>
+      <a href="https://github.com/nookipedia"><i class="fab fa-github fa-2x"></i></a>
+    </div>
+
+    <br><br><br><br>
+  </body>
+</html>
