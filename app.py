@@ -64,6 +64,22 @@ configure_dashboard(app)
 # SET ERROR HANDLERS
 #################################
 
+@app.errorhandler(400)
+def error_bad_request(e):
+    response = e.get_response()
+    if 'title' in e.description:
+        response.data = json.dumps({
+            "title": e.description['title'],
+            "details": e.description['details'],
+        })
+    else:
+        response.data = json.dumps({
+            "title": "Invalid input",
+            "details": "Please ensure provided parameters have valid vales.",
+        })
+    response.content_type = "application/json"
+    return response, 400
+
 @app.errorhandler(401)
 def error_resource_not_found(e):
     response = e.get_response()
@@ -197,7 +213,7 @@ def call_cargo(parameters, request_args): # Request args are passed in just for 
         abort(500, description=error_response("Error while calling Nookipedia's Cargo API.", "MediaWiki Cargo request failed for parameters: {}".format(parameters)))
 
     if not r.json()['cargoquery']:
-        abort(404, description=error_response("No data was found for the given query.", "MediaWiki Cargo request succeeded by nothing was returned for the parameters: {}".format(parameters)))
+        return []
 
     try:
         data = []
@@ -211,7 +227,7 @@ def call_cargo(parameters, request_args): # Request args are passed in just for 
                             r = requests.get(BASE_URL_WIKI + 'Special:FilePath/' + obj['title'][key].rsplit('/', 1)[-1] + '?width=' + request.args.get('thumbsize'))
                         except:
                             abort(500, description=error_response("Error while getting image CDN thumbnail URL.", "Failure occured with the following parameters: {}.".format(parameters)))
-                        item['image'] = r.url
+                        item['image_url'] = r.url
                     else:
                         # Replace all spaces in keys with underscores
                         item[key.replace(' ', '_')] = obj['title'][key]
@@ -230,7 +246,7 @@ def call_cargo(parameters, request_args): # Request args are passed in just for 
 
 # Convert month query parameter input into integer:
 # Acceptable input: 'current', '1', '01', 'jan', 'january'
-def month_lookup(month):
+def month_to_int(month):
     month = month.lower()
     try:
         if month.isdigit():
@@ -238,7 +254,6 @@ def month_lookup(month):
             if month in ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']:
                 return str(month)
             else:
-
                 return None
         elif month == 'current':
             return datetime.now().strftime("%m").lstrip('0')
@@ -255,7 +270,7 @@ def month_lookup(month):
                 'sep': '9',
                 'oct': '10',
                 'nov': '11',
-                'dec': '12',
+                'dec': '12'
             }
 
             return switcher.get(month.lower()[0:3], None)
@@ -288,9 +303,9 @@ def months_to_array(data):
 def get_critter_list(limit, tables, fields):
     # If client wants details for certain month:
     if request.args.get('month'):
-        calculated_month = month_lookup(request.args.get('month'))
+        calculated_month = month_to_int(request.args.get('month'))
         if not calculated_month:
-            abort(500, description=error_response("Failed to identify the provided month filter.", "Provided month filter {} was not recognized as a valid month.".format(request.args.get('month'))))
+            abort(400, description=error_response("Failed to identify the provided month filter.", "Provided month filter {} was not recognized as a valid month.".format(request.args.get('month'))))
 
         where = 'n_m' + calculated_month + '="1"'
         params = { 'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields, 'where': where }
@@ -317,9 +332,9 @@ def get_critter_list(limit, tables, fields):
                     # If client wants all details, return array of objects:
                     return jsonify({ "month": calculated_month, "north": n_hemi, "south": s_hemi })
             except:
-                abort(500, description=error_response("Failed to identify the provided month filter.", "Provided month filter {} was not recognized as a valid month.".format(request.args.get('month'))))
+                abort(400, description=error_response("Failed to identify the provided month filter.", "Provided month filter {} was not recognized as a valid month.".format(request.args.get('month'))))
         else:
-            abort(500, description=error_response("Failed to identify the provided month filter.", "Provided month filter {} was not recognized as a valid month.".format(request.args.get('month'))))
+            abort(400, description=error_response("Failed to identify the provided month filter.", "Provided month filter {} was not recognized as a valid month.".format(request.args.get('month'))))
     else:
         params = { 'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields }
         if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
@@ -330,6 +345,83 @@ def get_critter_list(limit, tables, fields):
             return jsonify(results_array)
         else:
             return jsonify(months_to_array(call_cargo(params, request.args)))
+
+def format_villager(data):
+    games = ['dnm', 'ac', 'e_plus', 'ww', 'cf', 'nl', 'wa', 'nh', 'film', 'hhd', 'pc']
+
+    for obj in data:
+        # Set islander to Boolean:
+        if obj['islander'] == '0':
+            obj['islander'] = False
+        elif obj['islander'] == '1':
+            obj['islander'] = True
+
+        # Capitalize debut:
+        obj['debut'] = obj['debut'].upper()
+
+        # Place prev_phrases in array:
+        prev_phrases = []
+        if obj['prev_phrase'] != '':
+            prev_phrases.append(obj['prev_phrase'])
+            if obj['prev_phrase2']:
+                prev_phrases.append(obj['prev_phrase2'])
+        obj['prev_phrases'] = prev_phrases
+        del obj['prev_phrase']
+        del obj['prev_phrase2']
+
+        # Place game appearances in array:
+        games_array = []
+        for key in obj:
+            if obj[key] == '1':
+                if key in games:
+                    games_array.append(key.upper())
+        for i in ['dnm', 'ac', 'e_plus', 'ww', 'cf', 'nl', 'wa', 'nh', 'film', 'hhd', 'pc']:
+            del obj[i]
+        obj['games_array'] = games_array
+
+    return data
+
+def get_villager_list(limit, tables, fields):
+    where = None
+
+    # Filter by personality:
+    if request.args.get('personality'):
+        personality_list = ['lazy', 'jock', 'cranky', 'smug', 'normal', 'peppy', 'snooty', 'sisterly']
+        personality = request.args.get('personality').lower()
+        if personality not in personality_list:
+            abort(400, description=error_response("Could not recognize provided personality.", "Ensure personality is either lazy, jock, cranky, smug, normal, peppy, snooty, or sisterly."))
+
+        if where:
+            where = where + ' AND personality = "' + personality + '"'
+        else:
+            where = 'personality = "' + personality + '"'
+
+    # Filter by species:
+    if request.args.get('species'):
+        species_list = ['alligator', 'anteater', 'bear', 'bird', 'bull', 'cat', 'cub', 'chicken', 'cow', 'deer', 'dog', 'duck', 'eagle', 'elephant', 'frog', 'goat', 'gorilla', 'hamster', 'hippo', 'horse', 'koala', 'kangaroo', 'lion', 'monkey', 'mouse', 'octopus', 'ostrich', 'penguin', 'pig', 'rabbit', 'rhino', 'sheep', 'squirrel', 'tiger', 'wolf']
+        species = request.args.get('species').lower()
+        if species not in species_list:
+            abort(400, description=error_response("Could not recognize provided personality.", "Ensure provided species is valid."))
+
+        if where:
+            where = where + ' AND species = "' + species + '"'
+        else:
+            where = 'species = "' + species + '"'
+    
+    if where:
+        params = { 'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields, 'where': where }
+    else:
+        params = { 'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields }
+
+    print(str(params))
+    if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
+        cargo_results = call_cargo(params, request.args)
+        results_array = []
+        for villager in cargo_results:
+            results_array.append(villager['name'])
+        return jsonify(results_array)
+    else:
+        return jsonify(format_villager(call_cargo(params, request.args)))
 
 #################################
 # STATIC RENDERS
@@ -364,6 +456,36 @@ def generate_key():
     except:
         abort(500, description=error_response("Failed to create new client UUID.", "UUID generation, or UUID insertion into keys table, failed."))
 
+# All villagers
+@app.route('/villagers', methods=['GET'])
+def get_villager_all():
+    authorize(DB_KEYS, request)
+
+    limit = '500'
+    tables = 'villager'
+    if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
+        fields = 'name'
+    else:
+        fields = 'url,name,id,image_url,species,personality,gender,birthday,sign,quote,phrase,prev_phrase,prev_phrase2,clothes,islander,debut,dnm,ac,e_plus,ww,cf,nl,wa,nh,film,hhd,pc'
+
+    return get_villager_list(limit, tables, fields)
+
+# Specific villager
+@app.route('/villagers/<string:villager>', methods=['GET'])
+def get_villager(villager):
+    authorize(DB_KEYS, request)
+    villager = villager.replace('_', ' ')
+    tables = 'villager'
+    fields = 'url,name,id,image_url,species,personality,gender,birthday,sign,quote,phrase,prev_phrase,prev_phrase2,clothes,islander,debut,dnm,ac,e_plus,ww,cf,nl,wa,nh,film,hhd,pc'
+    where = 'name="' + villager + '"'
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where }
+
+    cargo_results = call_cargo(params, request.args)
+    if cargo_results == []:
+        abort(404, description=error_response("No data was found for the given query.", "MediaWiki Cargo request succeeded by nothing was returned for the parameters: {}".format(params)))
+    else:
+        return jsonify(format_villager(cargo_results)[0])
+
 # All New Horizons fish
 @app.route('/nh/fish', methods=['GET'])
 def get_nh_fish_all():
@@ -388,7 +510,14 @@ def get_nh_fish(fish):
     where = 'name="' + fish + '"'
     params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where }
 
-    return jsonify(months_to_array(call_cargo(params, request.args)))
+    if(request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] == '1.0'):
+        return jsonify(months_to_array(call_cargo(params, request.args)))
+    else:
+        cargo_results = call_cargo(params, request.args)
+        if cargo_results == []:
+            abort(404, description=error_response("No data was found for the given query.", "MediaWiki Cargo request succeeded by nothing was returned for the parameters: {}".format(params)))
+        else:
+            return jsonify(months_to_array(cargo_results)[0])
 
 # All New Horizons bugs
 @app.route('/nh/bugs', methods=['GET'])
@@ -415,7 +544,14 @@ def get_nh_bug(bug):
     where = 'name="' + bug + '"'
     params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where }
 
-    return jsonify(months_to_array(call_cargo(params, request.args)))
+    if(request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] == '1.0'):
+        return jsonify(months_to_array(call_cargo(params, request.args)))
+    else:
+        cargo_results = call_cargo(params, request.args)
+        if cargo_results == []:
+            abort(404, description=error_response("No data was found for the given query.", "MediaWiki Cargo request succeeded by nothing was returned for the parameters: {}".format(params)))
+        else:
+            return jsonify(months_to_array(cargo_results)[0])
 
 # All New Horizons sea creatures
 @app.route('/nh/sea', methods=['GET'])
@@ -442,7 +578,14 @@ def get_nh_sea(sea):
     where = 'name="' + sea + '"'
     params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where }
 
-    return jsonify(months_to_array(call_cargo(params, request.args)))
+    if(request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] == '1.0'):
+        return jsonify(months_to_array(call_cargo(params, request.args)))
+    else:
+        cargo_results = call_cargo(params, request.args)
+        if cargo_results == []:
+            abort(404, description=error_response("No data was found for the given query.", "MediaWiki Cargo request succeeded by nothing was returned for the parameters: {}".format(params)))
+        else:
+            return jsonify(months_to_array(cargo_results)[0])
 
 if __name__ == '__main__':
     app.run(host = '0.0.0.0')
