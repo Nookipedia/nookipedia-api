@@ -377,7 +377,7 @@ def format_villager(data):
                     games_array.append(key.upper())
         for i in ['dnm', 'ac', 'e_plus', 'ww', 'cf', 'nl', 'wa', 'nh', 'film', 'hhd', 'pc']:
             del obj[i]
-        obj['games_array'] = games_array
+        obj['games'] = games_array
 
     return data
 
