@@ -401,7 +401,7 @@ def get_villager_list(limit, tables, fields):
         species_list = ['alligator', 'anteater', 'bear', 'bird', 'bull', 'cat', 'cub', 'chicken', 'cow', 'deer', 'dog', 'duck', 'eagle', 'elephant', 'frog', 'goat', 'gorilla', 'hamster', 'hippo', 'horse', 'koala', 'kangaroo', 'lion', 'monkey', 'mouse', 'octopus', 'ostrich', 'penguin', 'pig', 'rabbit', 'rhino', 'sheep', 'squirrel', 'tiger', 'wolf']
         species = request.args.get('species').lower()
         if species not in species_list:
-            abort(400, description=error_response("Could not recognize provided personality.", "Ensure provided species is valid."))
+            abort(400, description=error_response("Could not recognize provided species.", "Ensure provided species is valid."))
 
         if where:
             where = where + ' AND species = "' + species + '"'
