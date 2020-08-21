@@ -121,7 +121,7 @@
         ],
         "responses": {
           "200": {
-            "description": "A JSON array of villagers",
+            "description": "A JSON array of villagers.",
             "content": {
               "application/json": {
                 "schema": {
@@ -275,7 +275,7 @@
         ],
         "responses": {
           "200": {
-            "description": "A JSON array of villagers",
+            "description": "A JSON object describing the villager.",
             "content": {
               "application/json": {
                 "schema": {
@@ -293,6 +293,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error401"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Could not find the specified villager.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404"
                 }
               }
             }
@@ -364,7 +374,7 @@
         ],
         "responses": {
           "200": {
-            "description": "A JSON array of fish",
+            "description": "A JSON array of fish.",
             "content": {
               "application/json": {
                 "schema": {
@@ -540,7 +550,7 @@
         ],
         "responses": {
           "200": {
-            "description": "A JSON array of bug",
+            "description": "A JSON array of bugs.",
             "content": {
               "application/json": {
                 "schema": {
@@ -716,7 +726,7 @@
         ],
         "responses": {
           "200": {
-            "description": "A JSON array of sea creature",
+            "description": "A JSON array of sea creatures.",
             "content": {
               "application/json": {
                 "schema": {

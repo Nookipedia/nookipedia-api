@@ -137,7 +137,7 @@ paths:
             response time if calling this endpoint in between cache refreshes.
       responses:
         '200':
-          description: A JSON array of villagers
+          description: A JSON array of villagers.
           content:
             application/json:
               schema:
@@ -274,7 +274,7 @@ paths:
             response time if calling this endpoint in between cache refreshes.
       responses:
         '200':
-          description: A JSON array of villagers
+          description: A JSON object describing the villager.
           content:
             application/json:
               schema:
@@ -287,6 +287,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error401'
+        '404':
+          description: Could not find the specified villager.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error404'
         '500':
           description: There was an error fetching the requested data.
           content:
@@ -363,7 +369,7 @@ paths:
             response time if calling this endpoint in between cache refreshes.
       responses:
         '200':
-          description: A JSON array of fish
+          description: A JSON array of fish.
           content:
             application/json:
               schema:
@@ -521,7 +527,7 @@ paths:
             response time if calling this endpoint in between cache refreshes.
       responses:
         '200':
-          description: A JSON array of bug
+          description: A JSON array of bugs.
           content:
             application/json:
               schema:
@@ -680,7 +686,7 @@ paths:
             response time if calling this endpoint in between cache refreshes.
       responses:
         '200':
-          description: A JSON array of sea creature
+          description: A JSON array of sea creatures.
           content:
             application/json:
               schema:
