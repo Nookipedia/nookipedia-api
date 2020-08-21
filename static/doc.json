@@ -14,7 +14,7 @@
     "/villager": {
       "get": {
         "summary": "All villagers",
-        "description": "All villagers from the entire Animal Crossing series. Note that villagers only includes the animals that act as residents. Special characters, such as Tom Nook and Isabelle, are not accessed through this endpoint.",
+        "description": "All villagers from the entire Animal Crossing series, with the option to filter by species and/or personality. Note that villagers only includes the animals that act as residents. Special characters, such as Tom Nook and Isabelle, are not accessed through this endpoint.",
         "parameters": [
           {
             "in": "header",
@@ -98,7 +98,7 @@
                 "sisterly"
               ]
             },
-            "description": "Retrieve villagers with a certain personality. For 'sisterly', that the community often also calls it 'uchi' or 'big sister'."
+            "description": "Retrieve villagers with a certain personality. For 'sisterly', note that the community often also calls it 'uchi' or 'big sister'."
           },
           {
             "in": "query",
@@ -107,7 +107,161 @@
             "schema": {
               "type": "string"
             },
-            "description": "When set to `true`, only fish names are returned. Instead of an array of objects with all details, the return will be an array of strings. This is particularly useful when used with the `month` filter, for users who want just a list of fish in a given month but not all their respective details."
+            "description": "When set to `true`, only villager names are returned. Instead of an array of objects with all details, the return will be an array of strings."
+          },
+          {
+            "in": "query",
+            "name": "thumbsize",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL. This parameter is generally not recommended unless you absolutely need it, as each returned thumbnail link with a custom size requires an additional network call, which can result in a long response time if calling this endpoint in between cache refreshes."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A JSON array of villagers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Villager"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Failed to authenticate user from `X-API-KEY`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error401"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "There was an error fetching the requested data.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/villager/{villager}": {
+      "get": {
+        "summary": "Single villager",
+        "description": "Retrieve information about a specific villager. Note that villagers only includes the animals that act as residents. Special characters, such as Tom Nook and Isabelle, are not accessed through this endpoint.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "villager",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The name of the villager you wish to retrieve information about."
+          },
+          {
+            "in": "header",
+            "name": "X-API-KEY",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Your UUID secret key, granted to you by the Nookipedia team. Required for accessing the API."
+          },
+          {
+            "in": "header",
+            "name": "Accept-Version",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The version of the API you are calling, written as `1.0.0`. This is specified as required as good practice, but it is not actually enforced by the API. If you do not specify a version, you will be served the latest version, which may eventually result in breaking changes."
+          },
+          {
+            "in": "query",
+            "name": "species",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "alligator",
+                "anteater",
+                "bear",
+                "bird",
+                "bull",
+                "cat",
+                "cub",
+                "chicken",
+                "cow",
+                "deer",
+                "dog",
+                "duck",
+                "eagle",
+                "elephant",
+                "frog",
+                "goat",
+                "gorilla",
+                "hamster",
+                "hippo",
+                "horse",
+                "koala",
+                "kangaroo",
+                "lion",
+                "monkey",
+                "mouse",
+                "octopus",
+                "ostrich",
+                "penguin",
+                "pig",
+                "rabbit",
+                "rhino",
+                "sheep",
+                "squirrel",
+                "tiger",
+                "wolf"
+              ]
+            },
+            "description": "Retrieve villagers of a certain species."
+          },
+          {
+            "in": "query",
+            "name": "personality",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "lazy",
+                "jock",
+                "cranky",
+                "smug",
+                "normal",
+                "peppy",
+                "snooty",
+                "sisterly"
+              ]
+            },
+            "description": "Retrieve villagers with a certain personality. For 'sisterly', note that the community often also calls it 'uchi' or 'big sister'."
+          },
+          {
+            "in": "query",
+            "name": "excludedetails",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "When set to `true`, only villager names are returned. Instead of an array of objects with all details, the return will be an array of strings."
           },
           {
             "in": "query",
@@ -248,7 +402,7 @@
     "/nh/fish/{fish}": {
       "get": {
         "summary": "Single New Horizons fish",
-        "description": "Optional extended description in CommonMark or HTML.",
+        "description": "Retrieve information about a specific fish in *Animal Crossing: New Horizons*.",
         "parameters": [
           {
             "in": "path",
@@ -424,7 +578,7 @@
     "/nh/bugs/{bug}": {
       "get": {
         "summary": "Single New Horizons bug",
-        "description": "Optional extended description in CommonMark or HTML.",
+        "description": "Retrieve information about a specific bug in *Animal Crossing: New Horizons*.",
         "parameters": [
           {
             "in": "path",
@@ -600,7 +754,7 @@
     "/nh/sea/{sea_creature}": {
       "get": {
         "summary": "Single NH sea creature",
-        "description": "Optional extended description in CommonMark or HTML.",
+        "description": "Retrieve information about a specific sea creature in *Animal Crossing: New Horizons*.",
         "parameters": [
           {
             "in": "path",
@@ -819,7 +973,7 @@
           "personality": {
             "type": "string",
             "example": "Jock",
-            "description": "The villager's personality. Note that there are no official in-game personality names; these are names that are commonly used by the community. In the case of Sisterly, other common names include Big Sister and Uchi.",
+            "description": "The villager's personality. Note that there are no official in-game personality names; these are names that are commonly used by the community. In the case of 'sisterly', other common names include 'big sis' and 'uchi'.",
             "enum": [
               "Cranky",
               "Jock",
