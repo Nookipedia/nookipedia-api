@@ -671,7 +671,7 @@
     },
     "/nh/sea": {
       "get": {
-        "summary": "All NH sea creatures",
+        "summary": "All New Horizons sea creatures",
         "description": "Get a list of all sea creatures and their details in *Animal Crossing: New Horizons*. Note that while cached, this endpoint will be very responsive; however, hitting the endpoint in between cache refreshes can result in a response time of 5 to 15 seconds.",
         "parameters": [
           {
@@ -760,7 +760,7 @@
     },
     "/nh/sea/{sea_creature}": {
       "get": {
-        "summary": "Single NH sea creature",
+        "summary": "Single New Horizons sea creature",
         "description": "Retrieve information about a specific sea creature in *Animal Crossing: New Horizons*.",
         "parameters": [
           {
