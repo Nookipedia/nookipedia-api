@@ -278,9 +278,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Villager'
+                $ref: '#/components/schemas/Villager'
         '401':
           description: Failed to authenticate user from `X-API-KEY`.
           content:
