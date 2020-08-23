@@ -277,6 +277,52 @@ def month_to_int(month):
     except:
         return None
 
+# Convert month query parameter input into string name:
+# Acceptable input: '1', '01', 'jan', 'january'
+def month_to_string(month):
+    month = month.lower()
+    try:
+        if month.isdigit():
+            month = month.lstrip('0')
+            if month in ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']:
+                switcher = {
+                    '1': 'January',
+                    '2': 'Februarey',
+                    '3': 'March',
+                    '4': 'April',
+                    '5': 'May',
+                    '6': 'June',
+                    '7': 'July',
+                    '8': 'August',
+                    '9': 'September',
+                    '10': 'October',
+                    '11': 'November',
+                    '12': 'December'
+                }
+
+                return switcher.get(month.lower()[0:3], None)
+            else:
+                return None
+        else:
+            switcher = {
+                'jan': 'January',
+                'feb': 'February',
+                'mar': 'March',
+                'apr': 'April',
+                'may': 'May',
+                'jun': 'June',
+                'jul': 'July',
+                'aug': 'August',
+                'sep': 'September',
+                'oct': 'October',
+                'nov': 'November',
+                'dec': 'December'
+            }
+
+            return switcher.get(month.lower()[0:3], None)
+    except:
+        return None
+
 def months_to_array(data):
     month_fields = ['']
     n_months_array = []
@@ -386,12 +432,27 @@ def get_villager_list(limit, tables, fields):
 
     # Filter by name:
     if request.args.get('name'):
-        villager = request.args.get('name')
-        villager = villager.replace('_', ' ')
+        villager = request.args.get('name').replace('_', ' ')
         if where:
             where = where + ' AND name = "' + villager + '"'
         else:
             where = 'name = "' + villager + '"'
+
+    # Filter by birth month:
+    if request.args.get('birthmonth'):
+        month = month_to_string(request.args.get('birthmonth'))
+        if where:
+            where = where + ' AND birthday_month = "' + month + '"'
+        else:
+            where = 'birthday_month = "' + month + '"'
+    
+    # Filter by birth day:
+    if request.args.get('birthday'):
+        day = request.args.get('birthday')
+        if where:
+            where = where + ' AND birthday_day = "' + day + '"'
+        else:
+            where = 'birthday_day = "' + day + '"'
 
     # Filter by personality:
     if request.args.get('personality'):
