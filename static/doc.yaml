@@ -113,6 +113,31 @@ paths:
             Retrieve villagers with a certain personality. For 'sisterly', note
             that the community often also calls it 'uchi' or 'big sister'.
         - in: query
+          name: birthmonth
+          required: false
+          schema:
+            type: string
+          description: >-
+            Retrieve villagers born in a specific month. Value may be the
+            month's name (`jan`, `january`) or the integer representing the
+            month (`01`, `1`).
+        - in: query
+          name: birthday
+          required: false
+          schema:
+            type: string
+          description: >-
+            Use with `birthmonth` to get villager(s) born on a specific day.
+            Value should be an int, 1 through 31.
+        - in: query
+          name: includenhdetails
+          required: false
+          schema:
+            type: string
+          description: >-
+            Specify if you would like to also receive the `nh_details` object
+            that contains New Horizons details about the villager.
+        - in: query
           name: excludedetails
           required: false
           schema:
@@ -199,7 +224,7 @@ paths:
           description: >-
             Retrive only the fish that are available in a specific month. Value
             may be the month's name (`jan`, `january`), the integer representing
-            the number (`01`, `1`), or `current` for the current month. When
+            the month (`01`, `1`), or `current` for the current month. When
             `current` is specified, the return body will be an object with two
             arrays inside, one called `north` and the other `south` containing
             the fish available in each respective hemisphere. Note that the
@@ -357,7 +382,7 @@ paths:
           description: >-
             Retrive only the bug that are available in a specific month. Value
             may be the month's name (`jan`, `january`), the integer representing
-            the number (`01`, `1`), or `current` for the current month. When
+            the month (`01`, `1`), or `current` for the current month. When
             `current` is specified, the return body will be an object with two
             arrays inside, one called `north` and the other `south` containing
             the bug available in each respective hemisphere. Note that the
@@ -515,7 +540,7 @@ paths:
           description: >-
             Retrive only the sea creature that are available in a specific
             month. Value may be the month's name (`jan`, `january`), the integer
-            representing the number (`01`, `1`), or `current` for the current
+            representing the month (`01`, `1`), or `current` for the current
             month. When `current` is specified, the return body will be an
             object with two arrays inside, one called `north` and the other
             `south` containing the sea creature available in each respective

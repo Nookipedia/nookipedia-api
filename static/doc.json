@@ -102,6 +102,33 @@
           },
           {
             "in": "query",
+            "name": "birthmonth",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Retrieve villagers born in a specific month. Value may be the month's name (`jan`, `january`) or the integer representing the month (`01`, `1`)."
+          },
+          {
+            "in": "query",
+            "name": "birthday",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Use with `birthmonth` to get villager(s) born on a specific day. Value should be an int, 1 through 31."
+          },
+          {
+            "in": "query",
+            "name": "includenhdetails",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Specify if you would like to also receive the `nh_details` object that contains New Horizons details about the villager."
+          },
+          {
+            "in": "query",
             "name": "excludedetails",
             "required": false,
             "schema": {
@@ -197,7 +224,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Retrive only the fish that are available in a specific month. Value may be the month's name (`jan`, `january`), the integer representing the number (`01`, `1`), or `current` for the current month. When `current` is specified, the return body will be an object with two arrays inside, one called `north` and the other `south` containing the fish available in each respective hemisphere. Note that the current month is calculated based off the API server's time, so it may be slightly off for you at the beginning or end of the month."
+            "description": "Retrive only the fish that are available in a specific month. Value may be the month's name (`jan`, `january`), the integer representing the month (`01`, `1`), or `current` for the current month. When `current` is specified, the return body will be an object with two arrays inside, one called `north` and the other `south` containing the fish available in each respective hemisphere. Note that the current month is calculated based off the API server's time, so it may be slightly off for you at the beginning or end of the month."
           },
           {
             "in": "query",
@@ -373,7 +400,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Retrive only the bug that are available in a specific month. Value may be the month's name (`jan`, `january`), the integer representing the number (`01`, `1`), or `current` for the current month. When `current` is specified, the return body will be an object with two arrays inside, one called `north` and the other `south` containing the bug available in each respective hemisphere. Note that the current month is calculated based off the API server's time, so it may be slightly off for you at the beginning or end of the month."
+            "description": "Retrive only the bug that are available in a specific month. Value may be the month's name (`jan`, `january`), the integer representing the month (`01`, `1`), or `current` for the current month. When `current` is specified, the return body will be an object with two arrays inside, one called `north` and the other `south` containing the bug available in each respective hemisphere. Note that the current month is calculated based off the API server's time, so it may be slightly off for you at the beginning or end of the month."
           },
           {
             "in": "query",
@@ -549,7 +576,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Retrive only the sea creature that are available in a specific month. Value may be the month's name (`jan`, `january`), the integer representing the number (`01`, `1`), or `current` for the current month. When `current` is specified, the return body will be an object with two arrays inside, one called `north` and the other `south` containing the sea creature available in each respective hemisphere. Note that the current month is calculated based off the API server's time, so it may be slightly off for you at the beginning or end of the month."
+            "description": "Retrive only the sea creature that are available in a specific month. Value may be the month's name (`jan`, `january`), the integer representing the month (`01`, `1`), or `current` for the current month. When `current` is specified, the return body will be an object with two arrays inside, one called `north` and the other `south` containing the sea creature available in each respective hemisphere. Note that the current month is calculated based off the API server's time, so it may be slightly off for you at the beginning or end of the month."
           },
           {
             "in": "query",
