@@ -384,6 +384,15 @@ def format_villager(data):
 def get_villager_list(limit, tables, fields):
     where = None
 
+    # Filter by name:
+    if request.args.get('name'):
+        villager = request.args.get('name')
+        villager = villager.replace('_', ' ')
+        if where:
+            where = where + ' AND name = "' + villager + '"'
+        else:
+            where = 'name = "' + villager + '"'
+
     # Filter by personality:
     if request.args.get('personality'):
         personality_list = ['lazy', 'jock', 'cranky', 'smug', 'normal', 'peppy', 'snooty', 'sisterly']
@@ -456,7 +465,7 @@ def generate_key():
     except:
         abort(500, description=error_response("Failed to create new client UUID.", "UUID generation, or UUID insertion into keys table, failed."))
 
-# All villagers
+# Villagers
 @app.route('/villagers', methods=['GET'])
 def get_villager_all():
     authorize(DB_KEYS, request)
@@ -466,25 +475,9 @@ def get_villager_all():
     if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
         fields = 'name'
     else:
-        fields = 'url,name,id,image_url,species,personality,gender,birthday,sign,quote,phrase,prev_phrase,prev_phrase2,clothes,islander,debut,dnm,ac,e_plus,ww,cf,nl,wa,nh,film,hhd,pc'
+        fields = 'url,name,alt_name,id,image_url,species,personality,gender,birthday_month,birthday_day,sign,quote,phrase,prev_phrase,prev_phrase2,clothes,islander,debut,dnm,ac,e_plus,ww,cf,nl,wa,nh,film,hhd,pc'
 
     return get_villager_list(limit, tables, fields)
-
-# Specific villager
-@app.route('/villagers/<string:villager>', methods=['GET'])
-def get_villager(villager):
-    authorize(DB_KEYS, request)
-    villager = villager.replace('_', ' ')
-    tables = 'villager'
-    fields = 'url,name,id,image_url,species,personality,gender,birthday,sign,quote,phrase,prev_phrase,prev_phrase2,clothes,islander,debut,dnm,ac,e_plus,ww,cf,nl,wa,nh,film,hhd,pc'
-    where = 'name="' + villager + '"'
-    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where }
-
-    cargo_results = call_cargo(params, request.args)
-    if cargo_results == []:
-        abort(404, description=error_response("No data was found for the given query.", "MediaWiki Cargo request succeeded by nothing was returned for the parameters: {}".format(params)))
-    else:
-        return jsonify(format_villager(cargo_results)[0])
 
 # All New Horizons fish
 @app.route('/nh/fish', methods=['GET'])
