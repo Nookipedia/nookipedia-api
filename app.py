@@ -277,6 +277,52 @@ def month_to_int(month):
     except:
         return None
 
+# Convert month query parameter input into string name:
+# Acceptable input: '1', '01', 'jan', 'january'
+def month_to_string(month):
+    month = month.lower()
+    try:
+        if month.isdigit():
+            month = month.lstrip('0')
+            if month in ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']:
+                switcher = {
+                    '1': 'January',
+                    '2': 'Februarey',
+                    '3': 'March',
+                    '4': 'April',
+                    '5': 'May',
+                    '6': 'June',
+                    '7': 'July',
+                    '8': 'August',
+                    '9': 'September',
+                    '10': 'October',
+                    '11': 'November',
+                    '12': 'December'
+                }
+
+                return switcher.get(month.lower()[0:3], None)
+            else:
+                return None
+        else:
+            switcher = {
+                'jan': 'January',
+                'feb': 'February',
+                'mar': 'March',
+                'apr': 'April',
+                'may': 'May',
+                'jun': 'June',
+                'jul': 'July',
+                'aug': 'August',
+                'sep': 'September',
+                'oct': 'October',
+                'nov': 'November',
+                'dec': 'December'
+            }
+
+            return switcher.get(month.lower()[0:3], None)
+    except:
+        return None
+
 def months_to_array(data):
     month_fields = ['']
     n_months_array = []
@@ -384,6 +430,30 @@ def format_villager(data):
 def get_villager_list(limit, tables, fields):
     where = None
 
+    # Filter by name:
+    if request.args.get('name'):
+        villager = request.args.get('name').replace('_', ' ')
+        if where:
+            where = where + ' AND name = "' + villager + '"'
+        else:
+            where = 'name = "' + villager + '"'
+
+    # Filter by birth month:
+    if request.args.get('birthmonth'):
+        month = month_to_string(request.args.get('birthmonth'))
+        if where:
+            where = where + ' AND birthday_month = "' + month + '"'
+        else:
+            where = 'birthday_month = "' + month + '"'
+    
+    # Filter by birth day:
+    if request.args.get('birthday'):
+        day = request.args.get('birthday')
+        if where:
+            where = where + ' AND birthday_day = "' + day + '"'
+        else:
+            where = 'birthday_day = "' + day + '"'
+
     # Filter by personality:
     if request.args.get('personality'):
         personality_list = ['lazy', 'jock', 'cranky', 'smug', 'normal', 'peppy', 'snooty', 'sisterly']
@@ -456,7 +526,7 @@ def generate_key():
     except:
         abort(500, description=error_response("Failed to create new client UUID.", "UUID generation, or UUID insertion into keys table, failed."))
 
-# All villagers
+# Villagers
 @app.route('/villagers', methods=['GET'])
 def get_villager_all():
     authorize(DB_KEYS, request)
@@ -466,25 +536,9 @@ def get_villager_all():
     if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
         fields = 'name'
     else:
-        fields = 'url,name,id,image_url,species,personality,gender,birthday,sign,quote,phrase,prev_phrase,prev_phrase2,clothes,islander,debut,dnm,ac,e_plus,ww,cf,nl,wa,nh,film,hhd,pc'
+        fields = 'url,name,alt_name,id,image_url,species,personality,gender,birthday_month,birthday_day,sign,quote,phrase,prev_phrase,prev_phrase2,clothes,islander,debut,dnm,ac,e_plus,ww,cf,nl,wa,nh,film,hhd,pc'
 
     return get_villager_list(limit, tables, fields)
-
-# Specific villager
-@app.route('/villagers/<string:villager>', methods=['GET'])
-def get_villager(villager):
-    authorize(DB_KEYS, request)
-    villager = villager.replace('_', ' ')
-    tables = 'villager'
-    fields = 'url,name,id,image_url,species,personality,gender,birthday,sign,quote,phrase,prev_phrase,prev_phrase2,clothes,islander,debut,dnm,ac,e_plus,ww,cf,nl,wa,nh,film,hhd,pc'
-    where = 'name="' + villager + '"'
-    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where }
-
-    cargo_results = call_cargo(params, request.args)
-    if cargo_results == []:
-        abort(404, description=error_response("No data was found for the given query.", "MediaWiki Cargo request succeeded by nothing was returned for the parameters: {}".format(params)))
-    else:
-        return jsonify(format_villager(cargo_results)[0])
 
 # All New Horizons fish
 @app.route('/nh/fish', methods=['GET'])
