@@ -850,10 +850,12 @@ components:
             The game's internal identifier for the villager. Not all villagers
             have IDs; villagers who appeared in any game including or after Wild
             World have a consistent ID between games.
-        image:
+        image_url:
           type: string
           example: 'https://dodo.ac/np/images/9/94/Ribbot_NH.png'
-          description: Image of the fish. dodo.ac is Nookipedia's CDN server.
+          description: >-
+            Image of the villager from the latest game the villager appeared in.
+            dodo.ac is Nookipedia's CDN server.
         species:
           type: string
           example: Frog
@@ -966,9 +968,9 @@ components:
           description: >-
             Any phrases used in previous Animal Crossing installations. May be
             empty.
-        clothes:
+        clothing:
           type: string
-          example: zzrrbbit
+          example: Simple Parka
           description: >-
             The villager's default clothing. This will be the clothing from the
             latest game (i.e. if the villager had varying phrases between Wild
@@ -1007,6 +1009,18 @@ components:
           type: array
           items:
             type: string
+            enum:
+              - DNM
+              - AC
+              - E_PLUS
+              - WW
+              - CF
+              - NL
+              - WA
+              - NH
+              - FILM
+              - HHD
+              - PC
           example:
             - DNM
             - AC
@@ -1027,18 +1041,116 @@ components:
             Leaf expansion; NH is New Horizons for Switch; FILM is the Doubutsu
             no Mori Japan-exclusive film; HHD is Happy Home Designer for the
             Wii; and PC is Pocket Camp for mobile.
-          enum:
-            - DNM
-            - AC
-            - E_PLUS
-            - WW
-            - CF
-            - NL
-            - WA
-            - NH
-            - FILM
-            - HHD
-            - PC
+        nh_details:
+          type: object
+          properties:
+            image_url:
+              type: string
+              example: 'https://dodo.ac/np/images/9/94/Ribbot_NH.png'
+              description: Image of the villager from New Horizons.
+            photo_url:
+              type: string
+              example: 'https://dodo.ac/np/images/0/03/RibbotPicACNH.png'
+              description: >-
+                The villager's photo, received by the player after attaining a
+                certain friendship level.
+            icon_url:
+              type: string
+              example: 'https://dodo.ac/np/images/8/87/Ribbot_NH_Villager_Icon.png'
+              description: The villager's icon of their head.
+            quote:
+              type: string
+              example: 'Never rest, never rust.'
+              description: >-
+                The villager's quote, as found on the bac of their in-game
+                photo.
+            sub-personality:
+              type: string
+              example: B
+              description: >-
+                Each personality in New Horizons has two sub-personalities,
+                currently referred to as just A and B. The effect of a
+                sub-personality is currently unknown.
+              enum:
+                - A
+                - B
+            catchphrase:
+              type: string
+              example: zzrrbbit
+              description: >-
+                The default phrase a villager will use when speaking to the
+                player.
+            clothing:
+              type: string
+              example: Simple Parka
+              description: The default clothing that the villager wears.
+            clothing_variation:
+              type: string
+              example: Light Blue
+              description: The variation of the clothing (usually a color).
+            fav_styles:
+              type: array
+              items:
+                type: string
+              example:
+                - Simple
+                - Active
+              description: The villager's favorite clothing styles.
+            fav_colors:
+              type: array
+              items:
+                type: string
+              example:
+                - Blue
+                - Aqua
+              description: >-
+                The villager's favorite colors (giving the villager a gift with
+                one of their favorite colors increases friendship points).
+            hobby:
+              type: string
+              example: Fitness
+              description: >-
+                The villager's primary hobby, which determines most of the
+                activities they will do around the island (e.g. education
+                villagers will frequently read books and visit the museum).
+                Learn more at https://nookipedia.com/wiki/Hobbies
+              enum:
+                - Education
+                - Fashion
+                - Fitness
+                - Music
+                - Nature
+                - Play
+            house_interior_url:
+              type: string
+              example: 'https://dodo.ac/np/images/8/86/House_of_Ribbot_NH.png'
+              description: A screenshot of the villager's house interior.
+            house_exterior_url:
+              type: string
+              example: 'https://dodo.ac/np/images/4/42/House_of_Ribbot_NH_Model.png'
+              description: >-
+                A rendered model of the villager's house exterior. Note that
+                this is not an official Nintendo asset, but a render based of
+                the in-game model.
+            house_wallpaper:
+              type: string
+              example: Circuit-Board Wall
+              description: The wallpaper in the villager's house.
+            house_flooring:
+              type: string
+              example: Future-Tech Flooring
+              description: The flooring in the villager's house.
+            house_music:
+              type: string
+              example: K.K. Technopop
+              description: The music in the villager's house.
+            house_music_note:
+              type: string
+              example: ''
+              description: >-
+                Any notes about the villager's music. This is usually "Does not
+                contain a stereo initially", meaning that the villager's house
+                will not play music unless provided with a stereo.
     NHFish:
       type: object
       properties:
@@ -1054,7 +1166,7 @@ components:
           type: string
           example: '27'
           description: 'In-game fish number, marking position in the Critterpedia.'
-        image:
+        image_url:
           type: string
           example: 'https://dodo.ac/np/images/d/db/Cherry_Salmon_NH_Icon.png'
           description: Image of the fish. dodo.ac is Nookipedia's CDN server.
@@ -1192,7 +1304,7 @@ components:
           type: string
           example: '19'
           description: 'In-game bug number, marking position in the Critterpedia.'
-        image:
+        image_url:
           type: string
           example: 'https://dodo.ac/np/images/3/37/Grasshopper_NH_Icon.png'
           description: Image of the bug. dodo.ac is Nookipedia's CDN server.
@@ -1298,7 +1410,7 @@ components:
           type: string
           example: '20'
           description: 'In-game sea creature number, marking position in the Critterpedia.'
-        image:
+        image_url:
           type: string
           example: 'https://dodo.ac/np/images/5/58/Octopus_NH_Icon.png'
           description: Image of the sea creature. dodo.ac is Nookipedia's CDN server.
