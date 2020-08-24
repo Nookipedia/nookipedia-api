@@ -28,10 +28,11 @@ paths:
     get:
       summary: Villagers
       description: >-
-        All villagers from the entire Animal Crossing series, with the option to
-        filter by species and/or personality. Note that villagers only includes
-        the animals that act as residents. Special characters, such as Tom Nook
-        and Isabelle, are not accessed through this endpoint.
+        This endpoint retrieves villagers from the entire Animal Crossing
+        series, with the option to filter by species and/or TODO personality.
+        Note that villagers only includes the animals that act as residents.
+        Special characters, such as Tom Nook and Isabelle, are not accessed
+        through this endpoint.
       parameters:
         - in: header
           name: X-API-KEY
@@ -113,6 +114,29 @@ paths:
             Retrieve villagers with a certain personality. For 'sisterly', note
             that the community often also calls it 'uchi' or 'big sister'.
         - in: query
+          name: game
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - DNM
+                - AC
+                - E_PLUS
+                - WW
+                - CF
+                - NL
+                - WA
+                - NH
+                - FILM
+                - HHD
+                - PC
+          description: >-
+            Retrieve villagers that appear in all listed games. If you wanted
+            only villagers that appear in both *New Horizons* and *Pocket Camp*,
+            you would send in `game=nh&game=pc`.
+        - in: query
           name: birthmonth
           required: false
           schema:
@@ -130,13 +154,13 @@ paths:
             Use with `birthmonth` to get villager(s) born on a specific day.
             Value should be an int, 1 through 31.
         - in: query
-          name: includenhdetails
+          name: nhdetails
           required: false
           schema:
             type: string
           description: >-
-            Specify if you would like to also receive the `nh_details` object
-            that contains New Horizons details about the villager.
+            When set to `true`, an `nh_details` object will be included that
+            contains New Horizons details about the villager.
         - in: query
           name: excludedetails
           required: false

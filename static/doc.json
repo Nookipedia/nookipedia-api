@@ -14,7 +14,7 @@
     "/villager": {
       "get": {
         "summary": "Villagers",
-        "description": "All villagers from the entire Animal Crossing series, with the option to filter by species and/or personality. Note that villagers only includes the animals that act as residents. Special characters, such as Tom Nook and Isabelle, are not accessed through this endpoint.",
+        "description": "This endpoint retrieves villagers from the entire Animal Crossing series, with the option to filter by species and/or TODO personality. Note that villagers only includes the animals that act as residents. Special characters, such as Tom Nook and Isabelle, are not accessed through this endpoint.",
         "parameters": [
           {
             "in": "header",
@@ -102,6 +102,31 @@
           },
           {
             "in": "query",
+            "name": "game",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "DNM",
+                  "AC",
+                  "E_PLUS",
+                  "WW",
+                  "CF",
+                  "NL",
+                  "WA",
+                  "NH",
+                  "FILM",
+                  "HHD",
+                  "PC"
+                ]
+              }
+            },
+            "description": "Retrieve villagers that appear in all listed games. If you wanted only villagers that appear in both *New Horizons* and *Pocket Camp*, you would send in `game=nh&game=pc`."
+          },
+          {
+            "in": "query",
             "name": "birthmonth",
             "required": false,
             "schema": {
@@ -120,12 +145,12 @@
           },
           {
             "in": "query",
-            "name": "includenhdetails",
+            "name": "nhdetails",
             "required": false,
             "schema": {
               "type": "string"
             },
-            "description": "Specify if you would like to also receive the `nh_details` object that contains New Horizons details about the villager."
+            "description": "When set to `true`, an `nh_details` object will be included that contains New Horizons details about the villager."
           },
           {
             "in": "query",
