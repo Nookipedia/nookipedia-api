@@ -872,7 +872,8 @@ components:
             The villager's quote as it appears on the back of their in-game
             portrait item. This will be the quote from the latest game (i.e. if
             the villager had varying quotes between Wild World and New Horizons,
-            this will be the New Horizons quote).
+            this will be the New Horizons quote). For villagers from older games
+            that do not have a quote, this field will be an empty string.
         phrase:
           type: string
           example: zzrrbbit
