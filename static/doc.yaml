@@ -162,7 +162,9 @@ paths:
             type: string
           description: >-
             When set to `true`, an `nh_details` object will be included that
-            contains New Horizons details about the villager.
+            contains New Horizons details about the villager. If the villager
+            does not appear in *New Horizons*, the returned `nh_details` field
+            will be set to null.
         - in: query
           name: excludedetails
           required: false
@@ -200,7 +202,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error401'
+                $ref: '#/components/schemas/Error400'
         '401':
           description: Failed to authenticate user from `X-API-KEY`.
           content:
@@ -841,7 +843,11 @@ components:
         birthday:
           type: string
           example: February 13
-          description: Birthday of the villager in 'Month Day' form.
+          description: >-
+            Birthday of the villager in 'Month Day' form. Note that villager
+            birthdays were not introduced until *Wild World*. For villagers who
+            didn't appear in *Wild World* or any later games, this field will be
+            an empty string.
         sign:
           type: string
           example: Aquarius
@@ -901,14 +907,15 @@ components:
           type: string
           example: DNM
           description: >-
-            The first Animal Crossing game the villager appeared in. DNM is
-            Doubutsu no Mori for the Nintendo 64 (Japan-exclusive); AC is Animal
-            Crossing for GameCube; E_PLUS is Doubutsu no Mori e+ for GameCube
-            (expanded port of AC, Japan-exclusive); WW is Wild World for the DS;
-            CF is City Folk for Wii; NL is New Leaf for 3DS; WA is Welcome
-            amiibo, the New Leaf expansion; NH is New Horizons for Switch; FILM
-            is the Doubutsu no Mori Japan-exclusive film; HHD is Happy Home
-            Designer for the Wii; and PC is Pocket Camp for mobile.
+            The first Animal Crossing game the villager appeared in. `DNM` is
+            Doubutsu no Mori for the Nintendo 64 (Japan-exclusive); `AC` is
+            Animal Crossing for GameCube; `E_PLUS` is Doubutsu no Mori e+ for
+            GameCube (expanded port of AC, Japan-exclusive); `WW` is Wild World
+            for the DS; `CF` is City Folk for Wii; `NL` is New Leaf for 3DS;
+            `WA` is Welcome amiibo, the New Leaf expansion; NH is New Horizons
+            for Switch; `FILM` is the Doubutsu no Mori Japan-exclusive film;
+            `HHD` is Happy Home Designer for the Wii; and `PC` is Pocket Camp
+            for mobile.
           enum:
             - DNM
             - AC
@@ -949,16 +956,20 @@ components:
             - HHD
             - PC
           description: >-
-            List of official media villager appeared in. DNM is Doubutsu no Mori
-            for the Nintendo 64 (Japan-exclusive); AC is Animal Crossing for
-            GameCube; E_PLUS is Doubutsu no Mori e+ for GameCube (expanded port
-            of AC, Japan-exclusive); WW is Wild World for the DS; CF is City
-            Folk for Wii; NL is New Leaf for 3DS; WA is Welcome amiibo, the New
-            Leaf expansion; NH is New Horizons for Switch; FILM is the Doubutsu
-            no Mori Japan-exclusive film; HHD is Happy Home Designer for the
-            Wii; and PC is Pocket Camp for mobile.
+            List of official media villager appeared in. `DNM` is Doubutsu no
+            Mori for the Nintendo 64 (Japan-exclusive); `AC` is Animal Crossing
+            for GameCube; `E_PLUS` is Doubutsu no Mori e+ for GameCube (expanded
+            port of AC, Japan-exclusive); `WW` is Wild World for the DS; `CF` is
+            City Folk for Wii; `NL` is New Leaf for 3DS; `WA` is Welcome amiibo,
+            the New Leaf expansion; NH is New Horizons for Switch; `FILM` is the
+            Doubutsu no Mori Japan-exclusive film; `HHD` is Happy Home Designer
+            for the Wii; and `PC` is Pocket Camp for mobile.
         nh_details:
           type: object
+          description: >-
+            An object that holds villager data specific to *New Horizons*. If
+            the villager does not appear in *New Horizons*, this field will be
+            set to null.
           properties:
             image_url:
               type: string
