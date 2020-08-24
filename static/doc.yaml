@@ -20,7 +20,7 @@ info:
     scraped information directly from the wiki, this new edition of the API
     pulls data from a structured and constrained database, resulting in
     higher-quality data, better searching, and support for filtering.
-  version: 1.2.0
+  version: 1.1.0
 servers:
   - url: 'https://api.nookipedia.com/'
 paths:
