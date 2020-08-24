@@ -14,7 +14,7 @@
     "/villager": {
       "get": {
         "summary": "Villagers",
-        "description": "This endpoint retrieves villagers from the entire Animal Crossing series, with the option to filter by species and/or TODO personality. Note that villagers only includes the animals that act as residents. Special characters, such as Tom Nook and Isabelle, are not accessed through this endpoint.",
+        "description": "This endpoint retrieves villager information from the entire Animal Crossing series, with the option to filter by species, personality, game, and/or birthday. Note that villagers only includes the animals that act as residents. Special characters, such as Tom Nook and Isabelle, are not accessed through this endpoint.",
         "parameters": [
           {
             "in": "header",
