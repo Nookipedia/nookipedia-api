@@ -64,6 +64,22 @@ configure_dashboard(app)
 # SET ERROR HANDLERS
 #################################
 
+@app.errorhandler(400)
+def error_bad_request(e):
+    response = e.get_response()
+    if 'title' in e.description:
+        response.data = json.dumps({
+            "title": e.description['title'],
+            "details": e.description['details'],
+        })
+    else:
+        response.data = json.dumps({
+            "title": "Invalid input",
+            "details": "Please ensure provided parameters have valid vales.",
+        })
+    response.content_type = "application/json"
+    return response, 400
+
 @app.errorhandler(401)
 def error_resource_not_found(e):
     response = e.get_response()
@@ -185,52 +201,12 @@ def insert_db(query, args=()):
     cur.close()
 
 #################################
-# CARGO HANDLING
+# UTILITIES
 #################################
-
-# Make a call to Nookipedia's Cargo API using supplied parameters:
-@cache.memoize(300)
-def call_cargo(parameters, request_args): # Request args are passed in just for the sake of caching
-    try:
-        r = requests.get(url = BASE_URL_API, params = parameters)
-    except:
-        abort(500, description=error_response("Error while calling Nookipedia's Cargo API.", "MediaWiki Cargo request failed for parameters: {}".format(parameters)))
-
-    if not r.json()['cargoquery']:
-        abort(404, description=error_response("No data was found for the given query.", "MediaWiki Cargo request succeeded by nothing was returned for the parameters: {}".format(parameters)))
-
-    try:
-        data = []
-        # Check if user requested specific image size and modify accordingly:
-        if request.args.get('thumbsize'):
-            for obj in r.json()['cargoquery']:
-                item = {}
-                for key in obj['title']:
-                    if key == 'image url': # If image, fetch the CDN thumbnail URL:
-                        try:
-                            r = requests.get(BASE_URL_WIKI + 'Special:FilePath/' + obj['title'][key].rsplit('/', 1)[-1] + '?width=' + request.args.get('thumbsize'))
-                        except:
-                            abort(500, description=error_response("Error while getting image CDN thumbnail URL.", "Failure occured with the following parameters: {}.".format(parameters)))
-                        item['image'] = r.url
-                    else:
-                        # Replace all spaces in keys with underscores
-                        item[key.replace(' ', '_')] = obj['title'][key]
-                data.append(item)
-        else:
-            for obj in r.json()['cargoquery']:
-                item = {}
-                for key in obj['title']:
-                    # Replace all spaces in keys with underscores
-                    item[key.replace(' ', '_')] = obj['title'][key]
-                data.append(item)
-
-        return data
-    except:
-        abort(500, description=error_response("Error while formatting Cargo response.", "Iterating over cargoquery array in response object failed for the parameters: {}.".format(parameters)))
 
 # Convert month query parameter input into integer:
 # Acceptable input: 'current', '1', '01', 'jan', 'january'
-def month_lookup(month):
+def month_to_int(month):
     month = month.lower()
     try:
         if month.isdigit():
@@ -238,7 +214,6 @@ def month_lookup(month):
             if month in ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']:
                 return str(month)
             else:
-
                 return None
         elif month == 'current':
             return datetime.now().strftime("%m").lstrip('0')
@@ -255,13 +230,281 @@ def month_lookup(month):
                 'sep': '9',
                 'oct': '10',
                 'nov': '11',
-                'dec': '12',
+                'dec': '12'
             }
 
             return switcher.get(month.lower()[0:3], None)
     except:
         return None
 
+# Convert month query parameter input into string name:
+# Acceptable input: '1', '01', 'jan', 'january'
+def month_to_string(month):
+    month = month.lower()
+    try:
+        if month.isdigit():
+            month = month.lstrip('0')
+            if month in ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']:
+                switcher = {
+                    '1': 'January',
+                    '2': 'Februarey',
+                    '3': 'March',
+                    '4': 'April',
+                    '5': 'May',
+                    '6': 'June',
+                    '7': 'July',
+                    '8': 'August',
+                    '9': 'September',
+                    '10': 'October',
+                    '11': 'November',
+                    '12': 'December'
+                }
+
+                return switcher.get(month.lower()[0:3], None)
+            else:
+                return None
+        else:
+            switcher = {
+                'jan': 'January',
+                'feb': 'February',
+                'mar': 'March',
+                'apr': 'April',
+                'may': 'May',
+                'jun': 'June',
+                'jul': 'July',
+                'aug': 'August',
+                'sep': 'September',
+                'oct': 'October',
+                'nov': 'November',
+                'dec': 'December'
+            }
+
+            return switcher.get(month.lower()[0:3], None)
+    except:
+        return None
+
+#################################
+# CARGO HANDLING
+#################################
+
+# Make a call to Nookipedia's Cargo API using supplied parameters:
+@cache.memoize(3600)
+def call_cargo(parameters, request_args): # Request args are passed in just for the sake of caching
+    try:
+        r = requests.get(url = BASE_URL_API, params = parameters)
+        print('Return: {}'.format(str(r)))
+    except:
+        print('Return: {}'.format(str(r)))
+        abort(500, description=error_response("Error while calling Nookipedia's Cargo API.", "MediaWiki Cargo request failed for parameters: {}".format(parameters)))
+
+    if not r.json()['cargoquery']:
+        return []
+
+    try:
+        data = []
+        # Check if user requested specific image size and modify accordingly:
+        if request.args.get('thumbsize'):
+            for obj in r.json()['cargoquery']:
+                item = {}
+                for key in obj['title']:
+                    if key == 'image url': # If image, fetch the CDN thumbnail URL:
+                        try:
+                            r = requests.get(BASE_URL_WIKI + 'Special:FilePath/' + obj['title'][key].rsplit('/', 1)[-1] + '?width=' + request.args.get('thumbsize'))
+                        except:
+                            abort(500, description=error_response("Error while getting image CDN thumbnail URL.", "Failure occured with the following parameters: {}.".format(parameters)))
+                        item['image_url'] = r.url
+                    else:
+                        # Replace all spaces in keys with underscores
+                        item[key.replace(' ', '_')] = obj['title'][key]
+                data.append(item)
+        else:
+            for obj in r.json()['cargoquery']:
+                item = {}
+                for key in obj['title']:
+                    # Replace all spaces in keys with underscores
+                    item[key.replace(' ', '_')] = obj['title'][key]
+                data.append(item)
+
+        return data
+    except:
+        abort(500, description=error_response("Error while formatting Cargo response.", "Iterating over cargoquery array in response object failed for the parameters: {}.".format(parameters)))
+
+def format_villager(data):
+    games = ['dnm', 'ac', 'e_plus', 'ww', 'cf', 'nl', 'wa', 'nh', 'film', 'hhd', 'pc']
+
+    for obj in data:
+        # Set islander to Boolean:
+        if obj['islander'] == '0':
+            obj['islander'] = False
+        elif obj['islander'] == '1':
+            obj['islander'] = True
+
+        # Capitalize and standardize debut:
+        game_switcher = {
+            'DNME+': 'E_PLUS',
+            'ACGC': 'AC',
+            'ACWW': 'WW',
+            'ACCF': 'CF',
+            'ACNL': 'NL',
+            'ACNLA': 'WA',
+            'ACNH': 'NH',
+            'ACHHD': 'HHD',
+            'ACPC': 'PC'
+        }
+        if(game_switcher.get(obj['debut'].upper())):
+            obj['debut'] = game_switcher.get(obj['debut'].upper())
+        else:
+            obj['debut'] = obj['debut'].upper()
+
+        # Place prev_phrases in array:
+        prev_phrases = []
+        if obj['prev_phrase'] != '':
+            prev_phrases.append(obj['prev_phrase'])
+            if obj['prev_phrase2']:
+                prev_phrases.append(obj['prev_phrase2'])
+        obj['prev_phrases'] = prev_phrases
+        del obj['prev_phrase']
+        del obj['prev_phrase2']
+
+        # Place NH details in object, if applicable:
+        if request.args.get('nhdetails') and (request.args.get('nhdetails') == 'true'):
+            if obj['nh'] == '0':
+                obj['nh_details'] = None
+            else:
+                obj['nh_details'] = {
+                    'image_url': obj['nh_image_url'],
+                    'photo_url': obj['nh_photo_url'],
+                    'icon_url': obj['nh_icon_url'],
+                    'quote': obj['nh_quote'],
+                    'sub-personality': obj['nh_sub-personality'],
+                    'catchphrase': obj['nh_catchphrase'],
+                    'clothing': obj['nh_clothing'],
+                    'clothing_variation': obj['nh_clothing_variation'].replace('amp;', ''),
+                    'fav_styles': [],
+                    'fav_colors': [],
+                    'hobby': obj['nh_hobby'],
+                    'house_interior_url': obj['nh_house_interior_url'],
+                    'house_exterior_url': obj['nh_house_exterior_url'],
+                    'house_wallpaper': obj['nh_wallpaper'],
+                    'house_flooring': obj['nh_flooring'],
+                    'house_music': obj['nh_music'].replace('amp;', ''),
+                    'house_music_note': obj['nh_music_note']
+                }
+                if obj['nh_fav_style1']:
+                    obj['nh_details']['fav_styles'].append(obj['nh_fav_style1'])
+                    if obj['nh_fav_style2']:
+                        obj['nh_details']['fav_styles'].append(obj['nh_fav_style2'])
+                if obj['nh_fav_color1']:
+                    obj['nh_details']['fav_colors'].append(obj['nh_fav_color1'])
+                    if obj['nh_fav_color2']:
+                        obj['nh_details']['fav_colors'].append(obj['nh_fav_color2'])
+            del obj['nh_image_url']
+            del obj['nh_photo_url']
+            del obj['nh_icon_url']
+            del obj['nh_quote']
+            del obj['nh_sub-personality']
+            del obj['nh_catchphrase']
+            del obj['nh_clothing']
+            del obj['nh_clothing_variation']
+            del obj['nh_fav_style1']
+            del obj['nh_fav_style2']
+            del obj['nh_fav_color1']
+            del obj['nh_fav_color2']
+            del obj['nh_hobby']
+            del obj['nh_house_interior_url']
+            del obj['nh_house_exterior_url']
+            del obj['nh_wallpaper']
+            del obj['nh_flooring']
+            del obj['nh_music']
+            del obj['nh_music_note']
+
+        # Place game appearances in array:
+        games_array = []
+        for i in ['dnm', 'ac', 'e_plus', 'ww', 'cf', 'nl', 'wa', 'nh', 'film', 'hhd', 'pc']:
+            if obj[i] == '1':
+                games_array.append(i.upper())
+            del obj[i]
+        obj['appearances'] = games_array
+
+    return data
+
+def get_villager_list(limit, tables, join, fields):
+    where = None
+
+    # Filter by name:
+    if request.args.get('name'):
+        villager = request.args.get('name').replace('_', ' ')
+        if where:
+            where = where + ' AND villager.name = "' + villager + '"'
+        else:
+            where = 'villager.name = "' + villager + '"'
+
+    # Filter by birth month:
+    if request.args.get('birthmonth'):
+        month = month_to_string(request.args.get('birthmonth'))
+        if where:
+            where = where + ' AND villager.birthday_month = "' + month + '"'
+        else:
+            where = 'villager.birthday_month = "' + month + '"'
+    
+    # Filter by birth day:
+    if request.args.get('birthday'):
+        day = request.args.get('birthday')
+        if where:
+            where = where + ' AND villager.birthday_day = "' + day + '"'
+        else:
+            where = 'villager.birthday_day = "' + day + '"'
+
+    # Filter by personality:
+    if request.args.get('personality'):
+        personality_list = ['lazy', 'jock', 'cranky', 'smug', 'normal', 'peppy', 'snooty', 'sisterly']
+        personality = request.args.get('personality').lower()
+        if personality not in personality_list:
+            abort(400, description=error_response("Could not recognize provided personality.", "Ensure personality is either lazy, jock, cranky, smug, normal, peppy, snooty, or sisterly."))
+
+        if where:
+            where = where + ' AND villager.personality = "' + personality + '"'
+        else:
+            where = 'villager.personality = "' + personality + '"'
+
+    # Filter by species:
+    if request.args.get('species'):
+        species_list = ['alligator', 'anteater', 'bear', 'bird', 'bull', 'cat', 'cub', 'chicken', 'cow', 'deer', 'dog', 'duck', 'eagle', 'elephant', 'frog', 'goat', 'gorilla', 'hamster', 'hippo', 'horse', 'koala', 'kangaroo', 'lion', 'monkey', 'mouse', 'octopus', 'ostrich', 'penguin', 'pig', 'rabbit', 'rhino', 'sheep', 'squirrel', 'tiger', 'wolf']
+        species = request.args.get('species').lower()
+        if species not in species_list:
+            abort(400, description=error_response("Could not recognize provided species.", "Ensure provided species is valid."))
+
+        if where:
+            where = where + ' AND villager.species = "' + species + '"'
+        else:
+            where = 'villager.species = "' + species + '"'
+    
+    # Filter by game:
+    if request.args.get('game'):
+        games = request.args.getlist("game")
+        for game in games:
+            game = game.replace('_', ' ')
+            if where:
+                where = where + ' AND villager.' + game + ' = "1"'
+            else:
+                where = 'villager.' + game + ' = "1"'
+    
+    if where:
+        params = { 'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'join_on': join, 'fields': fields, 'where': where }
+    else:
+        params = { 'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'join_on': join, 'fields': fields }
+
+    print(str(params))
+    if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
+        cargo_results = call_cargo(params, request.args)
+        results_array = []
+        for villager in cargo_results:
+            results_array.append(villager['name'])
+        return jsonify(results_array)
+    else:
+        return jsonify(format_villager(call_cargo(params, request.args)))
+
+# For critters, convert north and south month fields into north and south arrays:
 def months_to_array(data):
     month_fields = ['']
     n_months_array = []
@@ -288,9 +531,9 @@ def months_to_array(data):
 def get_critter_list(limit, tables, fields):
     # If client wants details for certain month:
     if request.args.get('month'):
-        calculated_month = month_lookup(request.args.get('month'))
+        calculated_month = month_to_int(request.args.get('month'))
         if not calculated_month:
-            abort(500, description=error_response("Failed to identify the provided month filter.", "Provided month filter {} was not recognized as a valid month.".format(request.args.get('month'))))
+            abort(400, description=error_response("Failed to identify the provided month filter.", "Provided month filter {} was not recognized as a valid month.".format(request.args.get('month'))))
 
         where = 'n_m' + calculated_month + '="1"'
         params = { 'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields, 'where': where }
@@ -317,9 +560,9 @@ def get_critter_list(limit, tables, fields):
                     # If client wants all details, return array of objects:
                     return jsonify({ "month": calculated_month, "north": n_hemi, "south": s_hemi })
             except:
-                abort(500, description=error_response("Failed to identify the provided month filter.", "Provided month filter {} was not recognized as a valid month.".format(request.args.get('month'))))
+                abort(400, description=error_response("Failed to identify the provided month filter.", "Provided month filter {} was not recognized as a valid month.".format(request.args.get('month'))))
         else:
-            abort(500, description=error_response("Failed to identify the provided month filter.", "Provided month filter {} was not recognized as a valid month.".format(request.args.get('month'))))
+            abort(400, description=error_response("Failed to identify the provided month filter.", "Provided month filter {} was not recognized as a valid month.".format(request.args.get('month'))))
     else:
         params = { 'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields }
         if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
@@ -364,6 +607,25 @@ def generate_key():
     except:
         abort(500, description=error_response("Failed to create new client UUID.", "UUID generation, or UUID insertion into keys table, failed."))
 
+# Villagers
+@app.route('/villagers', methods=['GET'])
+def get_villager_all():
+    authorize(DB_KEYS, request)
+
+    limit = '500'
+    tables = 'villager'
+    join = ''
+    if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
+        fields = 'name'
+    elif request.args.get('nhdetails') and (request.args.get('nhdetails') == 'true'):
+        tables = 'villager,nh_villager,nh_house'
+        join = 'villager._pageName=nh_villager._pageName,villager._pageName=nh_house._pageName'
+        fields = 'villager.name,villager.url,villager.name,villager.alt_name,villager.id,villager.image_url,villager.species,villager.personality,villager.gender,villager.birthday_month,villager.birthday_day,villager.sign,villager.quote,villager.phrase,villager.prev_phrase,villager.prev_phrase2,villager.clothing,villager.islander,villager.debut,villager.dnm,villager.ac,villager.e_plus,villager.ww,villager.cf,villager.nl,villager.wa,villager.nh,villager.film,villager.hhd,villager.pc,nh_villager.image_url=nh_image_url,nh_villager.photo_url=nh_photo_url,nh_villager.icon_url=nh_icon_url,nh_villager.quote=nh_quote,nh_villager.sub_personality=nh_sub-personality,nh_villager.catchphrase=nh_catchphrase,nh_villager.clothing=nh_clothing,nh_villager.clothing_variation=nh_clothing_variation,nh_villager.fav_style1=nh_fav_style1,nh_villager.fav_style2=nh_fav_style2,nh_villager.fav_color1=nh_fav_color1,nh_villager.fav_color2=nh_fav_color2,nh_villager.hobby=nh_hobby,nh_house.interior_image_url=nh_house_interior_url,nh_house.exterior_image_url=nh_house_exterior_url,nh_house.wallpaper=nh_wallpaper,nh_house.flooring=nh_flooring,nh_house.music=nh_music,nh_house.music_note=nh_music_note'
+    else:
+        fields = 'url,name,alt_name,id,image_url,species,personality,gender,birthday_month,birthday_day,sign,quote,phrase,prev_phrase,prev_phrase2,clothing,islander,debut,dnm,ac,e_plus,ww,cf,nl,wa,nh,film,hhd,pc'
+
+    return get_villager_list(limit, tables, join, fields)
+
 # All New Horizons fish
 @app.route('/nh/fish', methods=['GET'])
 def get_nh_fish_all():
@@ -388,7 +650,14 @@ def get_nh_fish(fish):
     where = 'name="' + fish + '"'
     params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where }
 
-    return jsonify(months_to_array(call_cargo(params, request.args)))
+    if(request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] == '1.0'):
+        return jsonify(months_to_array(call_cargo(params, request.args)))
+    else:
+        cargo_results = call_cargo(params, request.args)
+        if cargo_results == []:
+            abort(404, description=error_response("No data was found for the given query.", "MediaWiki Cargo request succeeded by nothing was returned for the parameters: {}".format(params)))
+        else:
+            return jsonify(months_to_array(cargo_results)[0])
 
 # All New Horizons bugs
 @app.route('/nh/bugs', methods=['GET'])
@@ -415,7 +684,14 @@ def get_nh_bug(bug):
     where = 'name="' + bug + '"'
     params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where }
 
-    return jsonify(months_to_array(call_cargo(params, request.args)))
+    if(request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] == '1.0'):
+        return jsonify(months_to_array(call_cargo(params, request.args)))
+    else:
+        cargo_results = call_cargo(params, request.args)
+        if cargo_results == []:
+            abort(404, description=error_response("No data was found for the given query.", "MediaWiki Cargo request succeeded by nothing was returned for the parameters: {}".format(params)))
+        else:
+            return jsonify(months_to_array(cargo_results)[0])
 
 # All New Horizons sea creatures
 @app.route('/nh/sea', methods=['GET'])
@@ -442,7 +718,14 @@ def get_nh_sea(sea):
     where = 'name="' + sea + '"'
     params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where }
 
-    return jsonify(months_to_array(call_cargo(params, request.args)))
+    if(request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] == '1.0'):
+        return jsonify(months_to_array(call_cargo(params, request.args)))
+    else:
+        cargo_results = call_cargo(params, request.args)
+        if cargo_results == []:
+            abort(404, description=error_response("No data was found for the given query.", "MediaWiki Cargo request succeeded by nothing was returned for the parameters: {}".format(params)))
+        else:
+            return jsonify(months_to_array(cargo_results)[0])
 
 if __name__ == '__main__':
     app.run(host = '0.0.0.0')
