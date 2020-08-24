@@ -24,7 +24,7 @@ info:
 servers:
   - url: 'https://api.nookipedia.com/'
 paths:
-  /villager:
+  /villagers:
     get:
       summary: Villagers
       description: >-

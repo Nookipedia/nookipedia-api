@@ -11,7 +11,7 @@
     }
   ],
   "paths": {
-    "/villager": {
+    "/villagers": {
       "get": {
         "summary": "Villagers",
         "description": "This endpoint retrieves villager information from the entire Animal Crossing series, with the option to filter by species, personality, game, and/or birthday. Filters use the AND operator (e.g. asking for villagers who have species `frog` and personality `smug` will return all smug frogs). Note that villagers only include the animals that act as residents. Special characters, such as Tom Nook and Isabelle, are not accessed through this endpoint.",
