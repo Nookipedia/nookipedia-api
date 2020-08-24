@@ -14,7 +14,7 @@
     "/villager": {
       "get": {
         "summary": "Villagers",
-        "description": "This endpoint retrieves villager information from the entire Animal Crossing series, with the option to filter by species, personality, game, and/or birthday. Note that villagers only includes the animals that act as residents. Special characters, such as Tom Nook and Isabelle, are not accessed through this endpoint.",
+        "description": "This endpoint retrieves villager information from the entire Animal Crossing series, with the option to filter by species, personality, game, and/or birthday. Filters use the AND operator (e.g. asking for villagers who have species `frog` and personality `smug` will return all smug frogs). Note that villagers only include the animals that act as residents. Special characters, such as Tom Nook and Isabelle, are not accessed through this endpoint.",
         "parameters": [
           {
             "in": "header",
@@ -123,7 +123,7 @@
                 ]
               }
             },
-            "description": "Retrieve villagers that appear in all listed games. If you wanted only villagers that appear in both *New Horizons* and *Pocket Camp*, you would send in `game=nh&game=pc`."
+            "description": "Retrieve villagers that appear in all listed games. If you want only villagers that appear in both *New Horizons* and *Pocket Camp*, you would send in `?game=nh&game=pc`."
           },
           {
             "in": "query",
@@ -168,7 +168,7 @@
             "schema": {
               "type": "integer"
             },
-            "description": "Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL. This parameter is generally not recommended unless you absolutely need it, as each returned thumbnail link with a custom size requires an additional network call, which can result in a long response time if calling this endpoint in between cache refreshes."
+            "description": "Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL. When asking for a large list of villagers, this parameter is generally not recommended as the generation of each custom-sized thumbnail requires an additional network call to generate, which can result in a very long response time."
           }
         ],
         "responses": {
