@@ -379,7 +379,7 @@ def format_villager(data):
                     'sub-personality': obj['nh_sub-personality'],
                     'catchphrase': obj['nh_catchphrase'],
                     'clothing': obj['nh_clothing'],
-                    'clothing_variation': obj['nh_clothing_variation'],
+                    'clothing_variation': obj['nh_clothing_variation'].replace('amp;', ''),
                     'fav_styles': [],
                     'fav_colors': [],
                     'hobby': obj['nh_hobby'],
