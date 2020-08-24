@@ -201,48 +201,8 @@ def insert_db(query, args=()):
     cur.close()
 
 #################################
-# CARGO HANDLING
+# UTILITIES
 #################################
-
-# Make a call to Nookipedia's Cargo API using supplied parameters:
-@cache.memoize(300)
-def call_cargo(parameters, request_args): # Request args are passed in just for the sake of caching
-    try:
-        r = requests.get(url = BASE_URL_API, params = parameters)
-    except:
-        abort(500, description=error_response("Error while calling Nookipedia's Cargo API.", "MediaWiki Cargo request failed for parameters: {}".format(parameters)))
-
-    if not r.json()['cargoquery']:
-        return []
-
-    try:
-        data = []
-        # Check if user requested specific image size and modify accordingly:
-        if request.args.get('thumbsize'):
-            for obj in r.json()['cargoquery']:
-                item = {}
-                for key in obj['title']:
-                    if key == 'image url': # If image, fetch the CDN thumbnail URL:
-                        try:
-                            r = requests.get(BASE_URL_WIKI + 'Special:FilePath/' + obj['title'][key].rsplit('/', 1)[-1] + '?width=' + request.args.get('thumbsize'))
-                        except:
-                            abort(500, description=error_response("Error while getting image CDN thumbnail URL.", "Failure occured with the following parameters: {}.".format(parameters)))
-                        item['image_url'] = r.url
-                    else:
-                        # Replace all spaces in keys with underscores
-                        item[key.replace(' ', '_')] = obj['title'][key]
-                data.append(item)
-        else:
-            for obj in r.json()['cargoquery']:
-                item = {}
-                for key in obj['title']:
-                    # Replace all spaces in keys with underscores
-                    item[key.replace(' ', '_')] = obj['title'][key]
-                data.append(item)
-
-        return data
-    except:
-        abort(500, description=error_response("Error while formatting Cargo response.", "Iterating over cargoquery array in response object failed for the parameters: {}.".format(parameters)))
 
 # Convert month query parameter input into integer:
 # Acceptable input: 'current', '1', '01', 'jan', 'january'
@@ -323,6 +283,228 @@ def month_to_string(month):
     except:
         return None
 
+#################################
+# CARGO HANDLING
+#################################
+
+# Make a call to Nookipedia's Cargo API using supplied parameters:
+@cache.memoize(3600)
+def call_cargo(parameters, request_args): # Request args are passed in just for the sake of caching
+    try:
+        r = requests.get(url = BASE_URL_API, params = parameters)
+        print('Return: {}'.format(str(r)))
+    except:
+        print('Return: {}'.format(str(r)))
+        abort(500, description=error_response("Error while calling Nookipedia's Cargo API.", "MediaWiki Cargo request failed for parameters: {}".format(parameters)))
+
+    if not r.json()['cargoquery']:
+        return []
+
+    try:
+        data = []
+        # Check if user requested specific image size and modify accordingly:
+        if request.args.get('thumbsize'):
+            for obj in r.json()['cargoquery']:
+                item = {}
+                for key in obj['title']:
+                    if key == 'image url': # If image, fetch the CDN thumbnail URL:
+                        try:
+                            r = requests.get(BASE_URL_WIKI + 'Special:FilePath/' + obj['title'][key].rsplit('/', 1)[-1] + '?width=' + request.args.get('thumbsize'))
+                        except:
+                            abort(500, description=error_response("Error while getting image CDN thumbnail URL.", "Failure occured with the following parameters: {}.".format(parameters)))
+                        item['image_url'] = r.url
+                    else:
+                        # Replace all spaces in keys with underscores
+                        item[key.replace(' ', '_')] = obj['title'][key]
+                data.append(item)
+        else:
+            for obj in r.json()['cargoquery']:
+                item = {}
+                for key in obj['title']:
+                    # Replace all spaces in keys with underscores
+                    item[key.replace(' ', '_')] = obj['title'][key]
+                data.append(item)
+
+        return data
+    except:
+        abort(500, description=error_response("Error while formatting Cargo response.", "Iterating over cargoquery array in response object failed for the parameters: {}.".format(parameters)))
+
+def format_villager(data):
+    games = ['dnm', 'ac', 'e_plus', 'ww', 'cf', 'nl', 'wa', 'nh', 'film', 'hhd', 'pc']
+
+    for obj in data:
+        # Set islander to Boolean:
+        if obj['islander'] == '0':
+            obj['islander'] = False
+        elif obj['islander'] == '1':
+            obj['islander'] = True
+
+        # Capitalize and standardize debut:
+        game_switcher = {
+            'DNME+': 'E_PLUS',
+            'ACGC': 'AC',
+            'ACWW': 'WW',
+            'ACCF': 'CF',
+            'ACNL': 'NL',
+            'ACNLA': 'WA',
+            'ACNH': 'NH',
+            'ACHHD': 'HHD',
+            'ACPC': 'PC'
+        }
+        if(game_switcher.get(obj['debut'].upper())):
+            obj['debut'] = game_switcher.get(obj['debut'].upper())
+        else:
+            obj['debut'] = obj['debut'].upper()
+
+        # Place prev_phrases in array:
+        prev_phrases = []
+        if obj['prev_phrase'] != '':
+            prev_phrases.append(obj['prev_phrase'])
+            if obj['prev_phrase2']:
+                prev_phrases.append(obj['prev_phrase2'])
+        obj['prev_phrases'] = prev_phrases
+        del obj['prev_phrase']
+        del obj['prev_phrase2']
+
+        # Place NH details in object, if applicable:
+        if request.args.get('nhdetails') and (request.args.get('nhdetails') == 'true'):
+            if obj['nh'] == '0':
+                obj['nh_details'] = None
+            else:
+                obj['nh_details'] = {
+                    'image_url': obj['nh_image_url'],
+                    'photo_url': obj['nh_photo_url'],
+                    'icon_url': obj['nh_icon_url'],
+                    'quote': obj['nh_quote'],
+                    'sub-personality': obj['nh_sub-personality'],
+                    'catchphrase': obj['nh_catchphrase'],
+                    'clothing': obj['nh_clothing'],
+                    'clothing_variation': obj['nh_clothing_variation'],
+                    'fav_styles': [],
+                    'fav_colors': [],
+                    'hobby': obj['nh_hobby'],
+                    'house_interior_url': obj['nh_house_interior_url'],
+                    'house_exterior_url': obj['nh_house_exterior_url'],
+                    'house_wallpaper': obj['nh_wallpaper'],
+                    'house_flooring': obj['nh_flooring'],
+                    'house_music': obj['nh_music'],
+                    'house_music_note': obj['nh_music_note']
+                }
+                if obj['nh_fav_style1']:
+                    obj['nh_details']['fav_styles'].append(obj['nh_fav_style1'])
+                    if obj['nh_fav_style2']:
+                        obj['nh_details']['fav_styles'].append(obj['nh_fav_style2'])
+                if obj['nh_fav_color1']:
+                    obj['nh_details']['fav_colors'].append(obj['nh_fav_color1'])
+                    if obj['nh_fav_color2']:
+                        obj['nh_details']['fav_colors'].append(obj['nh_fav_color2'])
+            del obj['nh_image_url']
+            del obj['nh_photo_url']
+            del obj['nh_icon_url']
+            del obj['nh_quote']
+            del obj['nh_sub-personality']
+            del obj['nh_catchphrase']
+            del obj['nh_clothing']
+            del obj['nh_clothing_variation']
+            del obj['nh_fav_style1']
+            del obj['nh_fav_style2']
+            del obj['nh_fav_color1']
+            del obj['nh_fav_color2']
+            del obj['nh_hobby']
+            del obj['nh_house_interior_url']
+            del obj['nh_house_exterior_url']
+            del obj['nh_wallpaper']
+            del obj['nh_flooring']
+            del obj['nh_music']
+            del obj['nh_music_note']
+
+        # Place game appearances in array:
+        games_array = []
+        for i in ['dnm', 'ac', 'e_plus', 'ww', 'cf', 'nl', 'wa', 'nh', 'film', 'hhd', 'pc']:
+            if obj[i] == '1':
+                games_array.append(i.upper())
+            del obj[i]
+        obj['appearances'] = games_array
+
+    return data
+
+def get_villager_list(limit, tables, join, fields):
+    where = None
+
+    # Filter by name:
+    if request.args.get('name'):
+        villager = request.args.get('name').replace('_', ' ')
+        if where:
+            where = where + ' AND villager.name = "' + villager + '"'
+        else:
+            where = 'villager.name = "' + villager + '"'
+
+    # Filter by birth month:
+    if request.args.get('birthmonth'):
+        month = month_to_string(request.args.get('birthmonth'))
+        if where:
+            where = where + ' AND villager.birthday_month = "' + month + '"'
+        else:
+            where = 'villager.birthday_month = "' + month + '"'
+    
+    # Filter by birth day:
+    if request.args.get('birthday'):
+        day = request.args.get('birthday')
+        if where:
+            where = where + ' AND villager.birthday_day = "' + day + '"'
+        else:
+            where = 'villager.birthday_day = "' + day + '"'
+
+    # Filter by personality:
+    if request.args.get('personality'):
+        personality_list = ['lazy', 'jock', 'cranky', 'smug', 'normal', 'peppy', 'snooty', 'sisterly']
+        personality = request.args.get('personality').lower()
+        if personality not in personality_list:
+            abort(400, description=error_response("Could not recognize provided personality.", "Ensure personality is either lazy, jock, cranky, smug, normal, peppy, snooty, or sisterly."))
+
+        if where:
+            where = where + ' AND villager.personality = "' + personality + '"'
+        else:
+            where = 'villager.personality = "' + personality + '"'
+
+    # Filter by species:
+    if request.args.get('species'):
+        species_list = ['alligator', 'anteater', 'bear', 'bird', 'bull', 'cat', 'cub', 'chicken', 'cow', 'deer', 'dog', 'duck', 'eagle', 'elephant', 'frog', 'goat', 'gorilla', 'hamster', 'hippo', 'horse', 'koala', 'kangaroo', 'lion', 'monkey', 'mouse', 'octopus', 'ostrich', 'penguin', 'pig', 'rabbit', 'rhino', 'sheep', 'squirrel', 'tiger', 'wolf']
+        species = request.args.get('species').lower()
+        if species not in species_list:
+            abort(400, description=error_response("Could not recognize provided species.", "Ensure provided species is valid."))
+
+        if where:
+            where = where + ' AND villager.species = "' + species + '"'
+        else:
+            where = 'villager.species = "' + species + '"'
+    
+    # Filter by game:
+    if request.args.get('game'):
+        games = request.args.getlist("game")
+        for game in games:
+            game = game.replace('_', ' ')
+            if where:
+                where = where + ' AND villager.' + game + ' = "1"'
+            else:
+                where = 'villager.' + game + ' = "1"'
+    
+    if where:
+        params = { 'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'join_on': join, 'fields': fields, 'where': where }
+    else:
+        params = { 'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'join_on': join, 'fields': fields }
+
+    print(str(params))
+    if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
+        cargo_results = call_cargo(params, request.args)
+        results_array = []
+        for villager in cargo_results:
+            results_array.append(villager['name'])
+        return jsonify(results_array)
+    else:
+        return jsonify(format_villager(call_cargo(params, request.args)))
+
+# For critters, convert north and south month fields into north and south arrays:
 def months_to_array(data):
     month_fields = ['']
     n_months_array = []
@@ -392,107 +574,6 @@ def get_critter_list(limit, tables, fields):
         else:
             return jsonify(months_to_array(call_cargo(params, request.args)))
 
-def format_villager(data):
-    games = ['dnm', 'ac', 'e_plus', 'ww', 'cf', 'nl', 'wa', 'nh', 'film', 'hhd', 'pc']
-
-    for obj in data:
-        # Set islander to Boolean:
-        if obj['islander'] == '0':
-            obj['islander'] = False
-        elif obj['islander'] == '1':
-            obj['islander'] = True
-
-        # Capitalize debut:
-        obj['debut'] = obj['debut'].upper()
-
-        # Place prev_phrases in array:
-        prev_phrases = []
-        if obj['prev_phrase'] != '':
-            prev_phrases.append(obj['prev_phrase'])
-            if obj['prev_phrase2']:
-                prev_phrases.append(obj['prev_phrase2'])
-        obj['prev_phrases'] = prev_phrases
-        del obj['prev_phrase']
-        del obj['prev_phrase2']
-
-        # Place game appearances in array:
-        games_array = []
-        for key in obj:
-            if obj[key] == '1':
-                if key in games:
-                    games_array.append(key.upper())
-        for i in ['dnm', 'ac', 'e_plus', 'ww', 'cf', 'nl', 'wa', 'nh', 'film', 'hhd', 'pc']:
-            del obj[i]
-        obj['appearances'] = games_array
-
-    return data
-
-def get_villager_list(limit, tables, fields):
-    where = None
-
-    # Filter by name:
-    if request.args.get('name'):
-        villager = request.args.get('name').replace('_', ' ')
-        if where:
-            where = where + ' AND name = "' + villager + '"'
-        else:
-            where = 'name = "' + villager + '"'
-
-    # Filter by birth month:
-    if request.args.get('birthmonth'):
-        month = month_to_string(request.args.get('birthmonth'))
-        if where:
-            where = where + ' AND birthday_month = "' + month + '"'
-        else:
-            where = 'birthday_month = "' + month + '"'
-    
-    # Filter by birth day:
-    if request.args.get('birthday'):
-        day = request.args.get('birthday')
-        if where:
-            where = where + ' AND birthday_day = "' + day + '"'
-        else:
-            where = 'birthday_day = "' + day + '"'
-
-    # Filter by personality:
-    if request.args.get('personality'):
-        personality_list = ['lazy', 'jock', 'cranky', 'smug', 'normal', 'peppy', 'snooty', 'sisterly']
-        personality = request.args.get('personality').lower()
-        if personality not in personality_list:
-            abort(400, description=error_response("Could not recognize provided personality.", "Ensure personality is either lazy, jock, cranky, smug, normal, peppy, snooty, or sisterly."))
-
-        if where:
-            where = where + ' AND personality = "' + personality + '"'
-        else:
-            where = 'personality = "' + personality + '"'
-
-    # Filter by species:
-    if request.args.get('species'):
-        species_list = ['alligator', 'anteater', 'bear', 'bird', 'bull', 'cat', 'cub', 'chicken', 'cow', 'deer', 'dog', 'duck', 'eagle', 'elephant', 'frog', 'goat', 'gorilla', 'hamster', 'hippo', 'horse', 'koala', 'kangaroo', 'lion', 'monkey', 'mouse', 'octopus', 'ostrich', 'penguin', 'pig', 'rabbit', 'rhino', 'sheep', 'squirrel', 'tiger', 'wolf']
-        species = request.args.get('species').lower()
-        if species not in species_list:
-            abort(400, description=error_response("Could not recognize provided species.", "Ensure provided species is valid."))
-
-        if where:
-            where = where + ' AND species = "' + species + '"'
-        else:
-            where = 'species = "' + species + '"'
-    
-    if where:
-        params = { 'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields, 'where': where }
-    else:
-        params = { 'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields }
-
-    print(str(params))
-    if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
-        cargo_results = call_cargo(params, request.args)
-        results_array = []
-        for villager in cargo_results:
-            results_array.append(villager['name'])
-        return jsonify(results_array)
-    else:
-        return jsonify(format_villager(call_cargo(params, request.args)))
-
 #################################
 # STATIC RENDERS
 #################################
@@ -533,12 +614,17 @@ def get_villager_all():
 
     limit = '500'
     tables = 'villager'
+    join = ''
     if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
         fields = 'name'
+    elif request.args.get('nhdetails') and (request.args.get('nhdetails') == 'true'):
+        tables = 'villager,nh_villager,nh_house'
+        join = 'villager._pageName=nh_villager._pageName,villager._pageName=nh_house._pageName'
+        fields = 'villager.name,villager.url,villager.name,villager.alt_name,villager.id,villager.image_url,villager.species,villager.personality,villager.gender,villager.birthday_month,villager.birthday_day,villager.sign,villager.quote,villager.phrase,villager.prev_phrase,villager.prev_phrase2,villager.clothing,villager.islander,villager.debut,villager.dnm,villager.ac,villager.e_plus,villager.ww,villager.cf,villager.nl,villager.wa,villager.nh,villager.film,villager.hhd,villager.pc,nh_villager.image_url=nh_image_url,nh_villager.photo_url=nh_photo_url,nh_villager.icon_url=nh_icon_url,nh_villager.quote=nh_quote,nh_villager.sub_personality=nh_sub-personality,nh_villager.catchphrase=nh_catchphrase,nh_villager.clothing=nh_clothing,nh_villager.clothing_variation=nh_clothing_variation,nh_villager.fav_style1=nh_fav_style1,nh_villager.fav_style2=nh_fav_style2,nh_villager.fav_color1=nh_fav_color1,nh_villager.fav_color2=nh_fav_color2,nh_villager.hobby=nh_hobby,nh_house.interior_image_url=nh_house_interior_url,nh_house.exterior_image_url=nh_house_exterior_url,nh_house.wallpaper=nh_wallpaper,nh_house.flooring=nh_flooring,nh_house.music=nh_music,nh_house.music_note=nh_music_note'
     else:
-        fields = 'url,name,alt_name,id,image_url,species,personality,gender,birthday_month,birthday_day,sign,quote,phrase,prev_phrase,prev_phrase2,clothes,islander,debut,dnm,ac,e_plus,ww,cf,nl,wa,nh,film,hhd,pc'
+        fields = 'url,name,alt_name,id,image_url,species,personality,gender,birthday_month,birthday_day,sign,quote,phrase,prev_phrase,prev_phrase2,clothing,islander,debut,dnm,ac,e_plus,ww,cf,nl,wa,nh,film,hhd,pc'
 
-    return get_villager_list(limit, tables, fields)
+    return get_villager_list(limit, tables, join, fields)
 
 # All New Horizons fish
 @app.route('/nh/fish', methods=['GET'])
