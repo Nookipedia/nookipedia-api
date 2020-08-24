@@ -912,7 +912,7 @@ components:
             Animal Crossing for GameCube; `E_PLUS` is Doubutsu no Mori e+ for
             GameCube (expanded port of AC, Japan-exclusive); `WW` is Wild World
             for the DS; `CF` is City Folk for Wii; `NL` is New Leaf for 3DS;
-            `WA` is Welcome amiibo, the New Leaf expansion; NH is New Horizons
+            `WA` is Welcome amiibo, the New Leaf expansion; `NH` is New Horizons
             for Switch; `FILM` is the Doubutsu no Mori Japan-exclusive film;
             `HHD` is Happy Home Designer for the Wii; and `PC` is Pocket Camp
             for mobile.
@@ -961,9 +961,9 @@ components:
             for GameCube; `E_PLUS` is Doubutsu no Mori e+ for GameCube (expanded
             port of AC, Japan-exclusive); `WW` is Wild World for the DS; `CF` is
             City Folk for Wii; `NL` is New Leaf for 3DS; `WA` is Welcome amiibo,
-            the New Leaf expansion; NH is New Horizons for Switch; `FILM` is the
-            Doubutsu no Mori Japan-exclusive film; `HHD` is Happy Home Designer
-            for the Wii; and `PC` is Pocket Camp for mobile.
+            the New Leaf expansion; `NH` is New Horizons for Switch; `FILM` is
+            the Doubutsu no Mori Japan-exclusive film; `HHD` is Happy Home
+            Designer for the Wii; and `PC` is Pocket Camp for mobile.
         nh_details:
           type: object
           description: >-
