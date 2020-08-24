@@ -980,16 +980,21 @@ components:
               example: 'https://dodo.ac/np/images/0/03/RibbotPicACNH.png'
               description: >-
                 The villager's photo, received by the player after attaining a
-                certain friendship level.
+                certain friendship level. See
+                https://nookipedia.com/wiki/Category:New_Horizons_pictures for
+                full list.
             icon_url:
               type: string
               example: 'https://dodo.ac/np/images/8/87/Ribbot_NH_Villager_Icon.png'
-              description: The villager's icon of their head.
+              description: >-
+                The villager's icon of their head. See
+                https://nookipedia.com/wiki/Category:New_Horizons_character_icons
+                for full list.
             quote:
               type: string
               example: 'Never rest, never rust.'
               description: >-
-                The villager's quote, as found on the bac of their in-game
+                The villager's quote, as found on the back of their in-game
                 photo.
             sub-personality:
               type: string
@@ -1075,9 +1080,10 @@ components:
               type: string
               example: ''
               description: >-
-                Any notes about the villager's music. This is usually "Does not
-                contain a stereo initially", meaning that the villager's house
-                will not play music unless provided with a stereo.
+                Any notes about the villager's music. If populated, this is
+                usually "Does not contain a stereo initially", meaning that the
+                villager's house will not play music unless provided with a
+                stereo.
     NHFish:
       type: object
       properties:
