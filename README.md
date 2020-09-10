@@ -30,29 +30,35 @@ While the Cargo API is freely available for querying, we have our custom-built A
 * Actively monitored and under development (your feature requests can come to life).
 
 ## Deployment
-This application requires Python 3.
+This application requires Python 3 and [venv](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/).
 
 This application has the following dependencies from `apt get`:
 * `software-properties-common`
 * `sqlite3`
 
-This application has the following dependencies that will need to be installed via pip:
-* `Flask`
-* `Flask_Caching`
-* `flask_monitoringdashboard`
-* `waitress`
-* `wheel`
-
 Before running this application:
-* Run `export FLASK_APP=app.py`
-* Create the database for storing admin/client secrets (replace `<>` values with your desired values):
-  * `sudo sqlite3 <desired db name>.db`
-  * `CREATE TABLE <keys table name> ( key varchar(32), email TEXT, project TEXT );`
-  * `CREATE TABLE <admin keys table name> ( key varchar(32) );`
-  * The API requires a UUID key to make calls; you can insert one for yourself using `INSERT INTO <keys table name> VALUES ( "<uuid>", "test", "test" );`.
+
+* Create a virtual environment by running `python3 -m venv env && source env/bin/activate`.
+  Check if this is successful if `(env)` is added at the beginning of your prompt.
+  * For those running csh or fish instead of the default shell,
+    replace `activate` with `activate.csh` or `activate.fish`.
+* Install the requirements of the project by running `pip install -r requirements.txt`
+* Create the database for storing admin/client secrets.
+  Replace `<>` values with your desired values.
+  Note that the API requires a UUID key (`<uuid>`) to make calls
+
+```
+$ sudo sqlite3 <desired_db_name>.db
+sqlite3> CREATE TABLE <keys_table_name> ( key varchar(32), email TEXT, project TEXT );
+sqlite3> CREATE TABLE <admin_keys_table_name> ( key varchar(32) );
+sqlite3> INSERT INTO <keys_table_name> VALUES ( "<uuid>", "test", "test" );
+sqlite3> .exit 0;
+```
+
 * In `config.ini`:
   * Fill in the `SECRET_KEY` with a long random string of bytes (used for securely signing the session cookie; [learn more](https://flask.palletsprojects.com/en/1.1.x/config/#SECRET_KEY))
-  * Fill in the names for the `DATABASE`, `DB_KEYS`, and `DB_ADMIN_KEYS` as you declared above.
+  * Fill in the names for the `DATABASE`, `DB_KEYS`, and `DB_ADMIN_KEYS`
+    with `<desired_db_name>.db`, `<keys_table_name>`, and `<admin_keys_table_name>`.
 * In `dashboard-config.cfg`, change the dashboard's password to something other than the default `admin`.
 
 ### Local / Dev
