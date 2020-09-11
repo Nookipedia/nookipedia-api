@@ -1,0 +1,8 @@
+# for python
+env/*
+__pycache__
+
+# for database files and configuration
+dashboard-config.cfg
+config.ini
+*.db
