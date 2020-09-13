@@ -247,7 +247,7 @@ def month_to_string(month):
             if month in ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']:
                 switcher = {
                     '1': 'January',
-                    '2': 'Februarey',
+                    '2': 'February',
                     '3': 'March',
                     '4': 'April',
                     '5': 'May',
