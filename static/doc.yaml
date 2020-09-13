@@ -57,6 +57,18 @@ paths:
             served the latest version, which may eventually result in breaking
             changes.
         - in: query
+          name: name
+          required: false
+          schema:
+            type: string
+          description: >-
+            Villager name. For most names you will get back an array with one
+            object, but note that names are not a unique identifier across the
+            series, as there are 3 names that are shared by multiple villagers
+            (Lulu, Petunia, Carmen). For those 3 names you will get back an
+            array with 2 objects. How you disambiguate between these villagers
+            is up to you.
+        - in: query
           name: species
           required: false
           schema:
