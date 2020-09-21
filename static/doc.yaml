@@ -20,7 +20,7 @@ info:
     scraped information directly from the wiki, this new edition of the API
     pulls data from a structured and constrained database, resulting in
     higher-quality data, better searching, and support for filtering.
-  version: 1.1.0
+  version: 1.2.0
 servers:
   - url: 'https://api.nookipedia.com/'
 paths:
@@ -1109,35 +1109,13 @@ components:
           example: Cherry Salmon
           description: Name of the fish.
         number:
-          type: string
-          example: '27'
+          type: integer
+          example: 27
           description: 'In-game fish number, marking position in the Critterpedia.'
         image_url:
           type: string
           example: 'https://dodo.ac/np/images/d/db/Cherry_Salmon_NH_Icon.png'
           description: Image of the fish. dodo.ac is Nookipedia's CDN server.
-        catchphrase:
-          type: string
-          example: >-
-            I caught a cherry salmon! It's the perfect topper for a marlin
-            sundae!
-          description: The catchphrase the player says after catching the fish.
-        catchphrase2:
-          type: string
-          example: ''
-          description: >-
-            An alternative catchphrase that the player may say after catching
-            the critter under certain conditions (such as catching a squid when
-            it is raining). Note that the vast majority of critters do not have
-            a second catchphrase.
-        catchphrase3:
-          type: string
-          example: ''
-          description: >-
-            An alternative catchphrase that the player may say after catching
-            the critter under certain conditions (such as catching a squid when
-            it is raining). Note that the vast majority of critters do not have
-            a third catchphrase.
         time:
           type: string
           example: 4 PM – 9 AM
@@ -1170,71 +1148,214 @@ components:
             most fish as we do not yet know how exactly fish rarities are
             calculated in the game code.
         total_catch:
-          type: string
-          example: '100'
+          type: integer
+          example: 100
           description: >-
             The total number of fish the player has to have caught before this
             fish will start spawning.
         sell_nook:
-          type: string
-          example: '1000'
+          type: integer
+          example: 1000
           description: The number of Bells the fish can be sold to Nook's store for.
         sell_cj:
-          type: string
-          example: '1500'
+          type: integer
+          example: 1500
           description: >-
             The number of Bells the fish can be sold to C.J. for. This value is
             always 1.5x that of `sell_nook`.
         tank_width:
-          type: string
-          example: '1'
+          type: number
+          format: float
+          example: 1
           description: The width of the tank when the fish is placed as a furniture item.
         tank_length:
-          type: string
-          example: '1'
+          type: number
+          format: float
+          example: 1
           description: The length of the tank when the fish is placed as a furniture item.
-        n_availability:
+        catchphrases:
+          type: array
+          items:
+            type: string
+          example:
+            - >-
+              I caught a cherry salmon! It's the perfect topper for a marlin
+              sundae!
+          description: >-
+            An array of possible catchphrases the player says after catching the
+            fish. Most critters have just one, but some can have multiple.
+        availability_north:
+          type: array
+          items:
+            type: object
+            properties:
+              months:
+                type: string
+              time:
+                type: string
+          example:
+            - months: Mar – Jun
+              time: 4 PM – 9 AM
+            - months: Sep – Nov
+              time: All day
+          description: >-
+            An array of objects, each object holding a months string and the
+            time the critter is availabile during the specified month(s) in the
+            northern hemisphere. Most critters will have just one object. A
+            small number of critters have variable time availability in which
+            case this array will have multiple objects.
+        availability_south:
+          type: array
+          items:
+            type: object
+            properties:
+              months:
+                type: string
+              time:
+                type: string
+          example:
+            - months: Sep – Dec
+              time: 4 PM – 9 AM
+            - months: Mar – May
+              time: All day
+          description: >-
+            An array of objects, each object holding a months string and the
+            time the critter is availabile during the specified month(s) in the
+            southern hemisphere. Most critters will have just one object. A
+            small number of critters have variable time availability in which
+            case this array will have multiple objects.
+        times_by_month_north:
+          type: object
+          properties:
+            '1':
+              type: string
+            '2':
+              type: string
+            '3':
+              type: string
+            '4':
+              type: string
+            '5':
+              type: string
+            '6':
+              type: string
+            '7':
+              type: string
+            '8':
+              type: string
+            '9':
+              type: string
+            '10':
+              type: string
+            '11':
+              type: string
+            '12':
+              type: string
+          example:
+            '1': NA
+            '2': NA
+            '3': 4 PM – 9 AM
+            '4': 4 PM – 9 AM
+            '5': 4 PM – 9 AM
+            '6': 4 PM – 9 AM
+            '7': NA
+            '8': NA
+            '9': All day
+            '10': All day
+            '11': All day
+            '12': NA
+          description: >-
+            An object with twelve numerical keys, each representing a month
+            (`"1"` for January, `"2"` for February, etc.). The value is the
+            times the critter is available during that month. If the critter is
+            unavailable in a month, the value will be `"NA"`.
+        times_by_month_south:
+          type: object
+          properties:
+            '1':
+              type: string
+            '4':
+              type: string
+            '5':
+              type: string
+            '6':
+              type: string
+            '7':
+              type: string
+            '8':
+              type: string
+            '9':
+              type: string
+            '10':
+              type: string
+            '11':
+              type: string
+            '12':
+              type: string
+            2':
+              type: string
+            3':
+              type: string
+          example:
+            '1': NA
+            '2': NA
+            '3': 4 PM – 9 AM
+            '4': 4 PM – 9 AM
+            '5': 4 PM – 9 AM
+            '6': 4 PM – 9 AM
+            '7': NA
+            '8': NA
+            '9': All day
+            '10': All day
+            '11': All day
+            '12': NA
+          description: >-
+            An object with twelve numerical keys, each representing a month
+            (`"1"` for January, `"2"` for February, etc.). The value is the
+            times the critter is available during that month. If the critter is
+            unavailable in a month, the value will be `"NA"`.
+        months_north:
           type: string
           example: Mar – Jun; Sep – Nov
           description: >-
             The months the fish is available for in the Northern hemisphere. If
             all year, value will be `"All year"`.
-        s_availability:
+        months_south:
           type: string
           example: Mar – May; Sep – Dec
           description: >-
             The months the fish is available for in the Southern hemisphere. If
             all year, value will be `"All year"`.
-        n_availability_array:
+        'months_north_array:':
           type: array
           items:
-            type: string
+            type: integer
           example:
-            - '3'
-            - '4'
-            - '5'
-            - '6'
-            - '9'
-            - '10'
-            - '11'
+            - 3
+            - 4
+            - 5
+            - 6
+            - 9
+            - 10
+            - 11
           description: >-
-            An array of string integers representing the months the fish is
-            available in the Northern hemisphere.
-        s_availability_array:
+            An array of integers representing the months the fish is available
+            in the Northern hemisphere.
+        'months_south_array:':
           type: array
           items:
-            type: string
+            type: integer
           example:
-            - '3'
-            - '4'
-            - '5'
-            - '9'
-            - '10'
-            - '11'
-            - '12'
+            - 3
+            - 4
+            - 5
+            - 9
+            - 10
+            - 11
+            - 12
           description: >-
-            An array of string integers representing the months the fish is
-            available in the Southern hemisphere.
+            An array of integers representing the months the fish is available
+            in the Southern hemisphere.
     NHBug:
       type: object
       properties:
@@ -1247,25 +1368,13 @@ components:
           example: Grasshopper
           description: Name of the bug.
         number:
-          type: string
-          example: '19'
+          type: integer
+          example: 19
           description: 'In-game bug number, marking position in the Critterpedia.'
         image_url:
           type: string
           example: 'https://dodo.ac/np/images/3/37/Grasshopper_NH_Icon.png'
           description: Image of the bug. dodo.ac is Nookipedia's CDN server.
-        catchphrase:
-          type: string
-          example: I caught a grasshopper! They're a grass act!
-          description: The catchphrase the player says after catching the bug.
-        catchphrase2:
-          type: string
-          example: ''
-          description: >-
-            An alternative catchphrase that the player may say after catching
-            the critter under certain conditions (such as catching a squid when
-            it is raining). Note that the vast majority of critters do not have
-            a second catchphrase.
         time:
           type: string
           example: 8 AM – 5 PM
@@ -1284,63 +1393,200 @@ components:
             most bugs as we do not yet know how exactly bug rarities are
             calculated in the game code.
         total_catch:
-          type: string
-          example: '0'
+          type: integer
+          example: 0
           description: >-
             The total number of bug the player has to have caught before this
             bug will start spawning.
         sell_nook:
-          type: string
-          example: '160'
+          type: integer
+          example: 160
           description: The number of Bells the bug can be sold to Nook's store for.
         sell_flick:
-          type: string
-          example: '240'
+          type: integer
+          example: 240
           description: >-
             The number of Bells the bug can be sold to Flick for. This value is
             always 1.5x that of `sell_nook`.
         tank_width:
-          type: string
-          example: '1'
+          type: number
+          format: float
+          example: 1
           description: The width of the tank when the bug is placed as a furniture item.
         tank_length:
-          type: string
-          example: '1'
+          type: number
+          format: float
+          example: 1
           description: The length of the tank when the bug is placed as a furniture item.
-        n_availability:
+        catchphrases:
+          type: array
+          items:
+            type: string
+          example:
+            - I caught a grasshopper! They're a grass act!
+          description: >-
+            An array of possible catchphrases the player says after catching the
+            bug. Most critters have just one, but some can have multiple.
+        availability_north:
+          type: array
+          items:
+            type: object
+            properties:
+              months:
+                type: string
+              time:
+                type: string
+          example:
+            - months: Jul – Sep
+              time: 8 AM – 5 PM
+          description: >-
+            An array of objects, each object holding a months string and the
+            time the critter is availabile during the specified month(s) in the
+            northern hemisphere. Most critters will have just one object. A
+            small number of critters have variable time availability in which
+            case this array will have multiple objects.
+        availability_south:
+          type: array
+          items:
+            type: object
+            properties:
+              months:
+                type: string
+              time:
+                type: string
+          example:
+            - months: Jan – Mar
+              time: 8 AM – 5 PM
+          description: >-
+            An array of objects, each object holding a months string and the
+            time the critter is availabile during the specified month(s) in the
+            southern hemisphere. Most critters will have just one object. A
+            small number of critters have variable time availability in which
+            case this array will have multiple objects.
+        times_by_month_north:
+          type: object
+          properties:
+            '1':
+              type: string
+            '2':
+              type: string
+            '3':
+              type: string
+            '4':
+              type: string
+            '5':
+              type: string
+            '6':
+              type: string
+            '7':
+              type: string
+            '8':
+              type: string
+            '9':
+              type: string
+            '10':
+              type: string
+            '11':
+              type: string
+            '12':
+              type: string
+          example:
+            '1': NA
+            '2': NA
+            '3': NA
+            '4': NA
+            '5': NA
+            '6': NA
+            '7': 8 AM – 5 PM
+            '8': 8 AM – 5 PM
+            '9': 8 AM – 5 PM
+            '10': NA
+            '11': NA
+            '12': NA
+          description: >-
+            An object with twelve numerical keys, each representing a month
+            (`"1"` for January, `"2"` for February, etc.). The value is the
+            times the critter is available during that month. If the critter is
+            unavailable in a month, the value will be `"NA"`.
+        times_by_month_south:
+          type: object
+          properties:
+            '1':
+              type: string
+            '2':
+              type: string
+            '3':
+              type: string
+            '4':
+              type: string
+            '5':
+              type: string
+            '6':
+              type: string
+            '7':
+              type: string
+            '8':
+              type: string
+            '9':
+              type: string
+            '10':
+              type: string
+            '11':
+              type: string
+            '12':
+              type: string
+          example:
+            '1': 8 AM – 5 PM
+            '2': 8 AM – 5 PM
+            '3': 8 AM – 5 PM
+            '4': NA
+            '5': NA
+            '6': NA
+            '7': NA
+            '8': NA
+            '9': NA
+            '10': NA
+            '11': NA
+            '12': NA
+          description: >-
+            An object with twelve numerical keys, each representing a month
+            (`"1"` for January, `"2"` for February, etc.). The value is the
+            times the critter is available during that month. If the critter is
+            unavailable in a month, the value will be `"NA"`.
+        months_north:
           type: string
           example: Jul – Sep
           description: >-
             The months the bug is available for in the Northern hemisphere. If
             all year, value will be `"All year"`.
-        s_availability:
+        months_south:
           type: string
           example: Jan – Mar
           description: >-
             The months the bug is available for in the Southern hemisphere. If
             all year, value will be `"All year"`.
-        n_availability_array:
+        'months_north_array:':
           type: array
           items:
-            type: string
+            type: integer
           example:
-            - '7'
-            - '8'
-            - '9'
+            - 7
+            - 8
+            - 9
           description: >-
-            An array of string integers representing the months the bug is
-            available in the Northern hemisphere.
-        s_availability_array:
+            An array of integers representing the months the bug is available in
+            the Northern hemisphere.
+        'months_south_array:':
           type: array
           items:
-            type: string
+            type: integer
           example:
-            - '1'
-            - '2'
-            - '3'
+            - 1
+            - 2
+            - 3
           description: >-
-            An array of string integers representing the months the bug is
-            available in the Southern hemisphere.
+            An array of integers representing the months the bug is available in
+            the Southern hemisphere.
     NHSeaCreature:
       type: object
       properties:
@@ -1353,25 +1599,13 @@ components:
           example: Octopus
           description: Name of the sea creature.
         number:
-          type: string
-          example: '20'
+          type: integer
+          example: 20
           description: 'In-game sea creature number, marking position in the Critterpedia.'
         image_url:
           type: string
           example: 'https://dodo.ac/np/images/5/58/Octopus_NH_Icon.png'
           description: Image of the sea creature. dodo.ac is Nookipedia's CDN server.
-        catchphrase:
-          type: string
-          example: I got an octopus! It can give four hugs at once!
-          description: The catchphrase the player says after catching the sea creature.
-        catchphrase2:
-          type: string
-          example: ''
-          description: >-
-            An alternative catchphrase that the player may say after catching
-            the critter under certain conditions (such as catching a squid when
-            it is raining). Note that the vast majority of critters do not have
-            a second catchphrase.
         time:
           type: string
           example: All day
@@ -1407,78 +1641,218 @@ components:
             empty for most sea creatures as we do not yet know how exactly sea
             creature rarities are calculated in the game code.
         total_catch:
-          type: string
-          example: '0'
+          type: integer
+          example: 0
           description: >-
             The total number of sea creatures the player has to have caught
             before this sea creature will start spawning.
         sell_nook:
-          type: string
-          example: '160'
+          type: integer
+          example: 160
           description: >-
             The number of Bells the sea creature can be sold to Nook's store
             for.
         tank_width:
-          type: string
-          example: '1'
+          type: number
+          format: float
+          multipleOf: 0.1
+          example: 1
           description: >-
             The width of the tank when the sea creature is placed as a furniture
             item.
         tank_length:
-          type: string
-          example: '1'
+          type: number
+          format: float
+          multipleOf: 0.1
+          example: 1
           description: >-
             The length of the tank when the sea creature is placed as a
             furniture item.
-        n_availability:
+        catchphrases:
+          type: array
+          items:
+            type: string
+          example:
+            - I got an octopus! It can give four hugs at once!
+          description: >-
+            An array of possible catchphrases the player says after catching the
+            sea creature. Most critters have just one, but some can have
+            multiple.
+        availability_north:
+          type: array
+          items:
+            type: object
+            properties:
+              months:
+                type: string
+              time:
+                type: string
+          example:
+            - months: All year
+              time: All day
+          description: >-
+            An array of objects, each object holding a months string and the
+            time the critter is availabile during the specified month(s) in the
+            northern hemisphere. Most critters will have just one object. A
+            small number of critters have variable time availability in which
+            case this array will have multiple objects.
+        availability_south:
+          type: array
+          items:
+            type: object
+            properties:
+              months:
+                type: string
+              time:
+                type: string
+          example:
+            - months: All year
+              time: All day
+          description: >-
+            An array of objects, each object holding a months string and the
+            time the critter is availabile during the specified month(s) in the
+            southern hemisphere. Most critters will have just one object. A
+            small number of critters have variable time availability in which
+            case this array will have multiple objects.
+        times_by_month_north:
+          type: object
+          properties:
+            '1':
+              type: string
+            '2':
+              type: string
+            '3':
+              type: string
+            '4':
+              type: string
+            '5':
+              type: string
+            '6':
+              type: string
+            '7':
+              type: string
+            '8':
+              type: string
+            '9':
+              type: string
+            '10':
+              type: string
+            '11':
+              type: string
+            '12':
+              type: string
+          example:
+            '1': All day
+            '2': All day
+            '3': All day
+            '4': All day
+            '5': All day
+            '6': All day
+            '7': All day
+            '8': All day
+            '9': All day
+            '10': All day
+            '11': All day
+            '12': All day
+          description: >-
+            An object with twelve numerical keys, each representing a month
+            (`"1"` for January, `"2"` for February, etc.). The value is the
+            times the critter is available during that month. If the critter is
+            unavailable in a month, the value will be `"NA"`.
+        times_by_month_south:
+          type: object
+          properties:
+            '1':
+              type: string
+            '2':
+              type: string
+            '3':
+              type: string
+            '4':
+              type: string
+            '5':
+              type: string
+            '6':
+              type: string
+            '7':
+              type: string
+            '8':
+              type: string
+            '9':
+              type: string
+            '10':
+              type: string
+            '11':
+              type: string
+            '12':
+              type: string
+          example:
+            '1': All day
+            '2': All day
+            '3': All day
+            '4': All day
+            '5': All day
+            '6': All day
+            '7': All day
+            '8': All day
+            '9': All day
+            '10': All day
+            '11': All day
+            '12': All day
+          description: >-
+            An object with twelve numerical keys, each representing a month
+            (`"1"` for January, `"2"` for February, etc.). The value is the
+            times the critter is available during that month. If the critter is
+            unavailable in a month, the value will be `"NA"`.
+        months_north:
           type: string
           example: Jul – Sep
           description: >-
             The months the sea creature is available for in the Northern
             hemisphere. If all year, value will be `"All year"`.
-        s_availability:
+        months_south:
           type: string
           example: Jan – Mar
           description: >-
             The months the sea creature is available for in the Southern
             hemisphere. If all year, value will be `"All year"`.
-        n_availability_array:
+        months_north_array:
           type: array
           items:
-            type: string
+            type: integer
           example:
-            - '1'
-            - '2'
-            - '3'
-            - '4'
-            - '5'
-            - '6'
-            - '7'
-            - '8'
-            - '9'
-            - '10'
-            - '11'
-            - '12'
+            - 1
+            - 2
+            - 3
+            - 4
+            - 5
+            - 6
+            - 7
+            - 8
+            - 9
+            - 10
+            - 11
+            - 12
           description: >-
-            An array of string integers representing the months the sea creature
-            is available in the Northern hemisphere.
-        s_availability_array:
+            An array of integers representing the months the sea creature is
+            available in the Northern hemisphere.
+        months_south_array:
           type: array
           items:
-            type: string
+            type: integer
           example:
-            - '1'
-            - '2'
-            - '3'
-            - '4'
-            - '5'
-            - '6'
-            - '7'
-            - '8'
-            - '9'
-            - '10'
-            - '11'
-            - '12'
+            - 1
+            - 2
+            - 3
+            - 4
+            - 5
+            - 6
+            - 7
+            - 8
+            - 9
+            - 10
+            - 11
+            - 12
           description: >-
-            An array of string integers representing the months the sea creature
-            is available in the Southern hemisphere.
+            An array of integers representing the months the sea creature is
+            available in the Southern hemisphere.
