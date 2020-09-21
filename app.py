@@ -357,12 +357,12 @@ def format_villager(data):
             obj['debut'] = obj['debut'].upper()
 
         # Place prev_phrases in array:
-        prev_phrases = []
+        prev_phrases_array = []
         if obj['prev_phrase'] != '':
-            prev_phrases.append(obj['prev_phrase'])
+            prev_phrases_array.append(obj['prev_phrase'])
             if obj['prev_phrase2']:
-                prev_phrases.append(obj['prev_phrase2'])
-        obj['prev_phrases'] = prev_phrases
+                prev_phrases_array.append(obj['prev_phrase2'])
+        obj['prev_phrases'] = prev_phrases_array
         del obj['prev_phrase']
         del obj['prev_phrase2']
 
@@ -513,42 +513,142 @@ def months_to_array(data):
         for key in obj:
             if 'n_m' in key:
                 if obj[key] == '1':
-                    n_months_array.append(key.replace('n_m', ''))
+                    if not (request.headers.get('Accept-Version') and (request.headers.get('Accept-Version')[:3] in ('1.0', '1.1'))):
+                        n_months_array.append(int(key.replace('n_m', '')))
+                    else:
+                        n_months_array.append(key.replace('n_m', ''))
             if 's_m' in key:
                 if obj[key] == '1':
-                    s_months_array.append(key.replace('s_m', ''))
+                    if not (request.headers.get('Accept-Version') and (request.headers.get('Accept-Version')[:3] in ('1.0', '1.1'))):
+                        s_months_array.append(int(key.replace('s_m', '')))
+                    else:
+                        s_months_array.append(key.replace('s_m', ''))
         for i in range(1, 13):
             del obj['n_m' + str(i)]
             del obj['s_m' + str(i)]
 
-        obj['n_availability_array'] = n_months_array
-        obj['s_availability_array'] = s_months_array
+        if (request.headers.get('Accept-Version') and (request.headers.get('Accept-Version')[:3] in ('1.0', '1.1'))):
+            obj['n_availability_array'] = n_months_array
+            obj['s_availability_array'] = s_months_array
+        else:
+            obj['months_north'] = obj['n_availability']
+            del obj['n_availability']
+            obj['months_south'] = obj['s_availability']
+            del obj['s_availability']
+            obj['months_north_array'] = n_months_array
+            obj['months_south_array'] = s_months_array
         n_months_array = []
         s_months_array = []
 
     return data
 
+def format_critters(data):
+    # Create arrays that hold times by month per hemisphere:
+    for obj in data:
+
+        if not (request.headers.get('Accept-Version') and (request.headers.get('Accept-Version')[:3] in ('1.0', '1.1'))):
+            # Convert tank width/length to floats:
+            obj['tank_width'] = float(obj['tank_width'])
+            obj['tank_length'] = float(obj['tank_length'])
+
+            # Convert some fields to int:
+            obj['number'] = int(obj['number'])
+            obj['sell_nook'] = int(obj['sell_nook'])
+            if 'sell_cj' in obj:
+                obj['sell_cj'] = int(obj['sell_cj'])
+            if 'sell_flick' in obj:
+                obj['sell_flick'] = int(obj['sell_flick'])
+            obj['total_catch'] = int(obj['total_catch'])
+
+        # Merge catchphrases into an array:
+        catchphrase_array = [obj['catchphrase']]
+        if obj['catchphrase2']:
+            catchphrase_array.append(obj['catchphrase2'])
+            if 'catchphrase3' in obj and obj['catchphrase3']:
+                catchphrase_array.append(obj['catchphrase3'])
+
+        obj['catchphrases'] = catchphrase_array
+
+        # Remove individual catchphrase fields:
+        if not (request.headers.get('Accept-Version') and (request.headers.get('Accept-Version')[:3] in ('1.0', '1.1'))):
+            del obj['catchphrase']
+            if 'catchphrase2' in obj:
+                del obj['catchphrase2']
+            if 'catchphrase3' in obj:
+                del obj['catchphrase3']
+        
+        # Create array of times and corresponding months for those times:
+        availability_array_north = [ {'months': obj['time_n_months'], 'time': obj['time'] } ]
+        availability_array_south = [ {'months': obj['time_s_months'], 'time': obj['time'] } ]
+        if len(obj['time2']) > 0:
+            availability_array_north.append({'months': obj['time2_n_months'], 'time': obj['time2'] })
+            availability_array_south.append({'months': obj['time2_s_months'], 'time': obj['time2'] })
+        obj['availability_north'] = availability_array_north
+        obj['availability_south'] = availability_array_south
+
+        # Create arrays for times by month:
+        obj['times_by_month_north'] = {
+            '1': obj['n_m1_time'],
+            '2': obj['n_m2_time'],
+            '3': obj['n_m3_time'],
+            '4': obj['n_m4_time'],
+            '5': obj['n_m5_time'],
+            '6': obj['n_m6_time'],
+            '7': obj['n_m7_time'],
+            '8': obj['n_m8_time'],
+            '9': obj['n_m9_time'],
+            '10': obj['n_m10_time'],
+            '11': obj['n_m11_time'],
+            '12': obj['n_m12_time']
+        }
+        obj['times_by_month_south'] = {
+            '1': obj['s_m1_time'],
+            '2': obj['s_m2_time'],
+            '3': obj['s_m3_time'],
+            '4': obj['s_m4_time'],
+            '5': obj['s_m5_time'],
+            '6': obj['s_m6_time'],
+            '7': obj['s_m7_time'],
+            '8': obj['s_m8_time'],
+            '9': obj['s_m9_time'],
+            '10': obj['s_m10_time'],
+            '11': obj['s_m11_time'],
+            '12': obj['s_m12_time']
+        }
+
+        # Remove fields that were added to above objects:
+        for i in range(1, 13):
+            del obj['n_m' + str(i) + '_time']
+            del obj['s_m' + str(i) + '_time']
+
+        # Remove unneeded time fields:
+        if not (request.headers.get('Accept-Version') and (request.headers.get('Accept-Version')[:3] in ('1.0', '1.1'))):
+            del obj['time']
+        del obj['time2']
+        del obj['time_n_months']
+        del obj['time_s_months']
+        del obj['time2_n_months']
+        del obj['time2_s_months']
+
+    return data
+
 def get_critter_list(limit, tables, fields):
-    # If client wants details for certain month:
+    # If client requests specific month:
     if request.args.get('month'):
         calculated_month = month_to_int(request.args.get('month'))
         if not calculated_month:
-            abort(400, description=error_response("Failed to identify the provided month filter.", "Provided month filter {} was not recognized as a valid month.".format(request.args.get('month'))))
+                abort(400, description=error_response("Failed to identify the provided month filter.", "Provided month filter {} was not recognized as a valid month.".format(request.args.get('month'))))
 
-        where = 'n_m' + calculated_month + '="1"'
-        params = { 'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields, 'where': where }
-        n_hemi = call_cargo(params, request.args)
-        n_hemi = months_to_array(n_hemi)
+        paramsNorth = { 'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields, 'where': 'n_m' + calculated_month + '="1"' }
+        paramsSouth = { 'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields, 'where': 's_m' + calculated_month + '="1"' }
 
-        where = 's_m' + calculated_month + '="1"'
-        params = { 'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields, 'where': where }
-        s_hemi = call_cargo(params, request.args)
-        s_hemi = months_to_array(s_hemi)
+        # If client doesn't want all details:
+        if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
+            n_hemi = months_to_array(call_cargo(paramsNorth, request.args))
+            s_hemi = months_to_array(call_cargo(paramsSouth, request.args))
 
-        if n_hemi and s_hemi:
-            try:
-                # If client doesn't want details, return two arrays of strings called north and south:
-                if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
+            if n_hemi and s_hemi:
+                try:
                     n_hemi_array = []
                     for critter in n_hemi:
                         n_hemi_array.append(critter['name'])
@@ -556,13 +656,23 @@ def get_critter_list(limit, tables, fields):
                     for critter in s_hemi:
                         s_hemi_array.append(critter['name'])
                     return jsonify({ "month": calculated_month, "north": n_hemi_array, "south": s_hemi_array })
-                else:
-                    # If client wants all details, return array of objects:
-                    return jsonify({ "month": calculated_month, "north": n_hemi, "south": s_hemi })
-            except:
+                except:
+                    abort(400, description=error_response("Failed to identify the provided month filter.", "Provided month filter {} was not recognized as a valid month.".format(request.args.get('month'))))
+            else:
                 abort(400, description=error_response("Failed to identify the provided month filter.", "Provided month filter {} was not recognized as a valid month.".format(request.args.get('month'))))
+        # If client wants full details:
         else:
-            abort(400, description=error_response("Failed to identify the provided month filter.", "Provided month filter {} was not recognized as a valid month.".format(request.args.get('month'))))
+            n_hemi = months_to_array(format_critters(call_cargo(paramsNorth, request.args)))
+            s_hemi = months_to_array(format_critters(call_cargo(paramsSouth, request.args)))
+
+            if n_hemi and s_hemi:
+                try:
+                    return jsonify({ "month": calculated_month, "north": n_hemi, "south": s_hemi })
+                except:
+                    abort(400, description=error_response("Failed to identify the provided month filter.", "Provided month filter {} was not recognized as a valid month.".format(request.args.get('month'))))
+            else:
+                abort(400, description=error_response("Failed to identify the provided month filter.", "Provided month filter {} was not recognized as a valid month.".format(request.args.get('month'))))
+    # If client doesn't specify specific month:
     else:
         params = { 'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields }
         if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
@@ -572,7 +682,7 @@ def get_critter_list(limit, tables, fields):
                 results_array.append(critter['name'])
             return jsonify(results_array)
         else:
-            return jsonify(months_to_array(call_cargo(params, request.args)))
+            return jsonify(months_to_array(format_critters(call_cargo(params, request.args))))
 
 #################################
 # STATIC RENDERS
@@ -636,7 +746,7 @@ def get_nh_fish_all():
     if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
         fields = 'name,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12'
     else:
-        fields = 'url,name,number,image_url,catchphrase,catchphrase2,catchphrase3,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,time,location,shadow_size,rarity,total_catch,sell_nook,sell_cj,tank_width,tank_length'
+        fields = 'url,name,number,image_url,catchphrase,catchphrase2,catchphrase3,location,shadow_size,rarity,total_catch,sell_nook,sell_cj,tank_width,tank_length,time,time_n_availability=time_n_months,time_s_availability=time_s_months,time2,time2_n_availability=time2_n_months,time2_s_availability=time2_s_months,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,n_m1_time,n_m2_time,n_m3_time,n_m4_time,n_m5_time,n_m6_time,n_m7_time,n_m8_time,n_m9_time,n_m10_time,n_m11_time,n_m12_time,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,s_m1_time,s_m2_time,s_m3_time,s_m4_time,s_m5_time,s_m6_time,s_m7_time,s_m8_time,s_m9_time,s_m10_time,s_m11_time,s_m12_time'
 
     return get_critter_list(limit, tables, fields)
 
@@ -646,18 +756,18 @@ def get_nh_fish(fish):
     authorize(DB_KEYS, request)
     fish = fish.replace('_', ' ')
     tables = 'nh_fish'
-    fields = 'url,name,number,image_url,catchphrase,catchphrase2,catchphrase3,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,time,location,shadow_size,rarity,total_catch,sell_nook,sell_cj,tank_width,tank_length'
+    fields = 'url,name,number,image_url,catchphrase,catchphrase2,catchphrase3,location,shadow_size,rarity,total_catch,sell_nook,sell_cj,tank_width,tank_length,time,time_n_availability=time_n_months,time_s_availability=time_s_months,time2,time2_n_availability=time2_n_months,time2_s_availability=time2_s_months,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,n_m1_time,n_m2_time,n_m3_time,n_m4_time,n_m5_time,n_m6_time,n_m7_time,n_m8_time,n_m9_time,n_m10_time,n_m11_time,n_m12_time,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,s_m1_time,s_m2_time,s_m3_time,s_m4_time,s_m5_time,s_m6_time,s_m7_time,s_m8_time,s_m9_time,s_m10_time,s_m11_time,s_m12_time'
     where = 'name="' + fish + '"'
     params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where }
 
-    if(request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] == '1.0'):
-        return jsonify(months_to_array(call_cargo(params, request.args)))
+    cargo_results = call_cargo(params, request.args)
+    if cargo_results == []:
+        abort(404, description=error_response("No data was found for the given query.", "MediaWiki Cargo request succeeded by nothing was returned for the parameters: {}".format(params)))
     else:
-        cargo_results = call_cargo(params, request.args)
-        if cargo_results == []:
-            abort(404, description=error_response("No data was found for the given query.", "MediaWiki Cargo request succeeded by nothing was returned for the parameters: {}".format(params)))
+        if(request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] == '1.0'):
+            return jsonify(months_to_array(format_critters(cargo_results)))
         else:
-            return jsonify(months_to_array(cargo_results)[0])
+            return jsonify(months_to_array(format_critters(cargo_results))[0])
 
 # All New Horizons bugs
 @app.route('/nh/bugs', methods=['GET'])
@@ -669,7 +779,7 @@ def get_nh_bug_all():
     if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
         fields = 'name,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12'
     else:
-        fields = 'url,name,number,image_url,catchphrase,catchphrase2,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,time,location,rarity,total_catch,sell_nook,sell_flick,tank_width,tank_length'
+        fields = 'url,name,number,image_url,catchphrase,catchphrase2,location,rarity,total_catch,sell_nook,sell_flick,tank_width,tank_length,time,time_n_availability=time_n_months,time_s_availability=time_s_months,time2,time2_n_availability=time2_n_months,time2_s_availability=time2_s_months,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,n_m1_time,n_m2_time,n_m3_time,n_m4_time,n_m5_time,n_m6_time,n_m7_time,n_m8_time,n_m9_time,n_m10_time,n_m11_time,n_m12_time,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,s_m1_time,s_m2_time,s_m3_time,s_m4_time,s_m5_time,s_m6_time,s_m7_time,s_m8_time,s_m9_time,s_m10_time,s_m11_time,s_m12_time'
 
     return get_critter_list(limit, tables, fields)
 
@@ -680,18 +790,18 @@ def get_nh_bug(bug):
 
     bug = bug.replace('_', ' ')
     tables = 'nh_bug'
-    fields = 'url,name,number,image_url,catchphrase,catchphrase2,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,time,location,rarity,total_catch,sell_nook,sell_flick,tank_width,tank_length'
+    fields = 'url,name,number,image_url,catchphrase,catchphrase2,location,rarity,total_catch,sell_nook,sell_flick,tank_width,tank_length,time,time_n_availability=time_n_months,time_s_availability=time_s_months,time2,time2_n_availability=time2_n_months,time2_s_availability=time2_s_months,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,n_m1_time,n_m2_time,n_m3_time,n_m4_time,n_m5_time,n_m6_time,n_m7_time,n_m8_time,n_m9_time,n_m10_time,n_m11_time,n_m12_time,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,s_m1_time,s_m2_time,s_m3_time,s_m4_time,s_m5_time,s_m6_time,s_m7_time,s_m8_time,s_m9_time,s_m10_time,s_m11_time,s_m12_time'
     where = 'name="' + bug + '"'
     params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where }
 
-    if(request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] == '1.0'):
-        return jsonify(months_to_array(call_cargo(params, request.args)))
+    cargo_results = call_cargo(params, request.args)
+    if cargo_results == []:
+        abort(404, description=error_response("No data was found for the given query.", "MediaWiki Cargo request succeeded by nothing was returned for the parameters: {}".format(params)))
     else:
-        cargo_results = call_cargo(params, request.args)
-        if cargo_results == []:
-            abort(404, description=error_response("No data was found for the given query.", "MediaWiki Cargo request succeeded by nothing was returned for the parameters: {}".format(params)))
+        if(request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] == '1.0'):
+            return jsonify(months_to_array(format_critters(cargo_results)))
         else:
-            return jsonify(months_to_array(cargo_results)[0])
+            return jsonify(months_to_array(format_critters(cargo_results))[0])
 
 # All New Horizons sea creatures
 @app.route('/nh/sea', methods=['GET'])
@@ -703,7 +813,7 @@ def get_nh_sea_all():
     if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
         fields = 'name,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12'
     else:
-        fields = 'url,name,number,image_url,catchphrase,catchphrase2,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,time,shadow_size,shadow_movement,rarity,total_catch,sell_nook,tank_width,tank_length'
+        fields = 'url,name,number,image_url,catchphrase,catchphrase2,shadow_size,shadow_movement,rarity,total_catch,sell_nook,tank_width,tank_length,time,time_n_availability=time_n_months,time_s_availability=time_s_months,time2,time2_n_availability=time2_n_months,time2_s_availability=time2_s_months,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,n_m1_time,n_m2_time,n_m3_time,n_m4_time,n_m5_time,n_m6_time,n_m7_time,n_m8_time,n_m9_time,n_m10_time,n_m11_time,n_m12_time,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,s_m1_time,s_m2_time,s_m3_time,s_m4_time,s_m5_time,s_m6_time,s_m7_time,s_m8_time,s_m9_time,s_m10_time,s_m11_time,s_m12_time'
 
     return get_critter_list(limit, tables, fields)
 
@@ -714,18 +824,18 @@ def get_nh_sea(sea):
 
     sea = sea.replace('_', ' ')
     tables = 'nh_sea_creature'
-    fields = 'url,name,number,image_url,catchphrase,catchphrase2,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,time,shadow_size,shadow_movement,rarity,total_catch,sell_nook,tank_width,tank_length'
+    fields = 'url,name,number,image_url,catchphrase,catchphrase2,shadow_size,shadow_movement,rarity,total_catch,sell_nook,tank_width,tank_length,time,time_n_availability=time_n_months,time_s_availability=time_s_months,time2,time2_n_availability=time2_n_months,time2_s_availability=time2_s_months,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,n_m1_time,n_m2_time,n_m3_time,n_m4_time,n_m5_time,n_m6_time,n_m7_time,n_m8_time,n_m9_time,n_m10_time,n_m11_time,n_m12_time,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,s_m1_time,s_m2_time,s_m3_time,s_m4_time,s_m5_time,s_m6_time,s_m7_time,s_m8_time,s_m9_time,s_m10_time,s_m11_time,s_m12_time'
     where = 'name="' + sea + '"'
     params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where }
 
-    if(request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] == '1.0'):
-        return jsonify(months_to_array(call_cargo(params, request.args)))
+    cargo_results = call_cargo(params, request.args)
+    if cargo_results == []:
+        abort(404, description=error_response("No data was found for the given query.", "MediaWiki Cargo request succeeded by nothing was returned for the parameters: {}".format(params)))
     else:
-        cargo_results = call_cargo(params, request.args)
-        if cargo_results == []:
-            abort(404, description=error_response("No data was found for the given query.", "MediaWiki Cargo request succeeded by nothing was returned for the parameters: {}".format(params)))
+        if(request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] == '1.0'):
+            return jsonify(months_to_array(format_critters(cargo_results)))
         else:
-            return jsonify(months_to_array(cargo_results)[0])
+            return jsonify(months_to_array(format_critters(cargo_results))[0])
 
 if __name__ == '__main__':
     app.run(host = '0.0.0.0')
