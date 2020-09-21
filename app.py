@@ -81,7 +81,7 @@ def error_bad_request(e):
     return response, 400
 
 @app.errorhandler(401)
-def error_resource_not_found(e):
+def error_resource_not_authorized(e):
     response = e.get_response()
     if 'title' in e.description:
         response.data = json.dumps({
@@ -113,7 +113,7 @@ def error_resource_not_found(e):
     return response, 404
 
 @app.errorhandler(405)
-def error_resource_not_found(e):
+def error_invalid_method(e):
     response = e.get_response()
     if 'title' in e.description:
         response.data = json.dumps({
@@ -165,8 +165,7 @@ def authorize(db, request):
         auth_check = query_db('SELECT * FROM ' + db + ' WHERE key = ?', [request_uuid], one=True)
         if auth_check is None:
             abort(401, description=error_response("Failed to validate UUID.", "UUID is either missing or invalid; or, unspecified server occured."))
-
-    except Exception as e:
+    except Exception:
         abort(401, description=error_response("Failed to validate UUID.", "UUID is either missing or invalid; or, unspecified server occured."))
 
 #################################
@@ -432,7 +431,7 @@ def format_villager(data):
 
         # Place game appearances in array:
         games_array = []
-        for i in ['dnm', 'ac', 'e_plus', 'ww', 'cf', 'nl', 'wa', 'nh', 'film', 'hhd', 'pc']:
+        for i in games:
             if obj[i] == '1':
                 games_array.append(i.upper())
             del obj[i]
@@ -518,7 +517,6 @@ def get_villager_list(limit, tables, join, fields):
 
 # For critters, convert north and south month fields into north and south arrays:
 def months_to_array(data):
-    month_fields = ['']
     n_months_array = []
     s_months_array = []
     for obj in data:
