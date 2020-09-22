@@ -316,7 +316,8 @@ def call_cargo(parameters, request_args): # Request args are passed in just for 
 
                 # If image, fetch the CDN thumbnail URL:
                 try:
-                    r = requests.get(BASE_URL_WIKI + 'Special:FilePath/' + obj['title'][key].rsplit('/', 1)[-1] + '?width=' + request.args.get('thumbsize'))
+                    print(str(obj['title']))
+                    r = requests.get(BASE_URL_WIKI + 'Special:FilePath/' + item['image_url'].rsplit('/', 1)[-1] + '?width=' + request.args.get('thumbsize'))
                     item['image_url'] = r.url
                 except:
                     abort(500, description=error_response("Error while getting image CDN thumbnail URL.", "Failure occured with the following parameters: {}.".format(parameters)))
