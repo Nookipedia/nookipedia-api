@@ -541,12 +541,14 @@ def months_to_array(data):
             obj['n_availability_array'] = n_months_array
             obj['s_availability_array'] = s_months_array
         else:
-            obj['months_north'] = obj['n_availability']
-            del obj['n_availability']
-            obj['months_south'] = obj['s_availability']
-            del obj['s_availability']
+            if 'n_availability' in obj:
+                obj['months_north'] = obj['n_availability']
+                del obj['n_availability']
+                obj['months_south'] = obj['s_availability']
+                del obj['s_availability']
             obj['months_north_array'] = n_months_array
             obj['months_south_array'] = s_months_array
+
         n_months_array = []
         s_months_array = []
 
