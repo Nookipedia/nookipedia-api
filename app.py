@@ -697,6 +697,28 @@ def get_critter_list(limit, tables, fields):
         else:
             return jsonify(months_to_array(format_critters(call_cargo(params, request.args))))
 
+def get_art_list(limit,tables,fields):
+    where = None
+    if request.args.get('fake'):
+        fake = request.args.get('fake').lower()
+        if fake=='true':
+            where = 'fake = true'
+        elif fake == 'false':
+            where = 'fake = false'
+    if where:
+        params = { 'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields, 'where': where }
+    else:
+        params = { 'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields }
+    cargo_results = call_cargo(params, request.args)
+    results_array = []
+    if request.args.get('excludedetails') and request.args.get('excludedetails') == 'true':
+        for art in cargo_results:
+            results_array.append(art['name'])
+    else:
+        for art in cargo_results:
+            results_array.append(art)
+    return jsonify(results_array)
+
 #################################
 # STATIC RENDERS
 #################################
@@ -849,6 +871,43 @@ def get_nh_sea(sea):
             return jsonify(months_to_array(format_critters(cargo_results)))
         else:
             return jsonify(months_to_array(format_critters(cargo_results))[0])
+
+@app.route('/nh/art/<string:art>', methods=['GET'])
+def get_art(art):
+    print(art)
+    authorize(DB_KEYS, request)
+
+    if request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] in ('1.0','1.1','1.2'):
+        abort(404, description=error_response('Resource not found.', 'Please ensure requested resource exists.'))
+
+    art = art.replace('_', ' ')
+    tables = 'nh_art'
+    fields = 'name,image,fake,fake_image,art_name,author,year,art_style,description,buy_price,sell_price,availability,availability_note,authenticity,width,length'
+    where = f'name="{art}"'
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where }
+
+    cargo_results = call_cargo(params, request.args)
+    if cargo_results == []:
+        abort(404, description=error_response("No data was found for the given query.", f"MediaWiki Cargo request succeeded by nothing was returned for the parameters: {params}"))
+    else:
+        return jsonify(cargo_results[0])
+    
+
+@app.route('/nh/art', methods=['GET'])
+def get_art_all():
+    authorize(DB_KEYS, request)
+
+    if request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] in ('1.0','1.1','1.2'):
+        abort(404, description=error_response('Resource not found.', 'Please ensure requested resource exists.'))
+
+    limit = '50'
+    tables = 'nh_art'
+    if request.args.get('excludedetails') and request.args.get('excludedetails')=='true':
+        fields = 'name'
+    else:
+        fields = 'name,image,fake,fake_image,art_name,author,year,art_style,description,buy_price,sell_price,availability,availability_note,authenticity,width,length'
+    
+    return get_art_list(limit,tables,fields)
 
 if __name__ == '__main__':
     app.run(host = '0.0.0.0')
