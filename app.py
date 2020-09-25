@@ -319,9 +319,13 @@ def call_cargo(parameters, request_args): # Request args are passed in just for 
                     print(str(obj['title']))
                     r = requests.get(BASE_URL_WIKI + 'Special:FilePath/' + item['image_url'].rsplit('/', 1)[-1] + '?width=' + request.args.get('thumbsize'))
                     item['image_url'] = r.url
+                    # If this is a painting that has a fake, fetch that too
+                    if item.get('fake','0')=='1':
+                        r = requests.get(BASE_URL_WIKI + 'Special:FilePath/' + item['fake_image_url'].rsplit('/', 1)[-1] + '?width=' + request.args.get('thumbsize'))
+                        item['fake_image_url'] = r.url
                 except:
                     abort(500, description=error_response("Error while getting image CDN thumbnail URL.", "Failure occured with the following parameters: {}.".format(parameters)))
-
+                
                 data.append(item)
         else:
             for obj in r.json()['cargoquery']:
@@ -697,18 +701,39 @@ def get_critter_list(limit, tables, fields):
         else:
             return jsonify(months_to_array(format_critters(call_cargo(params, request.args))))
 
+def format_art(data):
+    # Correct some datatypes
+
+    # Booleans
+    if data['fake']=='1':
+        data['fake']=True
+    elif data['fake']=='0':
+        data['fake']=False
+    
+    # Integers
+    data['buy_price']=int(data['buy_price'])
+    data['sell_price']=int(data['sell_price'])
+
+    # Floats
+    data['width']=float(data['width'])
+    data['length']=float(data['length'])
+    return data
+
 def get_art_list(limit,tables,fields):
     where = None
+
     if request.args.get('fake'):
         fake = request.args.get('fake').lower()
         if fake=='true':
             where = 'fake = true'
         elif fake == 'false':
             where = 'fake = false'
+
     if where:
         params = { 'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields, 'where': where }
     else:
         params = { 'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields }
+
     cargo_results = call_cargo(params, request.args)
     results_array = []
     if request.args.get('excludedetails') and request.args.get('excludedetails') == 'true':
@@ -716,7 +741,7 @@ def get_art_list(limit,tables,fields):
             results_array.append(art['name'])
     else:
         for art in cargo_results:
-            results_array.append(art)
+            results_array.append(format_art(art))
     return jsonify(results_array)
 
 #################################
@@ -874,7 +899,6 @@ def get_nh_sea(sea):
 
 @app.route('/nh/art/<string:art>', methods=['GET'])
 def get_art(art):
-    print(art)
     authorize(DB_KEYS, request)
 
     if request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] in ('1.0','1.1','1.2'):
@@ -882,7 +906,7 @@ def get_art(art):
 
     art = art.replace('_', ' ')
     tables = 'nh_art'
-    fields = 'name,image,fake,fake_image,art_name,author,year,art_style,description,buy_price,sell_price,availability,availability_note,authenticity,width,length'
+    fields = 'name,image,image_url,fake,fake_image,fake_image_url,art_name,author,year,art_style,description,buy_price,sell_price,availability,authenticity,width,length'
     where = f'name="{art}"'
     params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where }
 
@@ -890,7 +914,7 @@ def get_art(art):
     if cargo_results == []:
         abort(404, description=error_response("No data was found for the given query.", f"MediaWiki Cargo request succeeded by nothing was returned for the parameters: {params}"))
     else:
-        return jsonify(cargo_results[0])
+        return jsonify(format_art(cargo_results[0]))
     
 
 @app.route('/nh/art', methods=['GET'])
@@ -902,12 +926,12 @@ def get_art_all():
 
     limit = '50'
     tables = 'nh_art'
-    if request.args.get('excludedetails') and request.args.get('excludedetails')=='true':
+    if request.args.get('excludedetails','false')=='true':
         fields = 'name'
     else:
-        fields = 'name,image,fake,fake_image,art_name,author,year,art_style,description,buy_price,sell_price,availability,availability_note,authenticity,width,length'
+        fields = 'name,image,image_url,fake,fake_image,fake_image_url,art_name,author,year,art_style,description,buy_price,sell_price,availability,authenticity,width,length'
     
     return get_art_list(limit,tables,fields)
 
 if __name__ == '__main__':
-    app.run(host = '0.0.0.0')
+    app.run(host = '127.0.0.1')
