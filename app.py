@@ -317,10 +317,12 @@ def call_cargo(parameters, request_args): # Request args are passed in just for 
                 # If image, fetch the CDN thumbnail URL:
                 try:
                     print(str(obj['title']))
-                    r = requests.get(BASE_URL_WIKI + 'Special:FilePath/' + item['image_url'].rsplit('/', 1)[-1] + '?width=' + request.args.get('thumbsize'))
-                    item['image_url'] = r.url
+                    #Only fetch the image if this object actually has an image to fetch
+                    if 'image_url' in item:
+                        r = requests.get(BASE_URL_WIKI + 'Special:FilePath/' + item['image_url'].rsplit('/', 1)[-1] + '?width=' + request.args.get('thumbsize'))
+                        item['image_url'] = r.url
                     # If this is a painting that has a fake, fetch that too
-                    if item.get('fake','0')=='1':
+                    if item.get('fake')=='1':
                         r = requests.get(BASE_URL_WIKI + 'Special:FilePath/' + item['fake_image_url'].rsplit('/', 1)[-1] + '?width=' + request.args.get('thumbsize'))
                         item['fake_image_url'] = r.url
                 except:
