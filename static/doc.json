@@ -908,6 +908,16 @@
               }
             }
           },
+          "404": {
+            "description": "Could not find the specified recipe.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404"
+                }
+              }
+            }
+          },
           "500": {
             "description": "There was an error fetching the requested data.",
             "content": {
@@ -924,7 +934,7 @@
     "/nh/recipe": {
       "get": {
         "summary": "All New Horizons recipes",
-        "description": "Get a list of all artwork and their details in *Animal Crossing: New Horizons*. Note that while cached, this endpoint will be very responsive; however, hitting the endpoint in between cache refreshes can result in a response time of 5 to 15 seconds.",
+        "description": "Get a list of all recipes and their details in *Animal Crossing: New Horizons*. Note that while cached, this endpoint will be very responsive; however, hitting the endpoint in between cache refreshes can result in a response time of 5 to 15 seconds.",
         "parameters": [
           {
             "in": "header",
@@ -966,11 +976,94 @@
         ],
         "responses": {
           "200": {
-            "description": "A JSON object describing the artwork.",
+            "description": "A JSON array of recipes.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NHRecipe"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NHRecipe"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Failed to authenticate user from `X-API-KEY`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error401"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "There was an error fetching the requested data.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/nh/recipe/{recipe}": {
+      "get": {
+        "summary": "Single New Horizons recipe",
+        "description": "Retrieve information about a specific recipe in Animal Crossing: New Horizons.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "recipe",
+            "required": true,
+            "description": "The name of the recipe you wish to retrieve information about.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-API-KEY",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Your UUID secret key, granted to you by the Nookipedia team. Required for accessing the API."
+          },
+          {
+            "in": "header",
+            "name": "Accept-Version",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The version of the API you are calling, written as `1.0.0`. This is specified as required as good practice, but it is not actually enforced by the API. If you do not specify a version, you will be served the latest version, which may eventually result in breaking changes."
+          },
+          {
+            "in": "query",
+            "name": "thumbsize",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL. This parameter is generally not recommended unless you absolutely need it, as each returned thumbnail link with a custom size requires an additional network call, which can result in a long response time if calling this endpoint in between cache refreshes."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A JSON array of recipes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NHRecipe"
+                  }
                 }
               }
             }
@@ -2332,15 +2425,10 @@
       "NHRecipe": {
         "type": "object",
         "properties": {
-          "identifier": {
-            "type": "string",
-            "example": "Acoustic Guitar",
-            "description": "The name of the recipe."
-          },
           "en_name": {
             "type": "string",
             "example": "Acoustic Guitar",
-            "description": "The english name of the recipe."
+            "description": "The name of the recipe."
           },
           "image": {
             "type": "string",

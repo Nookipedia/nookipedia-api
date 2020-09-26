@@ -786,7 +786,7 @@ def get_recipe_list(limit,tables,fields):
     results_array = []
     if request.args.get('excludedetails') == 'true':
         for recipe in cargo_results:
-            results_array.append(recipe['identifier'])
+            results_array.append(recipe['en_name'])
     else:
         for recipe in cargo_results:
             results_array.append(format_recipe(recipe))
@@ -981,6 +981,26 @@ def get_art_all():
     
     return get_art_list(limit,tables,fields)
 
+
+@app.route('/nh/recipe/<string:recipe>', methods=['GET'])
+def get_recipe(recipe):
+    authorize(DB_KEYS, request)
+
+    if 'Accept-Version' in request.headers and request.headers['Accept-Version'][:3] in ('1.0','1.1','1.2','1.3'):
+        abort(404, description=error_response('Resource not found.', 'Please ensure requested resource exists.'))
+    
+    recipe = recipe.replace('_',' ')
+    tables = 'nh_recipe'
+    fields = 'en_name,image,serial_id,sell,recipes_to_unlock,diy_availability1,diy_availability1_note,diy_availability2,diy_availability2_note,material1,material1_num,material2,material2_num,material3,material3_num,material4,material4_num,material5,material5_num,material6,material6_num'
+    where = f'en_name="{recipe}"'
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where }
+
+    cargo_results = call_cargo(params, request.args)
+    if len(cargo_results) == 0:
+        abort(404, description=error_response("No data was found for the given query.", f"MediaWiki Cargo request succeeded by nothing was returned for the parameters: {params}"))
+    else:
+        return jsonify(format_recipe(cargo_results[0]))
+
 @app.route('/nh/recipe', methods=['GET'])
 def get_recipe_all():
     authorize(DB_KEYS, request)
@@ -990,7 +1010,7 @@ def get_recipe_all():
     
     limit='600'
     tables = 'nh_recipe'
-    fields = 'identifier,en_name,image,serial_id,sell,recipes_to_unlock,diy_availability1,diy_availability1_note,diy_availability2,diy_availability2_note,material1,material1_num,material2,material2_num,material3,material3_num,material4,material4_num,material5,material5_num,material6,material6_num'
+    fields = 'en_name,image,serial_id,sell,recipes_to_unlock,diy_availability1,diy_availability1_note,diy_availability2,diy_availability2_note,material1,material1_num,material2,material2_num,material3,material3_num,material4,material4_num,material5,material5_num,material6,material6_num'
 
     return get_recipe_list(limit,tables,fields)
     
