@@ -744,6 +744,52 @@ def get_art_list(limit,tables,fields):
             results_array.append(format_art(art))
     return jsonify(results_array)
 
+def format_recipe(data):
+    # Correct some datatypes
+
+    # Integers
+    data['serial_id'] = int('0'+data['serial_id'])
+    data['sell'] = int('0'+data['sell']) if data['sell'] != 'NA' else 0
+    data['recipes_to_unlock'] = int('0'+data['recipes_to_unlock'])
+
+    # Change the material# and material#_num columns to be one materials column
+    data['materials'] = []
+    for i in range(1,7): # material1 to material6
+        if len(data[f'material{i}'])>0:
+            data['materials'].append({
+                'name':data[f'material{i}'],
+                'count':int(data[f'material{i}_num'])
+            })
+        del data[f'material{i}']
+        del data[f'material{i}_num']
+    return data
+
+def get_recipe_list(limit,tables,fields):
+    where = None
+    if 'material' in request.args:
+        materials = request.args['material'].split(',')
+        for m in materials:
+            m.replace('_',' ')
+            if where is None:
+                where = '(material1 = "{0}" or material2 = "{0}" or material3 = "{0}" or material4 = "{0}" or material5 = "{0}" or material6 = "{0}")'.format(m)
+            else:
+                where += ' AND (material1 = "{0}" or material2 = "{0}" or material3 = "{0}" or material4 = "{0}" or material5 = "{0}" or material6 = "{0}")'.format(m)
+
+    if where is not None:
+        params = { 'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields, 'where': where }
+    else:
+        params = { 'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields }
+
+    cargo_results = call_cargo(params, request.args)
+    results_array = []
+    if request.args.get('excludedetails') == 'true':
+        for recipe in cargo_results:
+            results_array.append(recipe['identifier'])
+    else:
+        for recipe in cargo_results:
+            results_array.append(format_recipe(recipe))
+    return jsonify(results_array)
+
 #################################
 # STATIC RENDERS
 #################################
@@ -932,6 +978,20 @@ def get_art_all():
         fields = 'name,image,image_url,fake,fake_image,fake_image_url,art_name,author,year,art_style,description,buy_price,sell_price,availability,authenticity,width,length'
     
     return get_art_list(limit,tables,fields)
+
+@app.route('/nh/recipe', methods=['GET'])
+def get_recipe_all():
+    authorize(DB_KEYS, request)
+
+    if 'Accept-Version' in request.headers and request.headers['Accept-Version'][:3] in ('1.0','1.1','1.2','1.3'):
+        abort(404, description=error_response('Resource not found.', 'Please ensure requested resource exists.'))
+    
+    limit='600'
+    tables = 'nh_recipe'
+    fields = 'identifier,en_name,image,serial_id,sell,recipes_to_unlock,diy_availability1,diy_availability1_note,diy_availability2,diy_availability2_note,material1,material1_num,material2,material2_num,material3,material3_num,material4,material4_num,material5,material5_num,material6,material6_num'
+
+    return get_recipe_list(limit,tables,fields)
+    
 
 if __name__ == '__main__':
     app.run(host = '127.0.0.1')

@@ -920,6 +920,83 @@
           }
         }
       }
+    },
+    "/nh/recipe": {
+      "get": {
+        "summary": "All New Horizons recipes",
+        "description": "Get a list of all artwork and their details in *Animal Crossing: New Horizons*. Note that while cached, this endpoint will be very responsive; however, hitting the endpoint in between cache refreshes can result in a response time of 5 to 15 seconds.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-API-KEY",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Your UUID secret key, granted to you by the Nookipedia team. Required for accessing the API."
+          },
+          {
+            "in": "header",
+            "name": "Accept-Version",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The version of the API you are calling, written as `1.0.0`. This is specified as required as good practice, but it is not actually enforced by the API. If you do not specify a version, you will be served the latest version, which may eventually result in breaking changes."
+          },
+          {
+            "in": "query",
+            "name": "material",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "A comma-seperated list of materials to filter with."
+          },
+          {
+            "in": "query",
+            "name": "thumbsize",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL. This parameter is generally not recommended unless you absolutely need it, as each returned thumbnail link with a custom size requires an additional network call, which can result in a long response time if calling this endpoint in between cache refreshes."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A JSON object describing the artwork.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NHRecipe"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Failed to authenticate user from `X-API-KEY`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error401"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "There was an error fetching the requested data.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2249,6 +2326,86 @@
               12
             ],
             "description": "An array of integers representing the months the sea creature is available in the Southern hemisphere."
+          }
+        }
+      },
+      "NHRecipe": {
+        "type": "object",
+        "properties": {
+          "identifier": {
+            "type": "string",
+            "example": "Acoustic Guitar",
+            "description": "The name of the recipe."
+          },
+          "en_name": {
+            "type": "string",
+            "example": "Acoustic Guitar",
+            "description": "The english name of the recipe."
+          },
+          "image": {
+            "type": "string",
+            "example": "Acoustic Guitar  NH DIY Icon.png",
+            "description": "The image for the recipe."
+          },
+          "serial_id": {
+            "type": "integer",
+            "example": 406,
+            "description": "The unique ID of the recipe."
+          },
+          "sell": {
+            "type": "integer",
+            "example": 200,
+            "description": "The sell price of the recipe."
+          },
+          "recipes_to_unlock": {
+            "type": "integer",
+            "example": 0,
+            "description": "How many recipes to need to unlock this one."
+          },
+          "diy_availability1": {
+            "type": "string",
+            "example": "Smug Villager",
+            "description": "The source of the recipe."
+          },
+          "diy_availability1_note": {
+            "type": "string",
+            "example": "",
+            "description": "Any notes on the source of the recipe."
+          },
+          "diy_availability2": {
+            "type": "string",
+            "example": "",
+            "description": "A secondary source of the recipe, if it exists."
+          },
+          "diy_availability2_note": {
+            "type": "string",
+            "example": "",
+            "description": "Any notes on the secondary source of the recipe."
+          },
+          "materials": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "count": {
+                  "type": "integer"
+                }
+              }
+            },
+            "example": [
+              {
+                "name": "Softwood",
+                "count": 8
+              },
+              {
+                "name": "Iron Nugget",
+                "count": 3
+              }
+            ],
+            "description": "The list of materials required to craft the recipe"
           }
         }
       }
