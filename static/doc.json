@@ -2435,10 +2435,35 @@
             "example": "Acoustic Guitar  NH DIY Icon.png",
             "description": "The image for the recipe."
           },
+          "image_url": {
+            "type": "string",
+            "example": "https://dodo.ac/np/images/0/07/Acoustic_Guitar_NH_DIY_Icon.png",
+            "description": "The image url for the recipe."
+          },
           "serial_id": {
             "type": "integer",
             "example": 406,
             "description": "The unique ID of the recipe."
+          },
+          "buy1_price": {
+            "type": "integer",
+            "example": 0,
+            "description": "The primary price of the recipe"
+          },
+          "buy1_currency": {
+            "type": "string",
+            "example": "",
+            "description": "The primary currency the recipe is purchased with"
+          },
+          "buy2_price": {
+            "type": "integer",
+            "example": 0,
+            "description": "The secondary price of the recipe"
+          },
+          "buy2_currency": {
+            "type": "string",
+            "example": "",
+            "description": "The secondary currency the recipe is purchased with"
           },
           "sell": {
             "type": "integer",
