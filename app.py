@@ -767,6 +767,8 @@ def format_recipe(data):
     data['serial_id'] = int('0'+data['serial_id'])
     data['sell'] = int('0'+data['sell']) if data['sell'] != 'NA' else 0
     data['recipes_to_unlock'] = int('0'+data['recipes_to_unlock'])
+    data['buy1_price'] = int('0'+data['buy1_price'])
+    data['buy2_price'] = int('0'+data['buy2_price'])
 
     # Change the material# and material#_num columns to be one materials column
     data['materials'] = []
@@ -1004,10 +1006,11 @@ def get_recipe(recipe):
         abort(404, description=error_response('Resource not found.', 'Please ensure requested resource exists.'))
     
     recipe = recipe.replace('_',' ')
+    limit = '1'
     tables = 'nh_recipe'
-    fields = 'en_name,image,serial_id,sell,recipes_to_unlock,diy_availability1,diy_availability1_note,diy_availability2,diy_availability2_note,material1,material1_num,material2,material2_num,material3,material3_num,material4,material4_num,material5,material5_num,material6,material6_num'
+    fields = 'en_name,image,image_url,serial_id,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,recipes_to_unlock,diy_availability1,diy_availability1_note,diy_availability2,diy_availability2_note,material1,material1_num,material2,material2_num,material3,material3_num,material4,material4_num,material5,material5_num,material6,material6_num'
     where = f'en_name="{recipe}"'
-    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where }
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where, 'limit': limit}
 
     cargo_results = call_cargo(params, request.args)
     if len(cargo_results) == 0:
@@ -1024,7 +1027,7 @@ def get_recipe_all():
     
     limit='600'
     tables = 'nh_recipe'
-    fields = 'en_name,image,serial_id,sell,recipes_to_unlock,diy_availability1,diy_availability1_note,diy_availability2,diy_availability2_note,material1,material1_num,material2,material2_num,material3,material3_num,material4,material4_num,material5,material5_num,material6,material6_num'
+    fields = 'en_name,image,image_url,serial_id,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,recipes_to_unlock,diy_availability1,diy_availability1_note,diy_availability2,diy_availability2_note,material1,material1_num,material2,material2_num,material3,material3_num,material4,material4_num,material5,material5_num,material6,material6_num'
 
     return get_recipe_list(limit,tables,fields)
     
