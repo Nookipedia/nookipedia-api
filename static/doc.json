@@ -781,7 +781,7 @@
           },
           {
             "in": "query",
-            "name": "fake",
+            "name": "hasfake",
             "required": false,
             "schema": {
               "type": "string"
@@ -996,10 +996,10 @@
             "example": "Academic Painting",
             "description": "Name of the artwork"
           },
-          "image": {
+          "url": {
             "type": "string",
-            "example": "Academic Painting NH Icon.png",
-            "description": "The image for the real artwork"
+            "example": "https://nookipedia.com/wiki/Academic_Painting",
+            "description": "The url to the artwork"
           },
           "image_url": {
             "type": "string",
@@ -1010,11 +1010,6 @@
             "type": "boolean",
             "example": true,
             "description": "Whether the artwork has a fake or not"
-          },
-          "fake_image": {
-            "type": "string",
-            "example": "Academic Painting (Forgery) NH Icon.png",
-            "description": "The image for the fake artwork, if it exists"
           },
           "fake_image_url": {
             "type": "string",
