@@ -906,7 +906,7 @@ def get_nh_art(art):
 
     art = art.replace('_', ' ')
     tables = 'nh_art'
-    fields = 'name,_pageName=url,image_url,has_fake,fake_image,fake_image_url,art_name,author,year,art_style,description,buy_price,sell_price,availability,authenticity,width,length'
+    fields = 'name,_pageName=url,image_url,has_fake,fake_image_url,art_name,author,year,art_style,description,buy_price,sell_price,availability,authenticity,width,length'
     where = f'name="{art}"'
     params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where }
 
@@ -929,7 +929,7 @@ def get_nh_art_all():
     if request.args.get('excludedetails','false')=='true':
         fields = 'name'
     else:
-        fields = 'name,_pageName=url,image_url,has_fake,fake_image,fake_image_url,art_name,author,year,art_style,description,buy_price,sell_price,availability,authenticity,width,length'
+        fields = 'name,_pageName=url,image_url,has_fake,fake_image_url,art_name,author,year,art_style,description,buy_price,sell_price,availability,authenticity,width,length'
     
     return get_art_list(limit,tables,fields)
 
