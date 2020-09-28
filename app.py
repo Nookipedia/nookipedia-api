@@ -320,12 +320,12 @@ def call_cargo(parameters, request_args): # Request args are passed in just for 
                     r = requests.get(BASE_URL_WIKI + 'Special:FilePath/' + item['image_url'].rsplit('/', 1)[-1] + '?width=' + request.args.get('thumbsize'))
                     item['image_url'] = r.url
                     # If this is a painting that has a fake, fetch that too
-                    if item.get('fake','0')=='1':
+                    if item.get('has_fake','0')=='1':
                         r = requests.get(BASE_URL_WIKI + 'Special:FilePath/' + item['fake_image_url'].rsplit('/', 1)[-1] + '?width=' + request.args.get('thumbsize'))
                         item['fake_image_url'] = r.url
                 except:
                     abort(500, description=error_response("Error while getting image CDN thumbnail URL.", "Failure occured with the following parameters: {}.".format(parameters)))
-                
+
                 data.append(item)
         else:
             for obj in r.json()['cargoquery']:
@@ -705,10 +705,10 @@ def format_art(data):
     # Correct some datatypes
 
     # Booleans
-    if data['fake']=='1':
-        data['fake']=True
-    elif data['fake']=='0':
-        data['fake']=False
+    if data['has_fake']=='1':
+        data['has_fake']=True
+    elif data['has_fake']=='0':
+        data['has_fake']=False
     
     # Integers
     data['buy_price']=int(data['buy_price'])
@@ -722,12 +722,12 @@ def format_art(data):
 def get_art_list(limit,tables,fields):
     where = None
 
-    if request.args.get('fake'):
-        fake = request.args.get('fake').lower()
+    if request.args.get('hasfake'):
+        fake = request.args.get('hasfake').lower()
         if fake=='true':
-            where = 'fake = true'
+            where = 'has_fake = true'
         elif fake == 'false':
-            where = 'fake = false'
+            where = 'has_fake = false'
 
     if where:
         params = { 'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields, 'where': where }
@@ -898,7 +898,7 @@ def get_nh_sea(sea):
             return jsonify(months_to_array(format_critters(cargo_results))[0])
 
 @app.route('/nh/art/<string:art>', methods=['GET'])
-def get_art(art):
+def get_nh_art(art):
     authorize(DB_KEYS, request)
 
     if request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] in ('1.0','1.1','1.2'):
@@ -906,7 +906,7 @@ def get_art(art):
 
     art = art.replace('_', ' ')
     tables = 'nh_art'
-    fields = 'name,image,image_url,fake,fake_image,fake_image_url,art_name,author,year,art_style,description,buy_price,sell_price,availability,authenticity,width,length'
+    fields = 'name,_pageName=url,image_url,has_fake,fake_image,fake_image_url,art_name,author,year,art_style,description,buy_price,sell_price,availability,authenticity,width,length'
     where = f'name="{art}"'
     params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where }
 
@@ -918,7 +918,7 @@ def get_art(art):
     
 
 @app.route('/nh/art', methods=['GET'])
-def get_art_all():
+def get_nh_art_all():
     authorize(DB_KEYS, request)
 
     if request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] in ('1.0','1.1','1.2'):
@@ -929,7 +929,7 @@ def get_art_all():
     if request.args.get('excludedetails','false')=='true':
         fields = 'name'
     else:
-        fields = 'name,image,image_url,fake,fake_image,fake_image_url,art_name,author,year,art_style,description,buy_price,sell_price,availability,authenticity,width,length'
+        fields = 'name,_pageName=url,image_url,has_fake,fake_image,fake_image_url,art_name,author,year,art_style,description,buy_price,sell_price,availability,authenticity,width,length'
     
     return get_art_list(limit,tables,fields)
 
