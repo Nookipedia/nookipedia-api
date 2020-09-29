@@ -2089,10 +2089,10 @@ components:
           type: string
           example: "Acoustic Guitar"
           description: "The name of the recipe."
-        image:
+        url:
           type: string
-          example: "Acoustic Guitar  NH DIY Icon.png"
-          description: "The image for the recipe."
+          example: "https://nookipedia.com/wiki/Item:Acoustic_Guitar_(New_Horizons)"
+          description: "The url for the recipe."
         image_url:
           type: string
           example: "https://dodo.ac/np/images/0/07/Acoustic_Guitar_NH_DIY_Icon.png"
