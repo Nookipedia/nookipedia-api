@@ -1002,7 +1002,7 @@ def get_nh_art_all():
     return get_art_list(limit,tables,fields)
 
 @app.route('/nh/recipe/<string:recipe>', methods=['GET'])
-def get_recipe(recipe):
+def get_nh_recipe(recipe):
     authorize(DB_KEYS, request)
 
     if 'Accept-Version' in request.headers and request.headers['Accept-Version'][:3] in ('1.0','1.1','1.2','1.3'):
@@ -1022,7 +1022,7 @@ def get_recipe(recipe):
         return jsonify(format_recipe(cargo_results[0]))
 
 @app.route('/nh/recipe', methods=['GET'])
-def get_recipe_all():
+def get_nh_recipe_all():
     authorize(DB_KEYS, request)
 
     if 'Accept-Version' in request.headers and request.headers['Accept-Version'][:3] in ('1.0','1.1','1.2','1.3'):
