@@ -331,7 +331,7 @@ def call_cargo(parameters, request_args): # Request args are passed in just for 
                 # If image, fetch the CDN thumbnail URL:
                 try:
                     print(str(obj['title']))
-                    #Only fetch the image if this object actually has an image to fetch
+                    # Only fetch the image if this object actually has an image to fetch
                     if 'image_url' in item:
                         r = requests.get(BASE_URL_WIKI + 'Special:FilePath/' + item['image_url'].rsplit('/', 1)[-1] + '?width=' + request.args.get('thumbsize'))
                         item['image_url'] = r.url
@@ -974,7 +974,7 @@ def get_nh_art(art):
     art = art.replace('_', ' ')
     limit = '1'
     tables = 'nh_art'
-    fields = 'name,_pageName=url,image_url,has_fake,fake_image,fake_image_url,art_name,author,year,art_style,description,buy_price,sell_price,availability,authenticity,width,length'
+    fields = 'name,_pageName=url,image_url,has_fake,fake_image_url,art_name,author,year,art_style,description,buy_price,sell_price,availability,authenticity,width,length'
     where = f'name="{art}"'
     params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where, 'limit': limit }
 
@@ -997,10 +997,9 @@ def get_nh_art_all():
     if request.args.get('excludedetails','false')=='true':
         fields = 'name'
     else:
-        fields = 'name,_pageName=url,image_url,has_fake,fake_image,fake_image_url,art_name,author,year,art_style,description,buy_price,sell_price,availability,authenticity,width,length'
-    
-    return get_art_list(limit,tables,fields)
+        fields = 'name,_pageName=url,image_url,has_fake,fake_image_url,art_name,author,year,art_style,description,buy_price,sell_price,availability,authenticity,width,length'
 
+    return get_art_list(limit,tables,fields)
 
 @app.route('/nh/recipe/<string:recipe>', methods=['GET'])
 def get_recipe(recipe):
@@ -1008,11 +1007,11 @@ def get_recipe(recipe):
 
     if 'Accept-Version' in request.headers and request.headers['Accept-Version'][:3] in ('1.0','1.1','1.2','1.3'):
         abort(404, description=error_response('Resource not found.', 'Please ensure requested resource exists.'))
-    
+
     recipe = recipe.replace('_',' ')
     limit = '1'
     tables = 'nh_recipe'
-    fields = 'en_name,image,image_url,serial_id,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,recipes_to_unlock,diy_availability1,diy_availability1_note,diy_availability2,diy_availability2_note,material1,material1_num,material2,material2_num,material3,material3_num,material4,material4_num,material5,material5_num,material6,material6_num'
+    fields = 'en_name,_pageName=url,image_url,serial_id,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,recipes_to_unlock,diy_availability1,diy_availability1_note,diy_availability2,diy_availability2_note,material1,material1_num,material2,material2_num,material3,material3_num,material4,material4_num,material5,material5_num,material6,material6_num'
     where = f'en_name="{recipe}"'
     params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where, 'limit': limit}
 
@@ -1028,13 +1027,12 @@ def get_recipe_all():
 
     if 'Accept-Version' in request.headers and request.headers['Accept-Version'][:3] in ('1.0','1.1','1.2','1.3'):
         abort(404, description=error_response('Resource not found.', 'Please ensure requested resource exists.'))
-    
+
     limit='600'
     tables = 'nh_recipe'
-    fields = 'en_name,image,image_url,serial_id,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,recipes_to_unlock,diy_availability1,diy_availability1_note,diy_availability2,diy_availability2_note,material1,material1_num,material2,material2_num,material3,material3_num,material4,material4_num,material5,material5_num,material6,material6_num'
+    fields = 'en_name,_pageName=url,image_url,serial_id,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,recipes_to_unlock,diy_availability1,diy_availability1_note,diy_availability2,diy_availability2_note,material1,material1_num,material2,material2_num,material3,material3_num,material4,material4_num,material5,material5_num,material6,material6_num'
 
     return get_recipe_list(limit,tables,fields)
-    
 
 if __name__ == '__main__':
     app.run(host = '127.0.0.1')

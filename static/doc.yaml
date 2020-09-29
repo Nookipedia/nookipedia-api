@@ -732,7 +732,7 @@ paths:
             served the latest version, which may eventually result in breaking
             changes.
         - in: query
-          name: fake
+          name: hasfake
           required: false
           schema:
             type: string
@@ -843,156 +843,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error401'
-        '404':
-          description: Could not find the specified recipe.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error404'
         '500':
           description: There was an error fetching the requested data.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error500'
-  /nh/recipe:
-    get:
-      summary: All New Horizons recipes
-      description: >-
-        Get a list of all recipes and their details in *Animal Crossing: New
-        Horizons*. Note that while cached, this endpoint will be very
-        responsive; however, hitting the endpoint in between cache refreshes can
-        result in a response time of 5 to 15 seconds.
-      parameters:
-        - in: header
-          name: X-API-KEY
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: >-
-            Your UUID secret key, granted to you by the Nookipedia team.
-            Required for accessing the API.
-        - in: header
-          name: Accept-Version
-          required: true
-          schema:
-            type: string
-          description: >-
-            The version of the API you are calling, written as `1.0.0`. This is
-            specified as required as good practice, but it is not actually
-            enforced by the API. If you do not specify a version, you will be
-            served the latest version, which may eventually result in breaking
-            changes.
-        - in: query
-          name: material
-          required: false
-          schema:
-            type: string
-          description: "A comma-seperated list of materials to filter with."
-        - in: query
-          name: thumbsize
-          required: false
-          schema:
-            type: integer
-          description: >-
-            Specify the desired width of returned image URLs. When unspecified,
-            the linked image(s) returned by the API will be full-resolution.
-            Note that images can only be reduced in size; specifying a width
-            greater than than the maximum size will return the default full-size
-            image URL. This parameter is generally not recommended unless you
-            absolutely need it, as each returned thumbnail link with a custom
-            size requires an additional network call, which can result in a long
-            response time if calling this endpoint in between cache refreshes.
-      responses:
-        '200':
-          description: A JSON array of recipes.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/NHRecipe'
-        '401':
-          description: Failed to authenticate user from `X-API-KEY`.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error401'
-        '500':
-          description: There was an error fetching the requested data.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error500'
-  "/nh/recipe/{recipe}":
-    get:
-      summary: Single New Horizons recipe
-      description: >-
-        Retrieve information about a specific recipe in Animal Crossing: New Horizons.
-      parameters:
-        - in: path
-          name: recipe
-          required: true
-          description: The name of the recipe you wish to retrieve information about.
-          schema:
-            type: string
-        - in: header
-          name: X-API-KEY
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: >-
-            Your UUID secret key, granted to you by the Nookipedia team.
-            Required for accessing the API.
-        - in: header
-          name: Accept-Version
-          required: true
-          schema:
-            type: string
-          description: >-
-            The version of the API you are calling, written as `1.0.0`. This is
-            specified as required as good practice, but it is not actually
-            enforced by the API. If you do not specify a version, you will be
-            served the latest version, which may eventually result in breaking
-            changes.
-        - in: query
-          name: thumbsize
-          required: false
-          schema:
-            type: integer
-          description: >-
-            Specify the desired width of returned image URLs. When unspecified,
-            the linked image(s) returned by the API will be full-resolution.
-            Note that images can only be reduced in size; specifying a width
-            greater than than the maximum size will return the default full-size
-            image URL. This parameter is generally not recommended unless you
-            absolutely need it, as each returned thumbnail link with a custom
-            size requires an additional network call, which can result in a long
-            response time if calling this endpoint in between cache refreshes.
-      responses:
-        '200':
-          description: A JSON array of recipes.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/NHRecipe'
-        '401':
-          description: Failed to authenticate user from `X-API-KEY`.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error401'
-        '500':
-          description: There was an error fetching the requested data.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error500'
-        
 components:
   schemas:
     Error400:
@@ -1060,22 +916,18 @@ components:
           type: string
           example: Academic Painting
           description: Name of the artwork
-        image:
+        url:
           type: string
-          example: Academic Painting NH Icon.png
-          description: The image for the real artwork
+          example: https://nookipedia.com/wiki/Academic_Painting
+          description: The url to the artwork
         image_url:
           type: string
           example: 'https://dodo.ac/np/images/e/e8/Academic_Painting_NH_Icon.png'
           description: The image URL for the real artwork
-        fake:
+        has_fake:
           type: boolean
           example: true
           description: Whether the artwork has a fake or not
-        fake_image:
-          type: string
-          example: Academic Painting (Forgery) NH Icon.png
-          description: 'The image for the fake artwork, if it exists'
         fake_image_url:
           type: string
           example: >-
