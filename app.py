@@ -302,6 +302,8 @@ def call_cargo(parameters, request_args): # Request args are passed in just for 
         querycount = math.ceil(cargolimit / cargomax) # Determines how many queries we're doing
         for _ in range(0,querycount):
             nestedparameters['limit'] = str(min(cargomax,cargolimit - len(cargoquery))) # Get cargomax items or less at a time
+            if nestedparameters['limit']=='0':
+                break
             nestedparameters['offset'] = str(len(cargoquery))
             r = requests.get(url = BASE_URL_API, params = nestedparameters)
             cargoquery.extend(r.json()['cargoquery'])
