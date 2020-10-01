@@ -480,7 +480,7 @@ def get_villager_list(limit, tables, join, fields):
             where = where + ' AND villager.birthday_month = "' + month + '"'
         else:
             where = 'villager.birthday_month = "' + month + '"'
-    
+
     # Filter by birth day:
     if request.args.get('birthday'):
         day = request.args.get('birthday')
@@ -512,7 +512,7 @@ def get_villager_list(limit, tables, join, fields):
             where = where + ' AND villager.species = "' + species + '"'
         else:
             where = 'villager.species = "' + species + '"'
-    
+
     # Filter by game:
     if request.args.get('game'):
         games = request.args.getlist("game")
@@ -522,7 +522,7 @@ def get_villager_list(limit, tables, join, fields):
                 where = where + ' AND villager.' + game + ' = "1"'
             else:
                 where = 'villager.' + game + ' = "1"'
-    
+
     if where:
         params = { 'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'join_on': join, 'fields': fields, 'where': where }
     else:
@@ -611,7 +611,7 @@ def format_critters(data):
                 del obj['catchphrase2']
             if 'catchphrase3' in obj:
                 del obj['catchphrase3']
-        
+
         # Create array of times and corresponding months for those times:
         availability_array_north = [ {'months': obj['time_n_months'], 'time': obj['time'] } ]
         availability_array_south = [ {'months': obj['time_s_months'], 'time': obj['time'] } ]
@@ -727,7 +727,7 @@ def format_art(data):
         data['has_fake']=True
     elif data['has_fake']=='0':
         data['has_fake']=False
-    
+
     # Integers
     data['buy_price']=int(data['buy_price'])
     data['sell_price']=int(data['sell_price'])
@@ -985,7 +985,7 @@ def get_nh_art(art):
         abort(404, description=error_response("No data was found for the given query.", f"MediaWiki Cargo request succeeded by nothing was returned for the parameters: {params}"))
     else:
         return jsonify(format_art(cargo_results[0]))
-    
+
 
 @app.route('/nh/art', methods=['GET'])
 def get_nh_art_all():
