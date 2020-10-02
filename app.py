@@ -3,7 +3,6 @@ import sqlite3
 import uuid
 import json
 import configparser
-import math
 from datetime import datetime
 from flask import Flask
 from flask import abort
@@ -292,24 +291,26 @@ def month_to_string(month):
 def call_cargo(parameters, request_args): # Request args are passed in just for the sake of caching
     cargoquery = []
     try:
-        # The limit for MediaWiki cargo queries, would be changed to 5000 for a bot
-        cargomax = 500
         # The default query size is 50 normally, we can actually change it here if we wanted
         cargolimit = int(parameters.get('limit','50'))
         # Copy the current parameters, we'll be changing them a bit in the loop but we want the original still
         nestedparameters = parameters.copy()
         # Set up the offset, if our cargolimit is more than cargomax we'll end up doing more than one query with an offset
-        querycount = math.ceil(cargolimit / cargomax) # Determines how many queries we're doing
-        for _ in range(0,querycount):
-            nestedparameters['limit'] = str(min(cargomax,cargolimit - len(cargoquery))) # Get cargomax items or less at a time
-            if nestedparameters['limit']=='0':
+        while True:
+            nestedparameters['limit'] = str(cargolimit-len(cargoquery)) # Get cargomax items or less at a time
+            if nestedparameters['limit']=='0': #Check if we've hit the limit
                 break
             nestedparameters['offset'] = str(len(cargoquery))
             r = requests.get(url = BASE_URL_API, params = nestedparameters)
-            cargoquery.extend(r.json()['cargoquery'])
+            cargochunk = r.json()['cargoquery']
+            if len(cargochunk) == 0: #Check if we've hit the end
+                break
+            cargoquery.extend(cargochunk)
         print('Return: {}'.format(str(r)))
     except:
         print('Return: {}'.format(str(r)))
+        import traceback
+        traceback.print_exc()
         abort(500, description=error_response("Error while calling Nookipedia's Cargo API.", "MediaWiki Cargo request failed for parameters: {}".format(parameters)))
 
     if not cargoquery:
