@@ -309,8 +309,6 @@ def call_cargo(parameters, request_args): # Request args are passed in just for 
         print('Return: {}'.format(str(r)))
     except:
         print('Return: {}'.format(str(r)))
-        import traceback
-        traceback.print_exc()
         abort(500, description=error_response("Error while calling Nookipedia's Cargo API.", "MediaWiki Cargo request failed for parameters: {}".format(parameters)))
 
     if not cargoquery:
