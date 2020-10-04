@@ -785,8 +785,11 @@ def format_recipe(data):
 
 def get_recipe_list(limit,tables,fields):
     where = None
+
     if 'material' in request.args:
-        materials = request.args['material'].split(',')
+        materials = request.args.getlist('material')
+        if len(materials) > 6:
+            abort(400, description=error_response('Invalid arguments','Cannot have more than six materials'))
         for m in materials:
             m.replace('_',' ')
             if where is None:
