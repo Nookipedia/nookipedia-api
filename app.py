@@ -768,8 +768,6 @@ def format_recipe(data):
     data['serial_id'] = int('0'+data['serial_id'])
     data['sell'] = int('0'+data['sell']) if data['sell'] != 'NA' else 0
     data['recipes_to_unlock'] = int('0'+data['recipes_to_unlock'])
-    data['buy1_price'] = int('0'+data['buy1_price'])
-    data['buy2_price'] = int('0'+data['buy2_price'])
 
     # Change the material# and material#_num columns to be one materials column
     data['materials'] = []
@@ -781,6 +779,28 @@ def format_recipe(data):
             })
         del data[f'material{i}']
         del data[f'material{i}_num']
+    
+        
+    data['diy_availability'] = []
+    for i in range(1,3):
+        if len(data[f'diy_availability{i}']) > 0:
+            data['diy_availability'].append({
+                'from':data[f'diy_availability{i}'],
+                'note':data[f'diy_availability{i}_note']
+            })
+        del data[f'diy_availability{i}']
+        del data[f'diy_availability{i}_note']
+    
+    # Do the same for buy#_price and buy#_currency columns
+    data['buy'] = []
+    for i in range(1,3): # Technically overkill, but it'd be easy to add a third buy column if it ever matters
+        if len(data[f'buy{i}_price']) > 0:
+            data['buy'].append({
+                'price':int(data[f'buy{i}_price']),
+                'currency':data[f'buy{i}_currency']
+            })
+        del data[f'buy{i}_price']
+        del data[f'buy{i}_currency']
     return data
 
 def get_recipe_list(limit,tables,fields):
