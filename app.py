@@ -319,6 +319,10 @@ def call_cargo(parameters, request_args): # Request args are passed in just for 
                     print(str(obj['title']))
                     r = requests.get(BASE_URL_WIKI + 'Special:FilePath/' + item['image_url'].rsplit('/', 1)[-1] + '?width=' + request.args.get('thumbsize'))
                     item['image_url'] = r.url
+                    # If this is a painting that has a fake, fetch that too
+                    if item.get('has_fake','0')=='1':
+                        r = requests.get(BASE_URL_WIKI + 'Special:FilePath/' + item['fake_image_url'].rsplit('/', 1)[-1] + '?width=' + request.args.get('thumbsize'))
+                        item['fake_image_url'] = r.url
                 except:
                     abort(500, description=error_response("Error while getting image CDN thumbnail URL.", "Failure occured with the following parameters: {}.".format(parameters)))
 
@@ -537,18 +541,18 @@ def months_to_array(data):
         for i in range(1, 13):
             del obj['n_m' + str(i)]
             del obj['s_m' + str(i)]
-
+        
         if (request.headers.get('Accept-Version') and (request.headers.get('Accept-Version')[:3] in ('1.0', '1.1'))):
             obj['n_availability_array'] = n_months_array
             obj['s_availability_array'] = s_months_array
         else:
             if 'n_availability' in obj:
-                obj['months_north'] = obj['n_availability']
+                obj['north']['months'] = obj['n_availability']
                 del obj['n_availability']
-                obj['months_south'] = obj['s_availability']
+                obj['south']['months'] = obj['s_availability']
                 del obj['s_availability']
-            obj['months_north_array'] = n_months_array
-            obj['months_south_array'] = s_months_array
+            obj['north']['months_array'] = n_months_array
+            obj['south']['months_array'] = s_months_array
 
         n_months_array = []
         s_months_array = []
@@ -589,18 +593,21 @@ def format_critters(data):
                 del obj['catchphrase2']
             if 'catchphrase3' in obj:
                 del obj['catchphrase3']
+
+
+        # North and south JSON to separate data by hemisphere
+        north = {}
+        south = {}
         
         # Create array of times and corresponding months for those times:
-        availability_array_north = [ {'months': obj['time_n_months'], 'time': obj['time'] } ]
-        availability_array_south = [ {'months': obj['time_s_months'], 'time': obj['time'] } ]
+        north['availability_array'] = [ {'months': obj['time_n_months'], 'time': obj['time'] } ]
+        south['availability_array'] = [ {'months': obj['time_s_months'], 'time': obj['time'] } ]
         if len(obj['time2']) > 0:
-            availability_array_north.append({'months': obj['time2_n_months'], 'time': obj['time2'] })
-            availability_array_south.append({'months': obj['time2_s_months'], 'time': obj['time2'] })
-        obj['availability_north'] = availability_array_north
-        obj['availability_south'] = availability_array_south
+            north['availability_array'].append({'months': obj['time2_n_months'], 'time': obj['time2'] })
+            south['availability_array'].append({'months': obj['time2_s_months'], 'time': obj['time2'] })
 
         # Create arrays for times by month:
-        obj['times_by_month_north'] = {
+        north['times_by_month'] = {
             '1': obj['n_m1_time'],
             '2': obj['n_m2_time'],
             '3': obj['n_m3_time'],
@@ -614,7 +621,7 @@ def format_critters(data):
             '11': obj['n_m11_time'],
             '12': obj['n_m12_time']
         }
-        obj['times_by_month_south'] = {
+        south['times_by_month'] = {
             '1': obj['s_m1_time'],
             '2': obj['s_m2_time'],
             '3': obj['s_m3_time'],
@@ -628,6 +635,9 @@ def format_critters(data):
             '11': obj['s_m11_time'],
             '12': obj['s_m12_time']
         }
+
+        obj['north'] = north
+        obj['south'] = south
 
         # Remove fields that were added to above objects:
         for i in range(1, 13):
@@ -696,6 +706,49 @@ def get_critter_list(limit, tables, fields):
             return jsonify(results_array)
         else:
             return jsonify(months_to_array(format_critters(call_cargo(params, request.args))))
+
+def format_art(data):
+    # Correct some datatypes
+
+    # Booleans
+    if data['has_fake']=='1':
+        data['has_fake']=True
+    elif data['has_fake']=='0':
+        data['has_fake']=False
+    
+    # Integers
+    data['buy_price']=int(data['buy_price'])
+    data['sell_price']=int(data['sell_price'])
+
+    # Floats
+    data['width']=float(data['width'])
+    data['length']=float(data['length'])
+    return data
+
+def get_art_list(limit,tables,fields):
+    where = None
+
+    if request.args.get('hasfake'):
+        fake = request.args.get('hasfake').lower()
+        if fake=='true':
+            where = 'has_fake = true'
+        elif fake == 'false':
+            where = 'has_fake = false'
+
+    if where:
+        params = { 'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields, 'where': where }
+    else:
+        params = { 'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields }
+
+    cargo_results = call_cargo(params, request.args)
+    results_array = []
+    if request.args.get('excludedetails') and request.args.get('excludedetails') == 'true':
+        for art in cargo_results:
+            results_array.append(art['name'])
+    else:
+        for art in cargo_results:
+            results_array.append(format_art(art))
+    return jsonify(results_array)
 
 #################################
 # STATIC RENDERS
@@ -850,5 +903,41 @@ def get_nh_sea(sea):
         else:
             return jsonify(months_to_array(format_critters(cargo_results))[0])
 
+@app.route('/nh/art/<string:art>', methods=['GET'])
+def get_nh_art(art):
+    authorize(DB_KEYS, request)
+
+    if request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] in ('1.0','1.1','1.2'):
+        abort(404, description=error_response('Resource not found.', 'Please ensure requested resource exists.'))
+
+    art = art.replace('_', ' ')
+    tables = 'nh_art'
+    fields = 'name,_pageName=url,image_url,has_fake,fake_image_url,art_name,author,year,art_style,description,buy_price,sell_price,availability,authenticity,width,length'
+    where = f'name="{art}"'
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where }
+
+    cargo_results = call_cargo(params, request.args)
+    if cargo_results == []:
+        abort(404, description=error_response("No data was found for the given query.", f"MediaWiki Cargo request succeeded by nothing was returned for the parameters: {params}"))
+    else:
+        return jsonify(format_art(cargo_results[0]))
+    
+
+@app.route('/nh/art', methods=['GET'])
+def get_nh_art_all():
+    authorize(DB_KEYS, request)
+
+    if request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] in ('1.0','1.1','1.2'):
+        abort(404, description=error_response('Resource not found.', 'Please ensure requested resource exists.'))
+
+    limit = '50'
+    tables = 'nh_art'
+    if request.args.get('excludedetails','false')=='true':
+        fields = 'name'
+    else:
+        fields = 'name,_pageName=url,image_url,has_fake,fake_image_url,art_name,author,year,art_style,description,buy_price,sell_price,availability,authenticity,width,length'
+    
+    return get_art_list(limit,tables,fields)
+
 if __name__ == '__main__':
-    app.run(host = '0.0.0.0')
+    app.run(host = '127.0.0.1')
