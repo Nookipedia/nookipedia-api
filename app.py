@@ -990,4 +990,4 @@ def get_nh_art_all():
     return get_art_list(limit,tables,fields)
 
 if __name__ == '__main__':
-    app.run(host = '127.0.0.1')
+    app.run(host = '0.0.0.0')
