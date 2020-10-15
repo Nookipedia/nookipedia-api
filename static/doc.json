@@ -2246,6 +2246,106 @@
             "description": "An array of integers representing the months the sea creature is available in the Southern hemisphere."
           }
         }
+      },
+      "NHRecipe": {
+        "type": "object",
+        "properties": {
+          "en_name": {
+            "type": "string",
+            "example": "Acoustic Guitar",
+            "description": "The name of the recipe."
+          },
+          "url": {
+            "type": "string",
+            "example": "https://nookipedia.com/wiki/Item:Acoustic_Guitar_(New_Horizons)",
+            "description": "The url for the recipe."
+          },
+          "image_url": {
+            "type": "string",
+            "example": "https://dodo.ac/np/images/0/07/Acoustic_Guitar_NH_DIY_Icon.png",
+            "description": "The image url for the recipe."
+          },
+          "serial_id": {
+            "type": "integer",
+            "example": 406,
+            "description": "The unique ID of the recipe."
+          },
+          "buy1_price": {
+            "type": "integer",
+            "example": 0,
+            "description": "The primary price of the recipe"
+          },
+          "buy1_currency": {
+            "type": "string",
+            "example": "",
+            "description": "The primary currency the recipe is purchased with"
+          },
+          "buy2_price": {
+            "type": "integer",
+            "example": 0,
+            "description": "The secondary price of the recipe"
+          },
+          "buy2_currency": {
+            "type": "string",
+            "example": "",
+            "description": "The secondary currency the recipe is purchased with"
+          },
+          "sell": {
+            "type": "integer",
+            "example": 200,
+            "description": "The sell price of the recipe."
+          },
+          "recipes_to_unlock": {
+            "type": "integer",
+            "example": 0,
+            "description": "How many recipes to need to unlock this one."
+          },
+          "diy_availability1": {
+            "type": "string",
+            "example": "Smug Villager",
+            "description": "The source of the recipe."
+          },
+          "diy_availability1_note": {
+            "type": "string",
+            "example": "",
+            "description": "Any notes on the source of the recipe."
+          },
+          "diy_availability2": {
+            "type": "string",
+            "example": "",
+            "description": "A secondary source of the recipe, if it exists."
+          },
+          "diy_availability2_note": {
+            "type": "string",
+            "example": "",
+            "description": "Any notes on the secondary source of the recipe."
+          },
+          "materials": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "count": {
+                  "type": "integer"
+                }
+              }
+            },
+            "example": [
+              {
+                "name": "Softwood",
+                "count": 8
+              },
+              {
+                "name": "Iron Nugget",
+                "count": 3
+              }
+            ],
+            "description": "The list of materials required to craft the recipe"
+          }
+        }
       }
     }
   }
