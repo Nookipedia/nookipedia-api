@@ -702,6 +702,153 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error500'
+  /nh/art:
+    get:
+      summary: All New Horizons artwork
+      description: >-
+        Get a list of all artwork and their details in *Animal Crossing: New
+        Horizons*. Note that while cached, this endpoint will be very
+        responsive; however, hitting the endpoint in between cache refreshes can
+        result in a response time of 5 to 15 seconds.
+      parameters:
+        - in: header
+          name: X-API-KEY
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: >-
+            Your UUID secret key, granted to you by the Nookipedia team.
+            Required for accessing the API.
+        - in: header
+          name: Accept-Version
+          required: true
+          schema:
+            type: string
+          description: >-
+            The version of the API you are calling, written as `1.0.0`. This is
+            specified as required as good practice, but it is not actually
+            enforced by the API. If you do not specify a version, you will be
+            served the latest version, which may eventually result in breaking
+            changes.
+        - in: query
+          name: hasfake
+          required: false
+          schema:
+            type: string
+          description: >-
+            When set to `true`, only artwork that has a fake will be returned.
+            When set to `false`, only artwork without fakes will be returned.
+        - in: query
+          name: excludedetails
+          required: false
+          schema:
+            type: string
+          description: >-
+            When set to `true`, only artwork names are returned. Instead of an
+            array of objects with all details, the return will be an array of
+            strings.
+        - in: query
+          name: thumbsize
+          required: false
+          schema:
+            type: integer
+          description: >-
+            Specify the desired width of returned image URLs. When unspecified,
+            the linked image(s) returned by the API will be full-resolution.
+            Note that images can only be reduced in size; specifying a width
+            greater than than the maximum size will return the default full-size
+            image URL. This parameter is generally not recommended unless you
+            absolutely need it, as each returned thumbnail link with a custom
+            size requires an additional network call, which can result in a long
+            response time if calling this endpoint in between cache refreshes.
+      responses:
+        '200':
+          description: A JSON array of artwork.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NHArtwork'
+        '401':
+          description: Failed to authenticate user from `X-API-KEY`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '500':
+          description: There was an error fetching the requested data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error500'
+  '/nh/art/{artwork}':
+    get:
+      summary: Single New Horizons artwork
+      description: >-
+        Retrieve information about a specific artwork in *Animal Crossing:
+        New Horizons*.
+      parameters:
+        - in: path
+          name: artwork
+          required: true
+          schema:
+            type: string
+          description: The name of the artwork you wish to retrieve information about.
+        - in: header
+          name: X-API-KEY
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: >-
+            Your UUID secret key, granted to you by the Nookipedia team.
+            Required for accessing the API.
+        - in: header
+          name: Accept-Version
+          required: true
+          schema:
+            type: string
+          description: >-
+            The version of the API you are calling, written as `1.0.0`. This is
+            specified as required as good practice, but it is not actually
+            enforced by the API. If you do not specify a version, you will be
+            served the latest version, which may eventually result in breaking
+            changes.
+        - in: query
+          name: thumbsize
+          required: false
+          schema:
+            type: integer
+          description: >-
+            Specify the desired width of returned image URLs. When unspecified,
+            the linked image(s) returned by the API will be full-resolution.
+            Note that images can only be reduced in size; specifying a width
+            greater than than the maximum size will return the default full-size
+            image URL. This parameter is generally not recommended unless you
+            absolutely need it, as each returned thumbnail link with a custom
+            size requires an additional network call, which can result in a long
+            response time if calling this endpoint in between cache refreshes.
+      responses:
+        '200':
+          description: A JSON object describing the artwork.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NHArtwork'
+        '401':
+          description: Failed to authenticate user from `X-API-KEY`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '500':
+          description: There was an error fetching the requested data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error500'
 components:
   schemas:
     Error400:
@@ -762,6 +909,85 @@ components:
           description: >-
             A more in-depth description of the issue, including parameters
             and/or error text when available.
+    NHArtwork:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Academic Painting
+          description: Name of the artwork
+        url:
+          type: string
+          example: https://nookipedia.com/wiki/Academic_Painting
+          description: The url to the artwork
+        image_url:
+          type: string
+          example: 'https://dodo.ac/np/images/e/e8/Academic_Painting_NH_Icon.png'
+          description: The image URL for the real artwork
+        has_fake:
+          type: boolean
+          example: true
+          description: Whether the artwork has a fake or not
+        fake_image_url:
+          type: string
+          example: >-
+            https://dodo.ac/np/images/1/13/Academic_Painting_%28Forgery%29_NH_Icon.png
+          description: 'The image url for the fake artwork, if it exists'
+        art_name:
+          type: string
+          example: Vitruvian Man
+          description: The name of the real-life analog to the artwork
+        author:
+          type: string
+          example: Leonardo da Vinci
+          description: The author of the real-life analog to the artwork
+        year:
+          type: string
+          example: circa 1487
+          description: The year that the real-life analog was made
+        art_style:
+          type: string
+          example: Pen and ink on paper
+          description: The art style of the artwork
+        description:
+          type: string
+          example: >-
+            This drawing is based on the &quot;ideal&quot; human-body ratio, as
+            stated in &quot;De architectura.&quot; &quot;De architectura&quot;
+            was a treatise by Vitruvius, an architect from the early 1st century
+            BCE.
+          description: The description of the artwork
+        buy_price:
+          type: integer
+          example: 4980
+          description: The buy price of the artwork
+        sell_price:
+          type: integer
+          example: 1245
+          description: The sell price of the artwork
+        availability:
+          type: string
+          example: Jolly Redd's Treasure Trawler
+          description: The availability of the artwork
+        authenticity:
+          type: string
+          example: >-
+            If there is a coffee stain in the top right
+            corner, it is fake. If there is no stain, it is genuine. The forgery
+            has a key taped to the back of the canvas.
+          description: >-
+            The description of the difference between real and fake, if there is
+            one
+        width:
+          type: number
+          format: float
+          example: 1
+          description: The width of the artwork
+        length:
+          type: number
+          format: float
+          example: 1
+          description: The length of the artwork
     Villager:
       type: object
       properties:
@@ -1856,3 +2082,77 @@ components:
           description: >-
             An array of integers representing the months the sea creature is
             available in the Southern hemisphere.
+    NHRecipe:
+      type: object
+      properties:
+        en_name:
+          type: string
+          example: "Acoustic Guitar"
+          description: "The name of the recipe."
+        url:
+          type: string
+          example: "https://nookipedia.com/wiki/Item:Acoustic_Guitar_(New_Horizons)"
+          description: "The url for the recipe."
+        image_url:
+          type: string
+          example: "https://dodo.ac/np/images/0/07/Acoustic_Guitar_NH_DIY_Icon.png"
+          description: "The image url for the recipe."
+        serial_id:
+          type: integer
+          example: 406
+          description: "The unique ID of the recipe."
+        buy1_price:
+          type: integer
+          example: 0
+          description: "The primary price of the recipe"
+        buy1_currency:
+          type: string
+          example: ""
+          description: "The primary currency the recipe is purchased with"
+        buy2_price:
+          type: integer
+          example: 0
+          description: "The secondary price of the recipe"
+        buy2_currency:
+          type: string
+          example: ""
+          description: "The secondary currency the recipe is purchased with"
+        sell:
+          type: integer
+          example: 200
+          description: "The sell price of the recipe."
+        recipes_to_unlock:
+          type: integer
+          example: 0
+          description: "How many recipes to need to unlock this one."
+        diy_availability1:
+          type: string
+          example: "Smug Villager"
+          description: "The source of the recipe."
+        diy_availability1_note:
+          type: string
+          example: ""
+          description: "Any notes on the source of the recipe."
+        diy_availability2:
+          type: string
+          example: ""
+          description: "A secondary source of the recipe, if it exists."
+        diy_availability2_note:
+          type: string
+          example: ""
+          description: "Any notes on the secondary source of the recipe."
+        materials:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              count:
+                type: integer
+          example:
+            - name: "Softwood"
+              count: 8
+            - name: "Iron Nugget"
+              count: 3
+          description: "The list of materials required to craft the recipe"

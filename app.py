@@ -289,21 +289,36 @@ def month_to_string(month):
 # Make a call to Nookipedia's Cargo API using supplied parameters:
 @cache.memoize(3600)
 def call_cargo(parameters, request_args): # Request args are passed in just for the sake of caching
+    cargoquery = []
     try:
-        r = requests.get(url = BASE_URL_API, params = parameters)
+        # The default query size is 50 normally, we can actually change it here if we wanted
+        cargolimit = int(parameters.get('limit','50'))
+        # Copy the current parameters, we'll be changing them a bit in the loop but we want the original still
+        nestedparameters = parameters.copy()
+        # Set up the offset, if our cargolimit is more than cargomax we'll end up doing more than one query with an offset
+        while True:
+            nestedparameters['limit'] = str(cargolimit-len(cargoquery)) # Get cargomax items or less at a time
+            if nestedparameters['limit']=='0': #Check if we've hit the limit
+                break
+            nestedparameters['offset'] = str(len(cargoquery))
+            r = requests.get(url = BASE_URL_API, params = nestedparameters)
+            cargochunk = r.json()['cargoquery']
+            if len(cargochunk) == 0: #Check if we've hit the end
+                break
+            cargoquery.extend(cargochunk)
         print('Return: {}'.format(str(r)))
     except:
         print('Return: {}'.format(str(r)))
         abort(500, description=error_response("Error while calling Nookipedia's Cargo API.", "MediaWiki Cargo request failed for parameters: {}".format(parameters)))
 
-    if not r.json()['cargoquery']:
+    if not cargoquery:
         return []
 
     try:
         data = []
         # Check if user requested specific image size and modify accordingly:
         if request.args.get('thumbsize'):
-            for obj in r.json()['cargoquery']:
+            for obj in cargoquery:
                 item = {}
 
                 # Replace all spaces in keys with underscores
@@ -317,8 +332,12 @@ def call_cargo(parameters, request_args): # Request args are passed in just for 
                 # If image, fetch the CDN thumbnail URL:
                 try:
                     print(str(obj['title']))
-                    r = requests.get(BASE_URL_WIKI + 'Special:FilePath/' + item['image_url'].rsplit('/', 1)[-1] + '?width=' + request.args.get('thumbsize'))
-                    item['image_url'] = r.url
+
+                    # Only fetch the image if this object actually has an image to fetch
+                    if 'image_url' in item:
+                        r = requests.get(BASE_URL_WIKI + 'Special:FilePath/' + item['image_url'].rsplit('/', 1)[-1] + '?width=' + request.args.get('thumbsize'))
+                        item['image_url'] = r.url
+
                     # If this is a painting that has a fake, fetch that too
                     if item.get('has_fake','0')=='1':
                         r = requests.get(BASE_URL_WIKI + 'Special:FilePath/' + item['fake_image_url'].rsplit('/', 1)[-1] + '?width=' + request.args.get('thumbsize'))
@@ -328,7 +347,7 @@ def call_cargo(parameters, request_args): # Request args are passed in just for 
 
                 data.append(item)
         else:
-            for obj in r.json()['cargoquery']:
+            for obj in cargoquery:
                 item = {}
 
                 # Replace all spaces in keys with underscores
@@ -462,7 +481,7 @@ def get_villager_list(limit, tables, join, fields):
             where = where + ' AND villager.birthday_month = "' + month + '"'
         else:
             where = 'villager.birthday_month = "' + month + '"'
-    
+
     # Filter by birth day:
     if request.args.get('birthday'):
         day = request.args.get('birthday')
@@ -494,7 +513,7 @@ def get_villager_list(limit, tables, join, fields):
             where = where + ' AND villager.species = "' + species + '"'
         else:
             where = 'villager.species = "' + species + '"'
-    
+
     # Filter by game:
     if request.args.get('game'):
         games = request.args.getlist("game")
@@ -504,7 +523,7 @@ def get_villager_list(limit, tables, join, fields):
                 where = where + ' AND villager.' + game + ' = "1"'
             else:
                 where = 'villager.' + game + ' = "1"'
-    
+
     if where:
         params = { 'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'join_on': join, 'fields': fields, 'where': where }
     else:
@@ -608,6 +627,7 @@ def format_critters(data):
         north = {}
         south = {}
         
+
         # Create array of times and corresponding months for those times:
         if request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] in ('1.0','1.1','1.2'):
             availability_array_north = [ {'months': obj['time_n_months'], 'time': obj['time'] } ]
@@ -765,7 +785,7 @@ def format_art(data):
         data['has_fake']=True
     elif data['has_fake']=='0':
         data['has_fake']=False
-    
+
     # Integers
     data['buy_price']=int(data['buy_price'])
     data['sell_price']=int(data['sell_price'])
@@ -799,6 +819,78 @@ def get_art_list(limit,tables,fields):
         for art in cargo_results:
             results_array.append(format_art(art))
     return jsonify(results_array)
+
+def format_recipe(data):
+    # Correct some datatypes
+
+    # Integers
+    data['serial_id'] = int('0'+data['serial_id'])
+    data['sell'] = int('0'+data['sell']) if data['sell'] != 'NA' else 0
+    data['recipes_to_unlock'] = int('0'+data['recipes_to_unlock'])
+
+    # Change the material# and material#_num columns to be one materials column
+    data['materials'] = []
+    for i in range(1,7): # material1 to material6
+        if len(data[f'material{i}'])>0:
+            data['materials'].append({
+                'name':data[f'material{i}'],
+                'count':int(data[f'material{i}_num'])
+            })
+        del data[f'material{i}']
+        del data[f'material{i}_num']
+    
+        
+    data['diy_availability'] = []
+    for i in range(1,3):
+        if len(data[f'diy_availability{i}']) > 0:
+            data['diy_availability'].append({
+                'from':data[f'diy_availability{i}'],
+                'note':data[f'diy_availability{i}_note']
+            })
+        del data[f'diy_availability{i}']
+        del data[f'diy_availability{i}_note']
+    
+    # Do the same for buy#_price and buy#_currency columns
+    data['buy'] = []
+    for i in range(1,3): # Technically overkill, but it'd be easy to add a third buy column if it ever matters
+        if len(data[f'buy{i}_price']) > 0:
+            data['buy'].append({
+                'price':int(data[f'buy{i}_price']),
+                'currency':data[f'buy{i}_currency']
+            })
+        del data[f'buy{i}_price']
+        del data[f'buy{i}_currency']
+    return data
+
+def get_recipe_list(limit,tables,fields):
+    where = None
+
+    if 'material' in request.args:
+        materials = request.args.getlist('material')
+        if len(materials) > 6:
+            abort(400, description=error_response('Invalid arguments','Cannot have more than six materials'))
+        for m in materials:
+            m.replace('_',' ')
+            if where is None:
+                where = '(material1 = "{0}" or material2 = "{0}" or material3 = "{0}" or material4 = "{0}" or material5 = "{0}" or material6 = "{0}")'.format(m)
+            else:
+                where += ' AND (material1 = "{0}" or material2 = "{0}" or material3 = "{0}" or material4 = "{0}" or material5 = "{0}" or material6 = "{0}")'.format(m)
+
+    if where is not None:
+        params = { 'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields, 'where': where }
+    else:
+        params = { 'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields }
+
+    cargo_results = call_cargo(params, request.args)
+    results_array = []
+    if request.args.get('excludedetails') == 'true':
+        for recipe in cargo_results:
+            results_array.append(recipe['en_name'])
+    else:
+        for recipe in cargo_results:
+            results_array.append(format_recipe(recipe))
+    return jsonify(results_array)
+
 
 #################################
 # STATIC RENDERS
@@ -871,10 +963,11 @@ def get_nh_fish_all():
 def get_nh_fish(fish):
     authorize(DB_KEYS, request)
     fish = fish.replace('_', ' ')
+    limit = '1'
     tables = 'nh_fish'
     fields = 'name,_pageName=url,number,image_url,catchphrase,catchphrase2,catchphrase3,location,shadow_size,rarity,total_catch,sell_nook,sell_cj,tank_width,tank_length,time,time_n_availability=time_n_months,time_s_availability=time_s_months,time2,time2_n_availability=time2_n_months,time2_s_availability=time2_s_months,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,n_m1_time,n_m2_time,n_m3_time,n_m4_time,n_m5_time,n_m6_time,n_m7_time,n_m8_time,n_m9_time,n_m10_time,n_m11_time,n_m12_time,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,s_m1_time,s_m2_time,s_m3_time,s_m4_time,s_m5_time,s_m6_time,s_m7_time,s_m8_time,s_m9_time,s_m10_time,s_m11_time,s_m12_time'
     where = 'name="' + fish + '"'
-    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where }
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where, 'limit': limit }
 
     cargo_results = call_cargo(params, request.args)
     if cargo_results == []:
@@ -905,10 +998,11 @@ def get_nh_bug(bug):
     authorize(DB_KEYS, request)
 
     bug = bug.replace('_', ' ')
+    limit = '1'
     tables = 'nh_bug'
     fields = 'name,_pageName=url,number,image_url,catchphrase,catchphrase2,location,rarity,total_catch,sell_nook,sell_flick,tank_width,tank_length,time,time_n_availability=time_n_months,time_s_availability=time_s_months,time2,time2_n_availability=time2_n_months,time2_s_availability=time2_s_months,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,n_m1_time,n_m2_time,n_m3_time,n_m4_time,n_m5_time,n_m6_time,n_m7_time,n_m8_time,n_m9_time,n_m10_time,n_m11_time,n_m12_time,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,s_m1_time,s_m2_time,s_m3_time,s_m4_time,s_m5_time,s_m6_time,s_m7_time,s_m8_time,s_m9_time,s_m10_time,s_m11_time,s_m12_time'
     where = 'name="' + bug + '"'
-    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where }
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where, 'limit': limit }
 
     cargo_results = call_cargo(params, request.args)
     if cargo_results == []:
@@ -939,10 +1033,11 @@ def get_nh_sea(sea):
     authorize(DB_KEYS, request)
 
     sea = sea.replace('_', ' ')
+    limit = '1'
     tables = 'nh_sea_creature'
     fields = 'name,_pageName=url,number,image_url,catchphrase,catchphrase2,shadow_size,shadow_movement,rarity,total_catch,sell_nook,tank_width,tank_length,time,time_n_availability=time_n_months,time_s_availability=time_s_months,time2,time2_n_availability=time2_n_months,time2_s_availability=time2_s_months,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,n_m1_time,n_m2_time,n_m3_time,n_m4_time,n_m5_time,n_m6_time,n_m7_time,n_m8_time,n_m9_time,n_m10_time,n_m11_time,n_m12_time,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,s_m1_time,s_m2_time,s_m3_time,s_m4_time,s_m5_time,s_m6_time,s_m7_time,s_m8_time,s_m9_time,s_m10_time,s_m11_time,s_m12_time'
     where = 'name="' + sea + '"'
-    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where }
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where, 'limit': limit }
 
     cargo_results = call_cargo(params, request.args)
     if cargo_results == []:
@@ -961,17 +1056,19 @@ def get_nh_art(art):
         abort(404, description=error_response('Resource not found.', 'Please ensure requested resource exists.'))
 
     art = art.replace('_', ' ')
+
+    limit = '1'
     tables = 'nh_art'
     fields = 'name,_pageName=url,image_url,has_fake,fake_image_url,art_name,author,year,art_style,description,buy_price,sell_price,availability,authenticity,width,length'
     where = f'name="{art}"'
-    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where }
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where, 'limit': limit }
 
     cargo_results = call_cargo(params, request.args)
     if cargo_results == []:
         abort(404, description=error_response("No data was found for the given query.", f"MediaWiki Cargo request succeeded by nothing was returned for the parameters: {params}"))
     else:
         return jsonify(format_art(cargo_results[0]))
-    
+
 
 @app.route('/nh/art', methods=['GET'])
 def get_nh_art_all():
@@ -986,8 +1083,42 @@ def get_nh_art_all():
         fields = 'name'
     else:
         fields = 'name,_pageName=url,image_url,has_fake,fake_image_url,art_name,author,year,art_style,description,buy_price,sell_price,availability,authenticity,width,length'
-    
+
+
     return get_art_list(limit,tables,fields)
 
+@app.route('/nh/recipe/<string:recipe>', methods=['GET'])
+def get_nh_recipe(recipe):
+    authorize(DB_KEYS, request)
+
+    if 'Accept-Version' in request.headers and request.headers['Accept-Version'][:3] in ('1.0','1.1','1.2','1.3'):
+        abort(404, description=error_response('Resource not found.', 'Please ensure requested resource exists.'))
+
+    recipe = recipe.replace('_',' ')
+    limit = '1'
+    tables = 'nh_recipe'
+    fields = 'en_name,_pageName=url,image_url,serial_id,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,recipes_to_unlock,diy_availability1,diy_availability1_note,diy_availability2,diy_availability2_note,material1,material1_num,material2,material2_num,material3,material3_num,material4,material4_num,material5,material5_num,material6,material6_num'
+    where = f'en_name="{recipe}"'
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where, 'limit': limit}
+
+    cargo_results = call_cargo(params, request.args)
+    if len(cargo_results) == 0:
+        abort(404, description=error_response("No data was found for the given query.", f"MediaWiki Cargo request succeeded by nothing was returned for the parameters: {params}"))
+    else:
+        return jsonify(format_recipe(cargo_results[0]))
+
+@app.route('/nh/recipe', methods=['GET'])
+def get_nh_recipe_all():
+    authorize(DB_KEYS, request)
+
+    if 'Accept-Version' in request.headers and request.headers['Accept-Version'][:3] in ('1.0','1.1','1.2','1.3'):
+        abort(404, description=error_response('Resource not found.', 'Please ensure requested resource exists.'))
+
+    limit='600'
+    tables = 'nh_recipe'
+    fields = 'en_name,_pageName=url,image_url,serial_id,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,recipes_to_unlock,diy_availability1,diy_availability1_note,diy_availability2,diy_availability2_note,material1,material1_num,material2,material2_num,material3,material3_num,material4,material4_num,material5,material5_num,material6,material6_num'
+
+    return get_recipe_list(limit,tables,fields)
+
 if __name__ == '__main__':
-    app.run(host = '0.0.0.0')
+    app.run(host = '127.0.0.1')
