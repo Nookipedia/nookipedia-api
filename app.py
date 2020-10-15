@@ -609,43 +609,7 @@ def format_critters(data):
         south = {}
         
         # Create array of times and corresponding months for those times:
-        if (request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] in ('1.3')) or not (request.headers.get('Accept-Version')):
-            north['availability_array'] = [ {'months': obj['time_n_months'], 'time': obj['time'] } ]
-            south['availability_array'] = [ {'months': obj['time_s_months'], 'time': obj['time'] } ]
-            if len(obj['time2']) > 0:
-                north['availability_array'].append({'months': obj['time2_n_months'], 'time': obj['time2'] })
-                south['availability_array'].append({'months': obj['time2_s_months'], 'time': obj['time2'] })
-
-            # Create arrays for times by month:
-            north['times_by_month'] = {
-                '1': obj['n_m1_time'],
-                '2': obj['n_m2_time'],
-                '3': obj['n_m3_time'],
-                '4': obj['n_m4_time'],
-                '5': obj['n_m5_time'],
-                '6': obj['n_m6_time'],
-                '7': obj['n_m7_time'],
-                '8': obj['n_m8_time'],
-                '9': obj['n_m9_time'],
-                '10': obj['n_m10_time'],
-                '11': obj['n_m11_time'],
-                '12': obj['n_m12_time']
-            }
-            south['times_by_month'] = {
-                '1': obj['s_m1_time'],
-                '2': obj['s_m2_time'],
-                '3': obj['s_m3_time'],
-                '4': obj['s_m4_time'],
-                '5': obj['s_m5_time'],
-                '6': obj['s_m6_time'],
-                '7': obj['s_m7_time'],
-                '8': obj['s_m8_time'],
-                '9': obj['s_m9_time'],
-                '10': obj['s_m10_time'],
-                '11': obj['s_m11_time'],
-                '12': obj['s_m12_time']
-            }
-        else:
+        if request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] in ('1.0','1.1','1.2'):
             availability_array_north = [ {'months': obj['time_n_months'], 'time': obj['time'] } ]
             availability_array_south = [ {'months': obj['time_s_months'], 'time': obj['time'] } ]
             if len(obj['time2']) > 0:
@@ -670,6 +634,42 @@ def format_critters(data):
                 '12': obj['n_m12_time']
             }
             obj['times_by_month_south'] = {
+                '1': obj['s_m1_time'],
+                '2': obj['s_m2_time'],
+                '3': obj['s_m3_time'],
+                '4': obj['s_m4_time'],
+                '5': obj['s_m5_time'],
+                '6': obj['s_m6_time'],
+                '7': obj['s_m7_time'],
+                '8': obj['s_m8_time'],
+                '9': obj['s_m9_time'],
+                '10': obj['s_m10_time'],
+                '11': obj['s_m11_time'],
+                '12': obj['s_m12_time']
+            }
+        else:
+            north['availability_array'] = [ {'months': obj['time_n_months'], 'time': obj['time'] } ]
+            south['availability_array'] = [ {'months': obj['time_s_months'], 'time': obj['time'] } ]
+            if len(obj['time2']) > 0:
+                north['availability_array'].append({'months': obj['time2_n_months'], 'time': obj['time2'] })
+                south['availability_array'].append({'months': obj['time2_s_months'], 'time': obj['time2'] })
+
+            # Create arrays for times by month:
+            north['times_by_month'] = {
+                '1': obj['n_m1_time'],
+                '2': obj['n_m2_time'],
+                '3': obj['n_m3_time'],
+                '4': obj['n_m4_time'],
+                '5': obj['n_m5_time'],
+                '6': obj['n_m6_time'],
+                '7': obj['n_m7_time'],
+                '8': obj['n_m8_time'],
+                '9': obj['n_m9_time'],
+                '10': obj['n_m10_time'],
+                '11': obj['n_m11_time'],
+                '12': obj['n_m12_time']
+            }
+            south['times_by_month'] = {
                 '1': obj['s_m1_time'],
                 '2': obj['s_m2_time'],
                 '3': obj['s_m3_time'],
