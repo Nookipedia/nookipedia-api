@@ -623,9 +623,6 @@ def format_critters(data):
                 del obj['catchphrase3']
 
 
-        # North and south JSON to separate data by hemisphere
-        north = {}
-        south = {}
         
 
         # Create array of times and corresponding months for those times:
@@ -668,6 +665,10 @@ def format_critters(data):
                 '12': obj['s_m12_time']
             }
         else:
+            # North and south JSON to separate data by hemisphere
+            north = {}
+            south = {}
+            
             north['availability_array'] = [ {'months': obj['time_n_months'], 'time': obj['time'] } ]
             south['availability_array'] = [ {'months': obj['time_s_months'], 'time': obj['time'] } ]
             if len(obj['time2']) > 0:
@@ -703,9 +704,6 @@ def format_critters(data):
                 '11': obj['s_m11_time'],
                 '12': obj['s_m12_time']
             }
-
-        # Separate north and south critter data
-        if (request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] in ('1.3')) or not (request.headers.get('Accept-Version')):
             obj['north'] = north
             obj['south'] = south
 
