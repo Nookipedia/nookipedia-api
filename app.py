@@ -560,7 +560,7 @@ def months_to_array(data):
         for i in range(1, 13):
             del obj['n_m' + str(i)]
             del obj['s_m' + str(i)]
-        
+
         if (request.headers.get('Accept-Version') and (request.headers.get('Accept-Version')[:3] in ('1.0', '1.1'))):
             obj['n_availability_array'] = n_months_array
             obj['s_availability_array'] = s_months_array
