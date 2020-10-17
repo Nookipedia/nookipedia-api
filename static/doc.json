@@ -3,7 +3,7 @@
   "info": {
     "title": "Nookipedia",
     "description": "The Nookipedia API provides endpoints for retrieving Animal Crossing data pulled from the [Nookipedia wiki](https://nookipedia.com/wiki/Main_Page). A couple of the key benefits of using the Nookipedia API is access to data spanning the entire *Animal Crossing* series, as well as information that is constantly updated and expanding as editors work on the wiki.<br><br>This API launched in July 2020 and is under active development. At the moment, we currently have endpoints to retrieve information about *Animal Crossing* villagers, as well as *Animal Crossing: New Horizons* bugs, fish, and sea creatures. In the horizon are endpoints for *New Horizons* furniture and clothing, as well as critters from previous games.<br><br>Access to the Nookipedia API requires obtaining a key. This is so we can manage our scale and provide better support for our users. To request access to the API, please fill out [this form](https://forms.gle/wLwtXLerKhfDrRLY8).<br><br>This API is 'version 2' of our [original API](https://nookipedia.com/api/). While the previous API scraped information directly from the wiki, this new edition of the API pulls data from a structured and constrained database, resulting in higher-quality data, better searching, and support for filtering.",
-    "version": "1.2.0"
+    "version": "1.3.0"
   },
   "servers": [
     {
@@ -1006,7 +1006,7 @@
             "example": "https://dodo.ac/np/images/e/e8/Academic_Painting_NH_Icon.png",
             "description": "The image URL for the real artwork"
           },
-          "fake": {
+          "has_fake": {
             "type": "boolean",
             "example": true,
             "description": "Whether the artwork has a fake or not"
@@ -1476,209 +1476,219 @@
             ],
             "description": "An array of possible catchphrases the player says after catching the fish. Most critters have just one, but some can have multiple."
           },
-          "availability_north": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "months": {
-                  "type": "string"
-                },
-                "time": {
-                  "type": "string"
-                }
-              }
-            },
-            "example": [
-              {
-                "months": "Mar – Jun",
-                "time": "4 PM – 9 AM"
-              },
-              {
-                "months": "Sep – Nov",
-                "time": "All day"
-              }
-            ],
-            "description": "An array of objects, each object holding a months string and the time the critter is availabile during the specified month(s) in the northern hemisphere. Most critters will have just one object. A small number of critters have variable time availability in which case this array will have multiple objects."
-          },
-          "availability_south": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "months": {
-                  "type": "string"
-                },
-                "time": {
-                  "type": "string"
-                }
-              }
-            },
-            "example": [
-              {
-                "months": "Sep – Dec",
-                "time": "4 PM – 9 AM"
-              },
-              {
-                "months": "Mar – May",
-                "time": "All day"
-              }
-            ],
-            "description": "An array of objects, each object holding a months string and the time the critter is availabile during the specified month(s) in the southern hemisphere. Most critters will have just one object. A small number of critters have variable time availability in which case this array will have multiple objects."
-          },
-          "times_by_month_north": {
+          "north": {
             "type": "object",
             "properties": {
-              "1": {
-                "type": "string"
+              "availability": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "months": {
+                      "type": "string"
+                    },
+                    "time": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": [
+                  {
+                    "months": "Mar – Jun",
+                    "time": "4 PM – 9 AM"
+                  },
+                  {
+                    "months": "Sep – Nov",
+                    "time": "All day"
+                  }
+                ],
+                "description": "An array of objects, each object holding a months string and the time the critter is availabile during the specified month(s) in the northern hemisphere. Most critters will have just one object. A small number of critters have variable time availability in which case this array will have multiple objects."
               },
-              "2": {
-                "type": "string"
+              "times_by_month": {
+                "type": "object",
+                "properties": {
+                  "1": {
+                    "type": "string"
+                  },
+                  "2": {
+                    "type": "string"
+                  },
+                  "3": {
+                    "type": "string"
+                  },
+                  "4": {
+                    "type": "string"
+                  },
+                  "5": {
+                    "type": "string"
+                  },
+                  "6": {
+                    "type": "string"
+                  },
+                  "7": {
+                    "type": "string"
+                  },
+                  "8": {
+                    "type": "string"
+                  },
+                  "9": {
+                    "type": "string"
+                  },
+                  "10": {
+                    "type": "string"
+                  },
+                  "11": {
+                    "type": "string"
+                  },
+                  "12": {
+                    "type": "string"
+                  }
+                },
+                "example": {
+                  "1": "NA",
+                  "2": "NA",
+                  "3": "4 PM – 9 AM",
+                  "4": "4 PM – 9 AM",
+                  "5": "4 PM – 9 AM",
+                  "6": "4 PM – 9 AM",
+                  "7": "NA",
+                  "8": "NA",
+                  "9": "All day",
+                  "10": "All day",
+                  "11": "All day",
+                  "12": "NA"
+                },
+                "description": "An object with twelve numerical keys, each representing a month (`\"1\"` for January, `\"2\"` for February, etc.). The value is the times the critter is available during that month. If the critter is unavailable in a month, the value will be `\"NA\"`."
               },
-              "3": {
-                "type": "string"
+              "months": {
+                "type": "string",
+                "example": "Mar – Jun; Sep – Nov",
+                "description": "The months the fish is available for in the Northern hemisphere. If all year, value will be `\"All year\"`."
               },
-              "4": {
-                "type": "string"
-              },
-              "5": {
-                "type": "string"
-              },
-              "6": {
-                "type": "string"
-              },
-              "7": {
-                "type": "string"
-              },
-              "8": {
-                "type": "string"
-              },
-              "9": {
-                "type": "string"
-              },
-              "10": {
-                "type": "string"
-              },
-              "11": {
-                "type": "string"
-              },
-              "12": {
-                "type": "string"
+              "months_array": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                },
+                "example": [
+                  3,
+                  4,
+                  5,
+                  6,
+                  9,
+                  10,
+                  11
+                ],
+                "description": "An array of integers representing the months the fish is available in the Northern hemisphere."
               }
-            },
-            "example": {
-              "1": "NA",
-              "2": "NA",
-              "3": "4 PM – 9 AM",
-              "4": "4 PM – 9 AM",
-              "5": "4 PM – 9 AM",
-              "6": "4 PM – 9 AM",
-              "7": "NA",
-              "8": "NA",
-              "9": "All day",
-              "10": "All day",
-              "11": "All day",
-              "12": "NA"
-            },
-            "description": "An object with twelve numerical keys, each representing a month (`\"1\"` for January, `\"2\"` for February, etc.). The value is the times the critter is available during that month. If the critter is unavailable in a month, the value will be `\"NA\"`."
+            }
           },
-          "times_by_month_south": {
+          "south": {
             "type": "object",
             "properties": {
-              "1": {
-                "type": "string"
+              "availability": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "months": {
+                      "type": "string"
+                    },
+                    "time": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": [
+                  {
+                    "months": "Sep – Dec",
+                    "time": "4 PM – 9 AM"
+                  },
+                  {
+                    "months": "Mar – May",
+                    "time": "All day"
+                  }
+                ],
+                "description": "An array of objects, each object holding a months string and the time the critter is availabile during the specified month(s) in the southern hemisphere. Most critters will have just one object. A small number of critters have variable time availability in which case this array will have multiple objects."
               },
-              "4": {
-                "type": "string"
+              "times_by_month": {
+                "type": "object",
+                "properties": {
+                  "1": {
+                    "type": "string"
+                  },
+                  "4": {
+                    "type": "string"
+                  },
+                  "5": {
+                    "type": "string"
+                  },
+                  "6": {
+                    "type": "string"
+                  },
+                  "7": {
+                    "type": "string"
+                  },
+                  "8": {
+                    "type": "string"
+                  },
+                  "9": {
+                    "type": "string"
+                  },
+                  "10": {
+                    "type": "string"
+                  },
+                  "11": {
+                    "type": "string"
+                  },
+                  "12": {
+                    "type": "string"
+                  },
+                  "2'": {
+                    "type": "string"
+                  },
+                  "3'": {
+                    "type": "string"
+                  }
+                },
+                "example": {
+                  "1": "NA",
+                  "2": "NA",
+                  "3": "4 PM – 9 AM",
+                  "4": "4 PM – 9 AM",
+                  "5": "4 PM – 9 AM",
+                  "6": "4 PM – 9 AM",
+                  "7": "NA",
+                  "8": "NA",
+                  "9": "All day",
+                  "10": "All day",
+                  "11": "All day",
+                  "12": "NA"
+                },
+                "description": "An object with twelve numerical keys, each representing a month (`\"1\"` for January, `\"2\"` for February, etc.). The value is the times the critter is available during that month. If the critter is unavailable in a month, the value will be `\"NA\"`."
               },
-              "5": {
-                "type": "string"
+              "months": {
+                "type": "string",
+                "example": "Mar – May; Sep – Dec",
+                "description": "The months the fish is available for in the Southern hemisphere. If all year, value will be `\"All year\"`."
               },
-              "6": {
-                "type": "string"
-              },
-              "7": {
-                "type": "string"
-              },
-              "8": {
-                "type": "string"
-              },
-              "9": {
-                "type": "string"
-              },
-              "10": {
-                "type": "string"
-              },
-              "11": {
-                "type": "string"
-              },
-              "12": {
-                "type": "string"
-              },
-              "2'": {
-                "type": "string"
-              },
-              "3'": {
-                "type": "string"
+              "months_array": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                },
+                "example": [
+                  3,
+                  4,
+                  5,
+                  9,
+                  10,
+                  11,
+                  12
+                ],
+                "description": "An array of integers representing the months the fish is available in the Southern hemisphere."
               }
-            },
-            "example": {
-              "1": "NA",
-              "2": "NA",
-              "3": "4 PM – 9 AM",
-              "4": "4 PM – 9 AM",
-              "5": "4 PM – 9 AM",
-              "6": "4 PM – 9 AM",
-              "7": "NA",
-              "8": "NA",
-              "9": "All day",
-              "10": "All day",
-              "11": "All day",
-              "12": "NA"
-            },
-            "description": "An object with twelve numerical keys, each representing a month (`\"1\"` for January, `\"2\"` for February, etc.). The value is the times the critter is available during that month. If the critter is unavailable in a month, the value will be `\"NA\"`."
-          },
-          "months_north": {
-            "type": "string",
-            "example": "Mar – Jun; Sep – Nov",
-            "description": "The months the fish is available for in the Northern hemisphere. If all year, value will be `\"All year\"`."
-          },
-          "months_south": {
-            "type": "string",
-            "example": "Mar – May; Sep – Dec",
-            "description": "The months the fish is available for in the Southern hemisphere. If all year, value will be `\"All year\"`."
-          },
-          "months_north_array:": {
-            "type": "array",
-            "items": {
-              "type": "integer"
-            },
-            "example": [
-              3,
-              4,
-              5,
-              6,
-              9,
-              10,
-              11
-            ],
-            "description": "An array of integers representing the months the fish is available in the Northern hemisphere."
-          },
-          "months_south_array:": {
-            "type": "array",
-            "items": {
-              "type": "integer"
-            },
-            "example": [
-              3,
-              4,
-              5,
-              9,
-              10,
-              11,
-              12
-            ],
-            "description": "An array of integers representing the months the fish is available in the Southern hemisphere."
+            }
           }
         }
       },
@@ -1757,193 +1767,203 @@
             ],
             "description": "An array of possible catchphrases the player says after catching the bug. Most critters have just one, but some can have multiple."
           },
-          "availability_north": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "months": {
-                  "type": "string"
-                },
-                "time": {
-                  "type": "string"
-                }
-              }
-            },
-            "example": [
-              {
-                "months": "Jul – Sep",
-                "time": "8 AM – 5 PM"
-              }
-            ],
-            "description": "An array of objects, each object holding a months string and the time the critter is availabile during the specified month(s) in the northern hemisphere. Most critters will have just one object. A small number of critters have variable time availability in which case this array will have multiple objects."
-          },
-          "availability_south": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "months": {
-                  "type": "string"
-                },
-                "time": {
-                  "type": "string"
-                }
-              }
-            },
-            "example": [
-              {
-                "months": "Jan – Mar",
-                "time": "8 AM – 5 PM"
-              }
-            ],
-            "description": "An array of objects, each object holding a months string and the time the critter is availabile during the specified month(s) in the southern hemisphere. Most critters will have just one object. A small number of critters have variable time availability in which case this array will have multiple objects."
-          },
-          "times_by_month_north": {
+          "north": {
             "type": "object",
             "properties": {
-              "1": {
-                "type": "string"
+              "availability": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "months": {
+                      "type": "string"
+                    },
+                    "time": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": [
+                  {
+                    "months": "Jul – Sep",
+                    "time": "8 AM – 5 PM"
+                  }
+                ],
+                "description": "An array of objects, each object holding a months string and the time the critter is availabile during the specified month(s) in the northern hemisphere. Most critters will have just one object. A small number of critters have variable time availability in which case this array will have multiple objects."
               },
-              "2": {
-                "type": "string"
+              "times_by_month": {
+                "type": "object",
+                "properties": {
+                  "1": {
+                    "type": "string"
+                  },
+                  "2": {
+                    "type": "string"
+                  },
+                  "3": {
+                    "type": "string"
+                  },
+                  "4": {
+                    "type": "string"
+                  },
+                  "5": {
+                    "type": "string"
+                  },
+                  "6": {
+                    "type": "string"
+                  },
+                  "7": {
+                    "type": "string"
+                  },
+                  "8": {
+                    "type": "string"
+                  },
+                  "9": {
+                    "type": "string"
+                  },
+                  "10": {
+                    "type": "string"
+                  },
+                  "11": {
+                    "type": "string"
+                  },
+                  "12": {
+                    "type": "string"
+                  }
+                },
+                "example": {
+                  "1": "NA",
+                  "2": "NA",
+                  "3": "NA",
+                  "4": "NA",
+                  "5": "NA",
+                  "6": "NA",
+                  "7": "8 AM – 5 PM",
+                  "8": "8 AM – 5 PM",
+                  "9": "8 AM – 5 PM",
+                  "10": "NA",
+                  "11": "NA",
+                  "12": "NA"
+                },
+                "description": "An object with twelve numerical keys, each representing a month (`\"1\"` for January, `\"2\"` for February, etc.). The value is the times the critter is available during that month. If the critter is unavailable in a month, the value will be `\"NA\"`."
               },
-              "3": {
-                "type": "string"
+              "months": {
+                "type": "string",
+                "example": "Jul – Sep",
+                "description": "The months the bug is available for in the Northern hemisphere. If all year, value will be `\"All year\"`."
               },
-              "4": {
-                "type": "string"
-              },
-              "5": {
-                "type": "string"
-              },
-              "6": {
-                "type": "string"
-              },
-              "7": {
-                "type": "string"
-              },
-              "8": {
-                "type": "string"
-              },
-              "9": {
-                "type": "string"
-              },
-              "10": {
-                "type": "string"
-              },
-              "11": {
-                "type": "string"
-              },
-              "12": {
-                "type": "string"
+              "months_array": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                },
+                "example": [
+                  7,
+                  8,
+                  9
+                ],
+                "description": "An array of integers representing the months the bug is available in the Northern hemisphere."
               }
-            },
-            "example": {
-              "1": "NA",
-              "2": "NA",
-              "3": "NA",
-              "4": "NA",
-              "5": "NA",
-              "6": "NA",
-              "7": "8 AM – 5 PM",
-              "8": "8 AM – 5 PM",
-              "9": "8 AM – 5 PM",
-              "10": "NA",
-              "11": "NA",
-              "12": "NA"
-            },
-            "description": "An object with twelve numerical keys, each representing a month (`\"1\"` for January, `\"2\"` for February, etc.). The value is the times the critter is available during that month. If the critter is unavailable in a month, the value will be `\"NA\"`."
+            }
           },
-          "times_by_month_south": {
+          "south": {
             "type": "object",
             "properties": {
-              "1": {
-                "type": "string"
+              "availability": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "months": {
+                      "type": "string"
+                    },
+                    "time": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": [
+                  {
+                    "months": "Jan – Mar",
+                    "time": "8 AM – 5 PM"
+                  }
+                ],
+                "description": "An array of objects, each object holding a months string and the time the critter is availabile during the specified month(s) in the southern hemisphere. Most critters will have just one object. A small number of critters have variable time availability in which case this array will have multiple objects."
               },
-              "2": {
-                "type": "string"
+              "times_by_month": {
+                "type": "object",
+                "properties": {
+                  "1": {
+                    "type": "string"
+                  },
+                  "2": {
+                    "type": "string"
+                  },
+                  "3": {
+                    "type": "string"
+                  },
+                  "4": {
+                    "type": "string"
+                  },
+                  "5": {
+                    "type": "string"
+                  },
+                  "6": {
+                    "type": "string"
+                  },
+                  "7": {
+                    "type": "string"
+                  },
+                  "8": {
+                    "type": "string"
+                  },
+                  "9": {
+                    "type": "string"
+                  },
+                  "10": {
+                    "type": "string"
+                  },
+                  "11": {
+                    "type": "string"
+                  },
+                  "12": {
+                    "type": "string"
+                  }
+                },
+                "example": {
+                  "1": "8 AM – 5 PM",
+                  "2": "8 AM – 5 PM",
+                  "3": "8 AM – 5 PM",
+                  "4": "NA",
+                  "5": "NA",
+                  "6": "NA",
+                  "7": "NA",
+                  "8": "NA",
+                  "9": "NA",
+                  "10": "NA",
+                  "11": "NA",
+                  "12": "NA"
+                },
+                "description": "An object with twelve numerical keys, each representing a month (`\"1\"` for January, `\"2\"` for February, etc.). The value is the times the critter is available during that month. If the critter is unavailable in a month, the value will be `\"NA\"`."
               },
-              "3": {
-                "type": "string"
+              "months": {
+                "type": "string",
+                "example": "Jan – Mar",
+                "description": "The months the bug is available for in the Southern hemisphere. If all year, value will be `\"All year\"`."
               },
-              "4": {
-                "type": "string"
-              },
-              "5": {
-                "type": "string"
-              },
-              "6": {
-                "type": "string"
-              },
-              "7": {
-                "type": "string"
-              },
-              "8": {
-                "type": "string"
-              },
-              "9": {
-                "type": "string"
-              },
-              "10": {
-                "type": "string"
-              },
-              "11": {
-                "type": "string"
-              },
-              "12": {
-                "type": "string"
+              "months_array": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                },
+                "example": [
+                  1,
+                  2,
+                  3
+                ],
+                "description": "An array of integers representing the months the bug is available in the Southern hemisphere."
               }
-            },
-            "example": {
-              "1": "8 AM – 5 PM",
-              "2": "8 AM – 5 PM",
-              "3": "8 AM – 5 PM",
-              "4": "NA",
-              "5": "NA",
-              "6": "NA",
-              "7": "NA",
-              "8": "NA",
-              "9": "NA",
-              "10": "NA",
-              "11": "NA",
-              "12": "NA"
-            },
-            "description": "An object with twelve numerical keys, each representing a month (`\"1\"` for January, `\"2\"` for February, etc.). The value is the times the critter is available during that month. If the critter is unavailable in a month, the value will be `\"NA\"`."
-          },
-          "months_north": {
-            "type": "string",
-            "example": "Jul – Sep",
-            "description": "The months the bug is available for in the Northern hemisphere. If all year, value will be `\"All year\"`."
-          },
-          "months_south": {
-            "type": "string",
-            "example": "Jan – Mar",
-            "description": "The months the bug is available for in the Southern hemisphere. If all year, value will be `\"All year\"`."
-          },
-          "months_north_array:": {
-            "type": "array",
-            "items": {
-              "type": "integer"
-            },
-            "example": [
-              7,
-              8,
-              9
-            ],
-            "description": "An array of integers representing the months the bug is available in the Northern hemisphere."
-          },
-          "months_south_array:": {
-            "type": "array",
-            "items": {
-              "type": "integer"
-            },
-            "example": [
-              1,
-              2,
-              3
-            ],
-            "description": "An array of integers representing the months the bug is available in the Southern hemisphere."
+            }
           }
         }
       },
@@ -2039,311 +2059,221 @@
             ],
             "description": "An array of possible catchphrases the player says after catching the sea creature. Most critters have just one, but some can have multiple."
           },
-          "availability_north": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "months": {
-                  "type": "string"
-                },
-                "time": {
-                  "type": "string"
-                }
-              }
-            },
-            "example": [
-              {
-                "months": "All year",
-                "time": "All day"
-              }
-            ],
-            "description": "An array of objects, each object holding a months string and the time the critter is availabile during the specified month(s) in the northern hemisphere. Most critters will have just one object. A small number of critters have variable time availability in which case this array will have multiple objects."
-          },
-          "availability_south": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "months": {
-                  "type": "string"
-                },
-                "time": {
-                  "type": "string"
-                }
-              }
-            },
-            "example": [
-              {
-                "months": "All year",
-                "time": "All day"
-              }
-            ],
-            "description": "An array of objects, each object holding a months string and the time the critter is availabile during the specified month(s) in the southern hemisphere. Most critters will have just one object. A small number of critters have variable time availability in which case this array will have multiple objects."
-          },
-          "times_by_month_north": {
+          "north": {
             "type": "object",
             "properties": {
-              "1": {
-                "type": "string"
-              },
-              "2": {
-                "type": "string"
-              },
-              "3": {
-                "type": "string"
-              },
-              "4": {
-                "type": "string"
-              },
-              "5": {
-                "type": "string"
-              },
-              "6": {
-                "type": "string"
-              },
-              "7": {
-                "type": "string"
-              },
-              "8": {
-                "type": "string"
-              },
-              "9": {
-                "type": "string"
-              },
-              "10": {
-                "type": "string"
-              },
-              "11": {
-                "type": "string"
-              },
-              "12": {
-                "type": "string"
-              }
-            },
-            "example": {
-              "1": "All day",
-              "2": "All day",
-              "3": "All day",
-              "4": "All day",
-              "5": "All day",
-              "6": "All day",
-              "7": "All day",
-              "8": "All day",
-              "9": "All day",
-              "10": "All day",
-              "11": "All day",
-              "12": "All day"
-            },
-            "description": "An object with twelve numerical keys, each representing a month (`\"1\"` for January, `\"2\"` for February, etc.). The value is the times the critter is available during that month. If the critter is unavailable in a month, the value will be `\"NA\"`."
-          },
-          "times_by_month_south": {
-            "type": "object",
-            "properties": {
-              "1": {
-                "type": "string"
-              },
-              "2": {
-                "type": "string"
-              },
-              "3": {
-                "type": "string"
-              },
-              "4": {
-                "type": "string"
-              },
-              "5": {
-                "type": "string"
-              },
-              "6": {
-                "type": "string"
-              },
-              "7": {
-                "type": "string"
-              },
-              "8": {
-                "type": "string"
-              },
-              "9": {
-                "type": "string"
-              },
-              "10": {
-                "type": "string"
-              },
-              "11": {
-                "type": "string"
-              },
-              "12": {
-                "type": "string"
-              }
-            },
-            "example": {
-              "1": "All day",
-              "2": "All day",
-              "3": "All day",
-              "4": "All day",
-              "5": "All day",
-              "6": "All day",
-              "7": "All day",
-              "8": "All day",
-              "9": "All day",
-              "10": "All day",
-              "11": "All day",
-              "12": "All day"
-            },
-            "description": "An object with twelve numerical keys, each representing a month (`\"1\"` for January, `\"2\"` for February, etc.). The value is the times the critter is available during that month. If the critter is unavailable in a month, the value will be `\"NA\"`."
-          },
-          "months_north": {
-            "type": "string",
-            "example": "Jul – Sep",
-            "description": "The months the sea creature is available for in the Northern hemisphere. If all year, value will be `\"All year\"`."
-          },
-          "months_south": {
-            "type": "string",
-            "example": "Jan – Mar",
-            "description": "The months the sea creature is available for in the Southern hemisphere. If all year, value will be `\"All year\"`."
-          },
-          "months_north_array": {
-            "type": "array",
-            "items": {
-              "type": "integer"
-            },
-            "example": [
-              1,
-              2,
-              3,
-              4,
-              5,
-              6,
-              7,
-              8,
-              9,
-              10,
-              11,
-              12
-            ],
-            "description": "An array of integers representing the months the sea creature is available in the Northern hemisphere."
-          },
-          "months_south_array": {
-            "type": "array",
-            "items": {
-              "type": "integer"
-            },
-            "example": [
-              1,
-              2,
-              3,
-              4,
-              5,
-              6,
-              7,
-              8,
-              9,
-              10,
-              11,
-              12
-            ],
-            "description": "An array of integers representing the months the sea creature is available in the Southern hemisphere."
-          }
-        }
-      },
-      "NHRecipe": {
-        "type": "object",
-        "properties": {
-          "en_name": {
-            "type": "string",
-            "example": "Acoustic Guitar",
-            "description": "The name of the recipe."
-          },
-          "url": {
-            "type": "string",
-            "example": "https://nookipedia.com/wiki/Item:Acoustic_Guitar_(New_Horizons)",
-            "description": "The url for the recipe."
-          },
-          "image_url": {
-            "type": "string",
-            "example": "https://dodo.ac/np/images/0/07/Acoustic_Guitar_NH_DIY_Icon.png",
-            "description": "The image url for the recipe."
-          },
-          "serial_id": {
-            "type": "integer",
-            "example": 406,
-            "description": "The unique ID of the recipe."
-          },
-          "buy1_price": {
-            "type": "integer",
-            "example": 0,
-            "description": "The primary price of the recipe"
-          },
-          "buy1_currency": {
-            "type": "string",
-            "example": "",
-            "description": "The primary currency the recipe is purchased with"
-          },
-          "buy2_price": {
-            "type": "integer",
-            "example": 0,
-            "description": "The secondary price of the recipe"
-          },
-          "buy2_currency": {
-            "type": "string",
-            "example": "",
-            "description": "The secondary currency the recipe is purchased with"
-          },
-          "sell": {
-            "type": "integer",
-            "example": 200,
-            "description": "The sell price of the recipe."
-          },
-          "recipes_to_unlock": {
-            "type": "integer",
-            "example": 0,
-            "description": "How many recipes to need to unlock this one."
-          },
-          "diy_availability1": {
-            "type": "string",
-            "example": "Smug Villager",
-            "description": "The source of the recipe."
-          },
-          "diy_availability1_note": {
-            "type": "string",
-            "example": "",
-            "description": "Any notes on the source of the recipe."
-          },
-          "diy_availability2": {
-            "type": "string",
-            "example": "",
-            "description": "A secondary source of the recipe, if it exists."
-          },
-          "diy_availability2_note": {
-            "type": "string",
-            "example": "",
-            "description": "Any notes on the secondary source of the recipe."
-          },
-          "materials": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string"
+              "availability": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "months": {
+                      "type": "string"
+                    },
+                    "time": {
+                      "type": "string"
+                    }
+                  }
                 },
-                "count": {
+                "example": [
+                  {
+                    "months": "All year",
+                    "time": "All day"
+                  }
+                ],
+                "description": "An array of objects, each object holding a months string and the time the critter is availabile during the specified month(s) in the northern hemisphere. Most critters will have just one object. A small number of critters have variable time availability in which case this array will have multiple objects."
+              },
+              "times_by_month": {
+                "type": "object",
+                "properties": {
+                  "1": {
+                    "type": "string"
+                  },
+                  "2": {
+                    "type": "string"
+                  },
+                  "3": {
+                    "type": "string"
+                  },
+                  "4": {
+                    "type": "string"
+                  },
+                  "5": {
+                    "type": "string"
+                  },
+                  "6": {
+                    "type": "string"
+                  },
+                  "7": {
+                    "type": "string"
+                  },
+                  "8": {
+                    "type": "string"
+                  },
+                  "9": {
+                    "type": "string"
+                  },
+                  "10": {
+                    "type": "string"
+                  },
+                  "11": {
+                    "type": "string"
+                  },
+                  "12": {
+                    "type": "string"
+                  }
+                },
+                "example": {
+                  "1": "All day",
+                  "2": "All day",
+                  "3": "All day",
+                  "4": "All day",
+                  "5": "All day",
+                  "6": "All day",
+                  "7": "All day",
+                  "8": "All day",
+                  "9": "All day",
+                  "10": "All day",
+                  "11": "All day",
+                  "12": "All day"
+                },
+                "description": "An object with twelve numerical keys, each representing a month (`\"1\"` for January, `\"2\"` for February, etc.). The value is the times the critter is available during that month. If the critter is unavailable in a month, the value will be `\"NA\"`."
+              },
+              "months": {
+                "type": "string",
+                "example": "Jul – Sep",
+                "description": "The months the sea creature is available for in the Northern hemisphere. If all year, value will be `\"All year\"`."
+              },
+              "months_array": {
+                "type": "array",
+                "items": {
                   "type": "integer"
-                }
+                },
+                "example": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6,
+                  7,
+                  8,
+                  9,
+                  10,
+                  11,
+                  12
+                ],
+                "description": "An array of integers representing the months the sea creature is available in the Northern hemisphere."
               }
-            },
-            "example": [
-              {
-                "name": "Softwood",
-                "count": 8
+            }
+          },
+          "south": {
+            "type": "object",
+            "properties": {
+              "availability": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "months": {
+                      "type": "string"
+                    },
+                    "time": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": [
+                  {
+                    "months": "All year",
+                    "time": "All day"
+                  }
+                ],
+                "description": "An array of objects, each object holding a months string and the time the critter is availabile during the specified month(s) in the southern hemisphere. Most critters will have just one object. A small number of critters have variable time availability in which case this array will have multiple objects."
               },
-              {
-                "name": "Iron Nugget",
-                "count": 3
+              "times_by_month": {
+                "type": "object",
+                "properties": {
+                  "1": {
+                    "type": "string"
+                  },
+                  "2": {
+                    "type": "string"
+                  },
+                  "3": {
+                    "type": "string"
+                  },
+                  "4": {
+                    "type": "string"
+                  },
+                  "5": {
+                    "type": "string"
+                  },
+                  "6": {
+                    "type": "string"
+                  },
+                  "7": {
+                    "type": "string"
+                  },
+                  "8": {
+                    "type": "string"
+                  },
+                  "9": {
+                    "type": "string"
+                  },
+                  "10": {
+                    "type": "string"
+                  },
+                  "11": {
+                    "type": "string"
+                  },
+                  "12": {
+                    "type": "string"
+                  }
+                },
+                "example": {
+                  "1": "All day",
+                  "2": "All day",
+                  "3": "All day",
+                  "4": "All day",
+                  "5": "All day",
+                  "6": "All day",
+                  "7": "All day",
+                  "8": "All day",
+                  "9": "All day",
+                  "10": "All day",
+                  "11": "All day",
+                  "12": "All day"
+                },
+                "description": "An object with twelve numerical keys, each representing a month (`\"1\"` for January, `\"2\"` for February, etc.). The value is the times the critter is available during that month. If the critter is unavailable in a month, the value will be `\"NA\"`."
+              },
+              "months": {
+                "type": "string",
+                "example": "Jan – Mar",
+                "description": "The months the sea creature is available for in the Southern hemisphere. If all year, value will be `\"All year\"`."
+              },
+              "months_array": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                },
+                "example": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6,
+                  7,
+                  8,
+                  9,
+                  10,
+                  11,
+                  12
+                ],
+                "description": "An array of integers representing the months the sea creature is available in the Southern hemisphere."
               }
-            ],
-            "description": "The list of materials required to craft the recipe"
+            }
           }
         }
       }
