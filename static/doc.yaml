@@ -1499,6 +1499,8 @@ components:
               description: >-
                 An array of integers representing the months the fish is available
                 in the Northern hemisphere.
+          description:
+            When you can catch the fish in the Northern hemisphere.
         south:
           type: object
           properties:
@@ -1588,6 +1590,8 @@ components:
               description: >-
                 An array of integers representing the months the fish is available
                 in the Southern hemisphere.
+          description:
+            When you can catch the fish in the Southern hemisphere.
     NHBug:
       type: object
       properties:
@@ -1742,6 +1746,8 @@ components:
               description: >-
                 An array of integers representing the months the bug is available in
                 the Northern hemisphere.
+          description:
+            When you can catch the bug in the Northern hemisphere.
         south:
           type: object
           properties:
@@ -1825,6 +1831,8 @@ components:
               description: >-
                 An array of integers representing the months the bug is available in
                 the Southern hemisphere.
+          description: >-
+            When you can catch the bug in the Southern hemisphere.
     NHSeaCreature:
       type: object
       properties:
@@ -2008,6 +2016,8 @@ components:
               description: >-
                 An array of integers representing the months the sea creature is
                 available in the Northern hemisphere.
+          description:
+            When you can catch the sea creature in the Northern hemisphere.
         south:
           type: object
           properties:
@@ -2100,3 +2110,5 @@ components:
               description: >-
                 An array of integers representing the months the sea creature is
                 available in the Southern hemisphere.
+          description:
+            When you can catch the sea creature in the Southern hemisphere.
