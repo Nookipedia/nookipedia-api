@@ -787,8 +787,8 @@ paths:
     get:
       summary: Single New Horizons artwork
       description: >-
-        Retrieve information about a specific artwork in *Animal Crossing:
-        New Horizons*.
+        Retrieve information about a specific artwork in *Animal Crossing: New
+        Horizons*.
       parameters:
         - in: path
           name: artwork
@@ -918,7 +918,7 @@ components:
           description: Name of the artwork
         url:
           type: string
-          example: https://nookipedia.com/wiki/Academic_Painting
+          example: 'https://nookipedia.com/wiki/Academic_Painting'
           description: The url to the artwork
         image_url:
           type: string
@@ -972,9 +972,9 @@ components:
         authenticity:
           type: string
           example: >-
-            If there is a coffee stain in the top right
-            corner, it is fake. If there is no stain, it is genuine. The forgery
-            has a key taped to the back of the canvas.
+            If there is a coffee stain in the top right corner, it is fake. If
+            there is no stain, it is genuine. The forgery has a key taped to the
+            back of the canvas.
           description: >-
             The description of the difference between real and fake, if there is
             one
@@ -1413,7 +1413,7 @@ components:
         north:
           type: object
           properties:
-            availability:
+            availability_array:
               type: array
               items:
                 type: object
@@ -1429,10 +1429,11 @@ components:
                   time: All day
               description: >-
                 An array of objects, each object holding a months string and the
-                time the critter is availabile during the specified month(s) in the
-                northern hemisphere. Most critters will have just one object. A
-                small number of critters have variable time availability in which
-                case this array will have multiple objects.
+                time the critter is availabile during the specified month(s) in
+                the northern hemisphere. Most critters will have just one
+                object. A small number of critters have variable time
+                availability in which case this array will have multiple
+                objects.
             times_by_month:
               type: object
               properties:
@@ -1476,14 +1477,14 @@ components:
               description: >-
                 An object with twelve numerical keys, each representing a month
                 (`"1"` for January, `"2"` for February, etc.). The value is the
-                times the critter is available during that month. If the critter is
-                unavailable in a month, the value will be `"NA"`.
+                times the critter is available during that month. If the critter
+                is unavailable in a month, the value will be `"NA"`.
             months:
               type: string
               example: Mar – Jun; Sep – Nov
               description: >-
-                The months the fish is available for in the Northern hemisphere. If
-                all year, value will be `"All year"`.
+                The months the fish is available for in the Northern hemisphere.
+                If all year, value will be `"All year"`.
             months_array:
               type: array
               items:
@@ -1497,14 +1498,13 @@ components:
                 - 10
                 - 11
               description: >-
-                An array of integers representing the months the fish is available
-                in the Northern hemisphere.
-          description:
-            When you can catch the fish in the Northern hemisphere.
+                An array of integers representing the months the fish is
+                available in the Northern hemisphere.
+          description: When you can catch the fish in the Northern hemisphere.
         south:
           type: object
           properties:
-            availability:
+            availability_array:
               type: array
               items:
                 type: object
@@ -1520,10 +1520,11 @@ components:
                   time: All day
               description: >-
                 An array of objects, each object holding a months string and the
-                time the critter is availabile during the specified month(s) in the
-                southern hemisphere. Most critters will have just one object. A
-                small number of critters have variable time availability in which
-                case this array will have multiple objects.
+                time the critter is availabile during the specified month(s) in
+                the southern hemisphere. Most critters will have just one
+                object. A small number of critters have variable time
+                availability in which case this array will have multiple
+                objects.
             times_by_month:
               type: object
               properties:
@@ -1567,14 +1568,14 @@ components:
               description: >-
                 An object with twelve numerical keys, each representing a month
                 (`"1"` for January, `"2"` for February, etc.). The value is the
-                times the critter is available during that month. If the critter is
-                unavailable in a month, the value will be `"NA"`.
+                times the critter is available during that month. If the critter
+                is unavailable in a month, the value will be `"NA"`.
             months:
               type: string
               example: Mar – May; Sep – Dec
               description: >-
-                The months the fish is available for in the Southern hemisphere. If
-                all year, value will be `"All year"`.
+                The months the fish is available for in the Southern hemisphere.
+                If all year, value will be `"All year"`.
             months_array:
               type: array
               items:
@@ -1588,10 +1589,9 @@ components:
                 - 11
                 - 12
               description: >-
-                An array of integers representing the months the fish is available
-                in the Southern hemisphere.
-          description:
-            When you can catch the fish in the Southern hemisphere.
+                An array of integers representing the months the fish is
+                available in the Southern hemisphere.
+          description: When you can catch the fish in the Southern hemisphere.
     NHBug:
       type: object
       properties:
@@ -1666,7 +1666,7 @@ components:
         north:
           type: object
           properties:
-            availability:
+            availability_array:
               type: array
               items:
                 type: object
@@ -1680,10 +1680,11 @@ components:
                   time: 8 AM – 5 PM
               description: >-
                 An array of objects, each object holding a months string and the
-                time the critter is availabile during the specified month(s) in the
-                northern hemisphere. Most critters will have just one object. A
-                small number of critters have variable time availability in which
-                case this array will have multiple objects.
+                time the critter is availabile during the specified month(s) in
+                the northern hemisphere. Most critters will have just one
+                object. A small number of critters have variable time
+                availability in which case this array will have multiple
+                objects.
             times_by_month:
               type: object
               properties:
@@ -1727,14 +1728,14 @@ components:
               description: >-
                 An object with twelve numerical keys, each representing a month
                 (`"1"` for January, `"2"` for February, etc.). The value is the
-                times the critter is available during that month. If the critter is
-                unavailable in a month, the value will be `"NA"`.
+                times the critter is available during that month. If the critter
+                is unavailable in a month, the value will be `"NA"`.
             months:
               type: string
               example: Jul – Sep
               description: >-
-                The months the bug is available for in the Northern hemisphere. If
-                all year, value will be `"All year"`.
+                The months the bug is available for in the Northern hemisphere.
+                If all year, value will be `"All year"`.
             months_array:
               type: array
               items:
@@ -1744,14 +1745,13 @@ components:
                 - 8
                 - 9
               description: >-
-                An array of integers representing the months the bug is available in
-                the Northern hemisphere.
-          description:
-            When you can catch the bug in the Northern hemisphere.
+                An array of integers representing the months the bug is
+                available in the Northern hemisphere.
+          description: When you can catch the bug in the Northern hemisphere.
         south:
           type: object
           properties:
-            availability:
+            availability_array:
               type: array
               items:
                 type: object
@@ -1765,10 +1765,11 @@ components:
                   time: 8 AM – 5 PM
               description: >-
                 An array of objects, each object holding a months string and the
-                time the critter is availabile during the specified month(s) in the
-                southern hemisphere. Most critters will have just one object. A
-                small number of critters have variable time availability in which
-                case this array will have multiple objects.
+                time the critter is availabile during the specified month(s) in
+                the southern hemisphere. Most critters will have just one
+                object. A small number of critters have variable time
+                availability in which case this array will have multiple
+                objects.
             times_by_month:
               type: object
               properties:
@@ -1812,14 +1813,14 @@ components:
               description: >-
                 An object with twelve numerical keys, each representing a month
                 (`"1"` for January, `"2"` for February, etc.). The value is the
-                times the critter is available during that month. If the critter is
-                unavailable in a month, the value will be `"NA"`.
+                times the critter is available during that month. If the critter
+                is unavailable in a month, the value will be `"NA"`.
             months:
               type: string
               example: Jan – Mar
               description: >-
-                The months the bug is available for in the Southern hemisphere. If
-                all year, value will be `"All year"`.
+                The months the bug is available for in the Southern hemisphere.
+                If all year, value will be `"All year"`.
             months_array:
               type: array
               items:
@@ -1829,10 +1830,9 @@ components:
                 - 2
                 - 3
               description: >-
-                An array of integers representing the months the bug is available in
-                the Southern hemisphere.
-          description: >-
-            When you can catch the bug in the Southern hemisphere.
+                An array of integers representing the months the bug is
+                available in the Southern hemisphere.
+          description: When you can catch the bug in the Southern hemisphere.
     NHSeaCreature:
       type: object
       properties:
@@ -1927,7 +1927,7 @@ components:
         north:
           type: object
           properties:
-            availability:
+            availability_array:
               type: array
               items:
                 type: object
@@ -1941,10 +1941,11 @@ components:
                   time: All day
               description: >-
                 An array of objects, each object holding a months string and the
-                time the critter is availabile during the specified month(s) in the
-                northern hemisphere. Most critters will have just one object. A
-                small number of critters have variable time availability in which
-                case this array will have multiple objects.
+                time the critter is availabile during the specified month(s) in
+                the northern hemisphere. Most critters will have just one
+                object. A small number of critters have variable time
+                availability in which case this array will have multiple
+                objects.
             times_by_month:
               type: object
               properties:
@@ -1988,8 +1989,8 @@ components:
               description: >-
                 An object with twelve numerical keys, each representing a month
                 (`"1"` for January, `"2"` for February, etc.). The value is the
-                times the critter is available during that month. If the critter is
-                unavailable in a month, the value will be `"NA"`.
+                times the critter is available during that month. If the critter
+                is unavailable in a month, the value will be `"NA"`.
             months:
               type: string
               example: Jul – Sep
@@ -2016,12 +2017,11 @@ components:
               description: >-
                 An array of integers representing the months the sea creature is
                 available in the Northern hemisphere.
-          description:
-            When you can catch the sea creature in the Northern hemisphere.
+          description: When you can catch the sea creature in the Northern hemisphere.
         south:
           type: object
           properties:
-            availability:
+            availability_array:
               type: array
               items:
                 type: object
@@ -2035,10 +2035,11 @@ components:
                   time: All day
               description: >-
                 An array of objects, each object holding a months string and the
-                time the critter is availabile during the specified month(s) in the
-                southern hemisphere. Most critters will have just one object. A
-                small number of critters have variable time availability in which
-                case this array will have multiple objects.
+                time the critter is availabile during the specified month(s) in
+                the southern hemisphere. Most critters will have just one
+                object. A small number of critters have variable time
+                availability in which case this array will have multiple
+                objects.
             times_by_month:
               type: object
               properties:
@@ -2082,8 +2083,8 @@ components:
               description: >-
                 An object with twelve numerical keys, each representing a month
                 (`"1"` for January, `"2"` for February, etc.). The value is the
-                times the critter is available during that month. If the critter is
-                unavailable in a month, the value will be `"NA"`.
+                times the critter is available during that month. If the critter
+                is unavailable in a month, the value will be `"NA"`.
             months:
               type: string
               example: Jan – Mar
@@ -2110,5 +2111,4 @@ components:
               description: >-
                 An array of integers representing the months the sea creature is
                 available in the Southern hemisphere.
-          description:
-            When you can catch the sea creature in the Southern hemisphere.
+          description: When you can catch the sea creature in the Southern hemisphere.
