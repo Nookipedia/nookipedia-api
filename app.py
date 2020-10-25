@@ -332,10 +332,12 @@ def call_cargo(parameters, request_args): # Request args are passed in just for 
                 # If image, fetch the CDN thumbnail URL:
                 try:
                     print(str(obj['title']))
+
                     # Only fetch the image if this object actually has an image to fetch
                     if 'image_url' in item:
                         r = requests.get(BASE_URL_WIKI + 'Special:FilePath/' + item['image_url'].rsplit('/', 1)[-1] + '?width=' + request.args.get('thumbsize'))
                         item['image_url'] = r.url
+
                     # If this is a painting that has a fake, fetch that too
                     if item.get('has_fake','0')=='1':
                         r = requests.get(BASE_URL_WIKI + 'Special:FilePath/' + item['fake_image_url'].rsplit('/', 1)[-1] + '?width=' + request.args.get('thumbsize'))
@@ -562,7 +564,7 @@ def months_to_array(data):
         if (request.headers.get('Accept-Version') and (request.headers.get('Accept-Version')[:3] in ('1.0', '1.1'))):
             obj['n_availability_array'] = n_months_array
             obj['s_availability_array'] = s_months_array
-        else:
+        elif (request.headers.get('Accept-Version') and (request.headers.get('Accept-Version')[:3] in ('1.2'))):
             if 'n_availability' in obj:
                 obj['months_north'] = obj['n_availability']
                 del obj['n_availability']
@@ -570,6 +572,15 @@ def months_to_array(data):
                 del obj['s_availability']
             obj['months_north_array'] = n_months_array
             obj['months_south_array'] = s_months_array
+        else:
+            if 'n_availability' in obj:
+                obj['north']['months'] = obj['n_availability']
+                del obj['n_availability']
+                obj['south']['months'] = obj['s_availability']
+                del obj['s_availability']
+            obj['north']['months_array'] = n_months_array
+            obj['south']['months_array'] = s_months_array
+            
 
         n_months_array = []
         s_months_array = []
@@ -611,44 +622,90 @@ def format_critters(data):
             if 'catchphrase3' in obj:
                 del obj['catchphrase3']
 
-        # Create array of times and corresponding months for those times:
-        availability_array_north = [ {'months': obj['time_n_months'], 'time': obj['time'] } ]
-        availability_array_south = [ {'months': obj['time_s_months'], 'time': obj['time'] } ]
-        if len(obj['time2']) > 0:
-            availability_array_north.append({'months': obj['time2_n_months'], 'time': obj['time2'] })
-            availability_array_south.append({'months': obj['time2_s_months'], 'time': obj['time2'] })
-        obj['availability_north'] = availability_array_north
-        obj['availability_south'] = availability_array_south
 
-        # Create arrays for times by month:
-        obj['times_by_month_north'] = {
-            '1': obj['n_m1_time'],
-            '2': obj['n_m2_time'],
-            '3': obj['n_m3_time'],
-            '4': obj['n_m4_time'],
-            '5': obj['n_m5_time'],
-            '6': obj['n_m6_time'],
-            '7': obj['n_m7_time'],
-            '8': obj['n_m8_time'],
-            '9': obj['n_m9_time'],
-            '10': obj['n_m10_time'],
-            '11': obj['n_m11_time'],
-            '12': obj['n_m12_time']
-        }
-        obj['times_by_month_south'] = {
-            '1': obj['s_m1_time'],
-            '2': obj['s_m2_time'],
-            '3': obj['s_m3_time'],
-            '4': obj['s_m4_time'],
-            '5': obj['s_m5_time'],
-            '6': obj['s_m6_time'],
-            '7': obj['s_m7_time'],
-            '8': obj['s_m8_time'],
-            '9': obj['s_m9_time'],
-            '10': obj['s_m10_time'],
-            '11': obj['s_m11_time'],
-            '12': obj['s_m12_time']
-        }
+        
+
+        # Create array of times and corresponding months for those times:
+        if request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] in ('1.0','1.1','1.2'):
+            availability_array_north = [ {'months': obj['time_n_months'], 'time': obj['time'] } ]
+            availability_array_south = [ {'months': obj['time_s_months'], 'time': obj['time'] } ]
+            if len(obj['time2']) > 0:
+                availability_array_north.append({'months': obj['time2_n_months'], 'time': obj['time2'] })
+                availability_array_south.append({'months': obj['time2_s_months'], 'time': obj['time2'] })
+            obj['availability_north'] = availability_array_north
+            obj['availability_south'] = availability_array_south
+
+            # Create arrays for times by month:
+            obj['times_by_month_north'] = {
+                '1': obj['n_m1_time'],
+                '2': obj['n_m2_time'],
+                '3': obj['n_m3_time'],
+                '4': obj['n_m4_time'],
+                '5': obj['n_m5_time'],
+                '6': obj['n_m6_time'],
+                '7': obj['n_m7_time'],
+                '8': obj['n_m8_time'],
+                '9': obj['n_m9_time'],
+                '10': obj['n_m10_time'],
+                '11': obj['n_m11_time'],
+                '12': obj['n_m12_time']
+            }
+            obj['times_by_month_south'] = {
+                '1': obj['s_m1_time'],
+                '2': obj['s_m2_time'],
+                '3': obj['s_m3_time'],
+                '4': obj['s_m4_time'],
+                '5': obj['s_m5_time'],
+                '6': obj['s_m6_time'],
+                '7': obj['s_m7_time'],
+                '8': obj['s_m8_time'],
+                '9': obj['s_m9_time'],
+                '10': obj['s_m10_time'],
+                '11': obj['s_m11_time'],
+                '12': obj['s_m12_time']
+            }
+        else:
+            # North and south JSON to separate data by hemisphere
+            north = {}
+            south = {}
+            
+            north['availability_array'] = [ {'months': obj['time_n_months'], 'time': obj['time'] } ]
+            south['availability_array'] = [ {'months': obj['time_s_months'], 'time': obj['time'] } ]
+            if len(obj['time2']) > 0:
+                north['availability_array'].append({'months': obj['time2_n_months'], 'time': obj['time2'] })
+                south['availability_array'].append({'months': obj['time2_s_months'], 'time': obj['time2'] })
+
+            # Create arrays for times by month:
+            north['times_by_month'] = {
+                '1': obj['n_m1_time'],
+                '2': obj['n_m2_time'],
+                '3': obj['n_m3_time'],
+                '4': obj['n_m4_time'],
+                '5': obj['n_m5_time'],
+                '6': obj['n_m6_time'],
+                '7': obj['n_m7_time'],
+                '8': obj['n_m8_time'],
+                '9': obj['n_m9_time'],
+                '10': obj['n_m10_time'],
+                '11': obj['n_m11_time'],
+                '12': obj['n_m12_time']
+            }
+            south['times_by_month'] = {
+                '1': obj['s_m1_time'],
+                '2': obj['s_m2_time'],
+                '3': obj['s_m3_time'],
+                '4': obj['s_m4_time'],
+                '5': obj['s_m5_time'],
+                '6': obj['s_m6_time'],
+                '7': obj['s_m7_time'],
+                '8': obj['s_m8_time'],
+                '9': obj['s_m9_time'],
+                '10': obj['s_m10_time'],
+                '11': obj['s_m11_time'],
+                '12': obj['s_m12_time']
+            }
+            obj['north'] = north
+            obj['south'] = south
 
         # Remove fields that were added to above objects:
         for i in range(1, 13):
@@ -832,6 +889,7 @@ def get_recipe_list(limit,tables,fields):
             results_array.append(format_recipe(recipe))
     return jsonify(results_array)
 
+
 #################################
 # STATIC RENDERS
 #################################
@@ -996,6 +1054,7 @@ def get_nh_art(art):
         abort(404, description=error_response('Resource not found.', 'Please ensure requested resource exists.'))
 
     art = art.replace('_', ' ')
+
     limit = '1'
     tables = 'nh_art'
     fields = 'name,_pageName=url,image_url,has_fake,fake_image_url,art_name,author,year,art_style,description,buy_price,sell_price,availability,authenticity,width,length'
@@ -1022,6 +1081,7 @@ def get_nh_art_all():
         fields = 'name'
     else:
         fields = 'name,_pageName=url,image_url,has_fake,fake_image_url,art_name,author,year,art_style,description,buy_price,sell_price,availability,authenticity,width,length'
+
 
     return get_art_list(limit,tables,fields)
 
