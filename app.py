@@ -32,7 +32,7 @@ DB_ADMIN_KEYS = config.get('DB', 'DB_ADMIN_KEYS')
 # INSTANTIATE APP:
 app = Flask(__name__)
 CORS(app)
-app.config['JSON_SORT_KEYS'] = False # Prevent from automatically sorting JSON alphabetically
+app.config['JSON_SORT_KEYS'] = False  # Prevent from automatically sorting JSON alphabetically
 app.config['SECRET_KEY'] = config.get('APP', 'SECRET_KEY')
 
 # SET CACHE:
@@ -290,7 +290,7 @@ def month_to_string(month):
 
 # Make a call to Nookipedia's Cargo API using supplied parameters:
 @cache.memoize(3600)
-def call_cargo(parameters, request_args): # Request args are passed in just for the sake of caching
+def call_cargo(parameters, request_args):  # Request args are passed in just for the sake of caching
     cargoquery = []
     try:
         # The default query size is 50 normally, we can actually change it here if we wanted
@@ -299,13 +299,13 @@ def call_cargo(parameters, request_args): # Request args are passed in just for 
         nestedparameters = parameters.copy()
         # Set up the offset, if our cargolimit is more than cargomax we'll end up doing more than one query with an offset
         while True:
-            nestedparameters['limit'] = str(cargolimit-len(cargoquery)) # Get cargomax items or less at a time
-            if nestedparameters['limit']=='0': #Check if we've hit the limit
+            nestedparameters['limit'] = str(cargolimit-len(cargoquery))  # Get cargomax items or less at a time
+            if nestedparameters['limit']=='0':  #Check if we've hit the limit
                 break
             nestedparameters['offset'] = str(len(cargoquery))
             r = requests.get(url = BASE_URL_API, params = nestedparameters)
             cargochunk = r.json()['cargoquery']
-            if len(cargochunk) == 0: #Check if we've hit the end
+            if len(cargochunk) == 0:  #Check if we've hit the end
                 break
             cargoquery.extend(cargochunk)
         print('Return: {}'.format(str(r)))
@@ -830,7 +830,7 @@ def format_recipe(data):
 
     # Change the material# and material#_num columns to be one materials column
     data['materials'] = []
-    for i in range(1,7): # material1 to material6
+    for i in range(1,7):  # material1 to material6
         if len(data[f'material{i}'])>0:
             data['materials'].append({
                 'name':data[f'material{i}'],
@@ -852,7 +852,7 @@ def format_recipe(data):
     
     # Do the same for buy#_price and buy#_currency columns
     data['buy'] = []
-    for i in range(1,3): # Technically overkill, but it'd be easy to add a third buy column if it ever matters
+    for i in range(1,3):  # Technically overkill, but it'd be easy to add a third buy column if it ever matters
         if len(data[f'buy{i}_price']) > 0:
             data['buy'].append({
                 'price':int(data[f'buy{i}_price']),
