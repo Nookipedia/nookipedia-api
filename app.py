@@ -10,6 +10,7 @@ from flask import request
 from flask import jsonify
 from flask import current_app
 from flask import g
+from flask_cors import CORS
 from flask_caching import Cache
 import flask_monitoringdashboard as dashboard
 
@@ -30,6 +31,7 @@ DB_ADMIN_KEYS = config.get('DB', 'DB_ADMIN_KEYS')
 
 # INSTANTIATE APP:
 app = Flask(__name__)
+CORS(app)
 app.config['JSON_SORT_KEYS'] = False # Prevent from automatically sorting JSON alphabetically
 app.config['SECRET_KEY'] = config.get('APP', 'SECRET_KEY')
 
