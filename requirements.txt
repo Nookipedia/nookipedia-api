@@ -6,6 +6,7 @@ colorhash==1.0.2
 configparser==5.0.0
 Flask==1.1.2
 Flask-Caching==1.9.0
+Flask-Cors==3.0.9
 Flask-MonitoringDashboard==3.1.0
 idna==2.10
 itsdangerous==1.1.0
