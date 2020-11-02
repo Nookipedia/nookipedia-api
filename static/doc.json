@@ -758,7 +758,7 @@
     "/nh/art": {
       "get": {
         "summary": "All New Horizons artwork",
-        "description": "Get a list of all artwork and their details in *Animal Crossing: New Horizons*. Note that while cached, this endpoint will be very responsive; however, hitting the endpoint in between cache refreshes can result in a response time of 5 to 15 seconds.",
+        "description": "Get a list of all artwork and their details in *Animal Crossing: New Horizons*.",
         "parameters": [
           {
             "in": "header",
@@ -981,7 +981,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/NHArtwork"
+                    "$ref": "#/components/schemas/NHRecipe"
                   }
                 }
               }
@@ -1151,93 +1151,6 @@
             "type": "string",
             "example": "Details unknown.",
             "description": "A more in-depth description of the issue, including parameters and/or error text when available."
-          }
-        }
-      },
-      "NHArtwork": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "example": "Academic Painting",
-            "description": "Name of the artwork"
-          },
-          "url": {
-            "type": "string",
-            "example": "https://nookipedia.com/wiki/Academic_Painting",
-            "description": "The url to the artwork"
-          },
-          "image_url": {
-            "type": "string",
-            "example": "https://dodo.ac/np/images/e/e8/Academic_Painting_NH_Icon.png",
-            "description": "The image URL for the real artwork"
-          },
-          "has_fake": {
-            "type": "boolean",
-            "example": true,
-            "description": "Whether the artwork has a fake or not"
-          },
-          "fake_image_url": {
-            "type": "string",
-            "example": "https://dodo.ac/np/images/1/13/Academic_Painting_%28Forgery%29_NH_Icon.png",
-            "description": "The image url for the fake artwork, if it exists"
-          },
-          "art_name": {
-            "type": "string",
-            "example": "Vitruvian Man",
-            "description": "The name of the real-life analog to the artwork"
-          },
-          "author": {
-            "type": "string",
-            "example": "Leonardo da Vinci",
-            "description": "The author of the real-life analog to the artwork"
-          },
-          "year": {
-            "type": "string",
-            "example": "circa 1487",
-            "description": "The year that the real-life analog was made"
-          },
-          "art_style": {
-            "type": "string",
-            "example": "Pen and ink on paper",
-            "description": "The art style of the artwork"
-          },
-          "description": {
-            "type": "string",
-            "example": "This drawing is based on the &quot;ideal&quot; human-body ratio, as stated in &quot;De architectura.&quot; &quot;De architectura&quot; was a treatise by Vitruvius, an architect from the early 1st century BCE.",
-            "description": "The description of the artwork"
-          },
-          "buy_price": {
-            "type": "integer",
-            "example": 4980,
-            "description": "The buy price of the artwork"
-          },
-          "sell_price": {
-            "type": "integer",
-            "example": 1245,
-            "description": "The sell price of the artwork"
-          },
-          "availability": {
-            "type": "string",
-            "example": "Jolly Redd's Treasure Trawler",
-            "description": "The availability of the artwork"
-          },
-          "authenticity": {
-            "type": "string",
-            "example": "If there is a coffee stain in the top right corner, it is fake. If there is no stain, it is genuine. The forgery has a key taped to the back of the canvas.",
-            "description": "The description of the difference between real and fake, if there is one"
-          },
-          "width": {
-            "type": "number",
-            "format": "float",
-            "example": 1,
-            "description": "The width of the artwork"
-          },
-          "length": {
-            "type": "number",
-            "format": "float",
-            "example": 1,
-            "description": "The length of the artwork"
           }
         }
       },
@@ -2449,6 +2362,93 @@
           }
         }
       },
+      "NHArtwork": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Academic Painting",
+            "description": "Name of the artwork."
+          },
+          "url": {
+            "type": "string",
+            "example": "https://nookipedia.com/wiki/Academic_Painting",
+            "description": "Link to the respective Nookipedia article."
+          },
+          "image_url": {
+            "type": "string",
+            "example": "https://dodo.ac/np/images/e/e8/Academic_Painting_NH_Icon.png",
+            "description": "Image of the real artwork. dodo.ac is Nookipedia's CDN server."
+          },
+          "has_fake": {
+            "type": "boolean",
+            "example": true,
+            "description": "Whether the artwork has a fake or not."
+          },
+          "fake_image_url": {
+            "type": "string",
+            "example": "https://dodo.ac/np/images/1/13/Academic_Painting_%28Forgery%29_NH_Icon.png",
+            "description": "Image of the fake artwork, if it exists."
+          },
+          "art_name": {
+            "type": "string",
+            "example": "Vitruvian Man",
+            "description": "The name of the real-life analog to the artwork."
+          },
+          "author": {
+            "type": "string",
+            "example": "Leonardo da Vinci",
+            "description": "The author of the real-life analog to the artwork."
+          },
+          "year": {
+            "type": "string",
+            "example": "circa 1487",
+            "description": "The year that the real-life analog was made."
+          },
+          "art_style": {
+            "type": "string",
+            "example": "Pen and ink on paper",
+            "description": "The art style of the artwork."
+          },
+          "description": {
+            "type": "string",
+            "example": "This drawing is based on the &quot;ideal&quot; human-body ratio, as stated in &quot;De architectura.&quot; &quot;De architectura&quot; was a treatise by Vitruvius, an architect from the early 1st century BCE.",
+            "description": "The description of the artwork."
+          },
+          "buy_price": {
+            "type": "integer",
+            "example": 4980,
+            "description": "The number of Bells the artwork may be purchased for."
+          },
+          "sell_price": {
+            "type": "integer",
+            "example": 1245,
+            "description": "The number of Bells the artwork can be sold to Nook's store for, when it is genuine."
+          },
+          "availability": {
+            "type": "string",
+            "example": "Jolly Redd's Treasure Trawler",
+            "description": "The availability of the artwork."
+          },
+          "authenticity": {
+            "type": "string",
+            "example": "If there is a coffee stain in the top right corner, it is fake. If there is no stain, it is genuine. The forgery has a key taped to the back of the canvas.",
+            "description": "The description of the difference between real and fake, if there is one"
+          },
+          "width": {
+            "type": "number",
+            "format": "float",
+            "example": 1,
+            "description": "The width of the artwork."
+          },
+          "length": {
+            "type": "number",
+            "format": "float",
+            "example": 1,
+            "description": "The length of the artwork."
+          }
+        }
+      },
       "NHRecipe": {
         "type": "object",
         "properties": {
@@ -2503,7 +2503,7 @@
             "example": 0,
             "description": "How many recipes the player has to have learned to unlock this one."
           },
-          "diy_availability": {
+          "availability": {
             "type": "array",
             "items": {
               "type": "object",
@@ -2525,7 +2525,8 @@
                 "from": "Nook's Cranny",
                 "note": ""
               }
-            ]
+            ],
+            "description": "Where the recipe may be obtained from. `from` is a brief description of the source; `note`, when provided, provides additional details."
           },
           "materials": {
             "type": "array",
