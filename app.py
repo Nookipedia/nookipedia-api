@@ -906,7 +906,7 @@ def get_recipe_list(limit, tables, fields):
     results_array = []
     if request.args.get('excludedetails') == 'true':
         for recipe in cargo_results:
-            results_array.append(recipe['en_name'])
+            results_array.append(recipe['name'])
     else:
         for recipe in cargo_results:
             results_array.append(format_recipe(recipe))
@@ -1128,7 +1128,7 @@ def get_nh_recipe(recipe):
     recipe = recipe.replace('_', ' ')
     limit = '1'
     tables = 'nh_recipe'
-    fields = 'en_name,_pageName=url,image_url,serial_id,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,recipes_to_unlock,diy_availability1,diy_availability1_note,diy_availability2,diy_availability2_note,material1,material1_num,material2,material2_num,material3,material3_num,material4,material4_num,material5,material5_num,material6,material6_num'
+    fields = '_pageName=url,en_name=name,image_url,serial_id,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,recipes_to_unlock,diy_availability1,diy_availability1_note,diy_availability2,diy_availability2_note,material1,material1_num,material2,material2_num,material3,material3_num,material4,material4_num,material5,material5_num,material6,material6_num'
     where = f'en_name="{recipe}"'
     params = {'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where, 'limit': limit}
 
@@ -1148,7 +1148,7 @@ def get_nh_recipe_all():
 
     limit = '600'
     tables = 'nh_recipe'
-    fields = 'en_name,_pageName=url,image_url,serial_id,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,recipes_to_unlock,diy_availability1,diy_availability1_note,diy_availability2,diy_availability2_note,material1,material1_num,material2,material2_num,material3,material3_num,material4,material4_num,material5,material5_num,material6,material6_num'
+    fields = '_pageName=url,en_name=name,image_url,serial_id,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,recipes_to_unlock,diy_availability1,diy_availability1_note,diy_availability2,diy_availability2_note,material1,material1_num,material2,material2_num,material3,material3_num,material4,material4_num,material5,material5_num,material6,material6_num'
 
     return get_recipe_list(limit, tables, fields)
 
