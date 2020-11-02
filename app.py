@@ -860,10 +860,10 @@ def format_recipe(data):
         del data[f'material{i}']
         del data[f'material{i}_num']
 
-    data['diy_availability'] = []
+    data['availability'] = []
     for i in range(1, 3):
         if len(data[f'diy_availability{i}']) > 0:
-            data['diy_availability'].append({
+            data['availability'].append({
                 'from': data[f'diy_availability{i}'],
                 'note': data[f'diy_availability{i}_note']
             })
