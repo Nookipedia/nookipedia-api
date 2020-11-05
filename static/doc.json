@@ -2415,12 +2415,12 @@
             "example": "This drawing is based on the &quot;ideal&quot; human-body ratio, as stated in &quot;De architectura.&quot; &quot;De architectura&quot; was a treatise by Vitruvius, an architect from the early 1st century BCE.",
             "description": "The description of the artwork."
           },
-          "buy_price": {
+          "buy": {
             "type": "integer",
             "example": 4980,
             "description": "The number of Bells the artwork may be purchased for."
           },
-          "sell_price": {
+          "sell": {
             "type": "integer",
             "example": 1245,
             "description": "The number of Bells the artwork can be sold to Nook's store for, when it is genuine."
