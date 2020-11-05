@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "title": "Nookipedia",
-    "description": "The Nookipedia API provides endpoints for retrieving Animal Crossing data pulled from the [Nookipedia wiki](https://nookipedia.com/wiki/Main_Page). A couple of the key benefits of using the Nookipedia API is access to data spanning the entire *Animal Crossing* series, as well as information that is constantly updated and expanding as editors work on the wiki.<br><br>This API launched in July 2020 and is under active development. At the moment, we currently have endpoints to retrieve information about *Animal Crossing* villagers, as well as *Animal Crossing: New Horizons* bugs, fish, and sea creatures. In the horizon are endpoints for *New Horizons* furniture and clothing, as well as critters from previous games.<br><br>Access to the Nookipedia API requires obtaining a key. This is so we can manage our scale and provide better support for our users. To request access to the API, please fill out [this form](https://forms.gle/wLwtXLerKhfDrRLY8).<br><br>This API is 'version 2' of our [original API](https://nookipedia.com/api/). While the previous API scraped information directly from the wiki, this new edition of the API pulls data from a structured and constrained database, resulting in higher-quality data, better searching, and support for filtering.",
+    "description": "The Nookipedia API provides endpoints for retrieving Animal Crossing data pulled from the [Nookipedia wiki](https://nookipedia.com/wiki/Main_Page). A couple of the key benefits of using the Nookipedia API is access to data spanning the entire *Animal Crossing* series, as well as information that is constantly updated and expanding as editors work on the wiki.<br><br>This API launched in July 2020 and is under active development. At the moment, we currently have endpoints to retrieve information about *Animal Crossing* villagers, as well as *Animal Crossing: New Horizons* bugs, fish, sea creatures, artworks, and recipes. Coming soon are endpoints for *New Horizons* furniture, clothing, and fossils, as well as critters from previous games.<br><br>Access to the Nookipedia API requires obtaining a key. This is so we can manage our scale and provide better support for our users. To request access to the API, please fill out [this form](https://forms.gle/wLwtXLerKhfDrRLY8).<br><br>This API is 'version 2' of our [original API](https://nookipedia.com/api/). While the previous API scraped information directly from the wiki, this new edition of the API pulls data from a structured and constrained database, resulting in higher-quality data, better searching, and support for filtering.",
     "version": "1.3.0"
   },
   "servers": [
@@ -758,7 +758,7 @@
     "/nh/art": {
       "get": {
         "summary": "All New Horizons artwork",
-        "description": "Get a list of all artwork and their details in *Animal Crossing: New Horizons*. Note that while cached, this endpoint will be very responsive; however, hitting the endpoint in between cache refreshes can result in a response time of 5 to 15 seconds.",
+        "description": "Get a list of all artwork and their details in *Animal Crossing: New Horizons*.",
         "parameters": [
           {
             "in": "header",
@@ -920,6 +920,172 @@
           }
         }
       }
+    },
+    "/nh/recipe": {
+      "get": {
+        "summary": "All New Horizons recipes",
+        "description": "Get a list of all recipes and their details in *Animal Crossing: New Horizons*.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-API-KEY",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Your UUID secret key, granted to you by the Nookipedia team. Required for accessing the API."
+          },
+          {
+            "in": "header",
+            "name": "Accept-Version",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The version of the API you are calling, written as `1.0.0`. This is specified as required as good practice, but it is not actually enforced by the API. If you do not specify a version, you will be served the latest version, which may eventually result in breaking changes."
+          },
+          {
+            "in": "query",
+            "name": "material",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Specify a material to only get recipes that use that material. You can specify `material` up to six times (no recipe uses more than six materials)."
+          },
+          {
+            "in": "query",
+            "name": "excludedetails",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "When set to `true`, only recipe names are returned. Instead of an array of objects with all details, the return will be an array of strings."
+          },
+          {
+            "in": "query",
+            "name": "thumbsize",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL. This parameter is generally not recommended unless you absolutely need it, as each returned thumbnail link with a custom size requires an additional network call, which can result in a long response time if calling this endpoint in between cache refreshes."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A JSON array of artwork.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NHRecipe"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Failed to authenticate user from `X-API-KEY`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error401"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "There was an error fetching the requested data.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/nh/recipe/{item}": {
+      "get": {
+        "summary": "Single New Horizons recipe",
+        "description": "Retrieve information about a specific recipe in *Animal Crossing: New Horizons*.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "item",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The name of the item you wish to retrieve recipe information about."
+          },
+          {
+            "in": "header",
+            "name": "X-API-KEY",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Your UUID secret key, granted to you by the Nookipedia team. Required for accessing the API."
+          },
+          {
+            "in": "header",
+            "name": "Accept-Version",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The version of the API you are calling, written as `1.0.0`. This is specified as required as good practice, but it is not actually enforced by the API. If you do not specify a version, you will be served the latest version, which may eventually result in breaking changes."
+          },
+          {
+            "in": "query",
+            "name": "thumbsize",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL. This parameter is generally not recommended unless you absolutely need it, as each returned thumbnail link with a custom size requires an additional network call, which can result in a long response time if calling this endpoint in between cache refreshes."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A JSON object describing the artwork.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NHRecipe"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Failed to authenticate user from `X-API-KEY`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error401"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "There was an error fetching the requested data.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -985,93 +1151,6 @@
             "type": "string",
             "example": "Details unknown.",
             "description": "A more in-depth description of the issue, including parameters and/or error text when available."
-          }
-        }
-      },
-      "NHArtwork": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "example": "Academic Painting",
-            "description": "Name of the artwork"
-          },
-          "url": {
-            "type": "string",
-            "example": "https://nookipedia.com/wiki/Academic_Painting",
-            "description": "The url to the artwork"
-          },
-          "image_url": {
-            "type": "string",
-            "example": "https://dodo.ac/np/images/e/e8/Academic_Painting_NH_Icon.png",
-            "description": "The image URL for the real artwork"
-          },
-          "has_fake": {
-            "type": "boolean",
-            "example": true,
-            "description": "Whether the artwork has a fake or not"
-          },
-          "fake_image_url": {
-            "type": "string",
-            "example": "https://dodo.ac/np/images/1/13/Academic_Painting_%28Forgery%29_NH_Icon.png",
-            "description": "The image url for the fake artwork, if it exists"
-          },
-          "art_name": {
-            "type": "string",
-            "example": "Vitruvian Man",
-            "description": "The name of the real-life analog to the artwork"
-          },
-          "author": {
-            "type": "string",
-            "example": "Leonardo da Vinci",
-            "description": "The author of the real-life analog to the artwork"
-          },
-          "year": {
-            "type": "string",
-            "example": "circa 1487",
-            "description": "The year that the real-life analog was made"
-          },
-          "art_style": {
-            "type": "string",
-            "example": "Pen and ink on paper",
-            "description": "The art style of the artwork"
-          },
-          "description": {
-            "type": "string",
-            "example": "This drawing is based on the &quot;ideal&quot; human-body ratio, as stated in &quot;De architectura.&quot; &quot;De architectura&quot; was a treatise by Vitruvius, an architect from the early 1st century BCE.",
-            "description": "The description of the artwork"
-          },
-          "buy_price": {
-            "type": "integer",
-            "example": 4980,
-            "description": "The buy price of the artwork"
-          },
-          "sell_price": {
-            "type": "integer",
-            "example": 1245,
-            "description": "The sell price of the artwork"
-          },
-          "availability": {
-            "type": "string",
-            "example": "Jolly Redd's Treasure Trawler",
-            "description": "The availability of the artwork"
-          },
-          "authenticity": {
-            "type": "string",
-            "example": "If there is a coffee stain in the top right corner, it is fake. If there is no stain, it is genuine. The forgery has a key taped to the back of the canvas.",
-            "description": "The description of the difference between real and fake, if there is one"
-          },
-          "width": {
-            "type": "number",
-            "format": "float",
-            "example": 1,
-            "description": "The width of the artwork"
-          },
-          "length": {
-            "type": "number",
-            "format": "float",
-            "example": 1,
-            "description": "The length of the artwork"
           }
         }
       },
@@ -2280,6 +2359,199 @@
               }
             },
             "description": "When you can catch the sea creature in the Southern hemisphere."
+          }
+        }
+      },
+      "NHArtwork": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Academic Painting",
+            "description": "Name of the artwork."
+          },
+          "url": {
+            "type": "string",
+            "example": "https://nookipedia.com/wiki/Academic_Painting",
+            "description": "Link to the respective Nookipedia article."
+          },
+          "image_url": {
+            "type": "string",
+            "example": "https://dodo.ac/np/images/e/e8/Academic_Painting_NH_Icon.png",
+            "description": "Image of the real artwork. dodo.ac is Nookipedia's CDN server."
+          },
+          "has_fake": {
+            "type": "boolean",
+            "example": true,
+            "description": "Whether the artwork has a fake or not."
+          },
+          "fake_image_url": {
+            "type": "string",
+            "example": "https://dodo.ac/np/images/1/13/Academic_Painting_%28Forgery%29_NH_Icon.png",
+            "description": "Image of the fake artwork, if it exists."
+          },
+          "art_name": {
+            "type": "string",
+            "example": "Vitruvian Man",
+            "description": "The name of the real-life analog to the artwork."
+          },
+          "author": {
+            "type": "string",
+            "example": "Leonardo da Vinci",
+            "description": "The author of the real-life analog to the artwork."
+          },
+          "year": {
+            "type": "string",
+            "example": "circa 1487",
+            "description": "The year that the real-life analog was made."
+          },
+          "art_style": {
+            "type": "string",
+            "example": "Pen and ink on paper",
+            "description": "The art style of the artwork."
+          },
+          "description": {
+            "type": "string",
+            "example": "This drawing is based on the &quot;ideal&quot; human-body ratio, as stated in &quot;De architectura.&quot; &quot;De architectura&quot; was a treatise by Vitruvius, an architect from the early 1st century BCE.",
+            "description": "The description of the artwork."
+          },
+          "buy_price": {
+            "type": "integer",
+            "example": 4980,
+            "description": "The number of Bells the artwork may be purchased for."
+          },
+          "sell_price": {
+            "type": "integer",
+            "example": 1245,
+            "description": "The number of Bells the artwork can be sold to Nook's store for, when it is genuine."
+          },
+          "availability": {
+            "type": "string",
+            "example": "Jolly Redd's Treasure Trawler",
+            "description": "The availability of the artwork."
+          },
+          "authenticity": {
+            "type": "string",
+            "example": "If there is a coffee stain in the top right corner, it is fake. If there is no stain, it is genuine. The forgery has a key taped to the back of the canvas.",
+            "description": "The description of the difference between real and fake, if there is one"
+          },
+          "width": {
+            "type": "number",
+            "format": "float",
+            "example": 1,
+            "description": "The width of the artwork."
+          },
+          "length": {
+            "type": "number",
+            "format": "float",
+            "example": 1,
+            "description": "The length of the artwork."
+          }
+        }
+      },
+      "NHRecipe": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Flimsy Axe",
+            "description": "The name of the recipe."
+          },
+          "url": {
+            "type": "string",
+            "example": "https://nookipedia.com/wiki/Item:Flimsy_Axe_(New_Horizons)",
+            "description": "Link to the respective Nookipedia article."
+          },
+          "image_url": {
+            "type": "string",
+            "example": "https://dodo.ac/np/images/a/ac/Flimsy_Axe_NH_DIY_Icon.png",
+            "description": "Image of the item the recipe crafts. dodo.ac is Nookipedia's CDN server."
+          },
+          "serial_id": {
+            "type": "integer",
+            "example": 100,
+            "description": "The unique in-game ID of the recipe."
+          },
+          "buy": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "price": {
+                  "type": "integer"
+                },
+                "currency": {
+                  "type": "string"
+                }
+              }
+            },
+            "example": [
+              {
+                "price": 280,
+                "currency": "Bells"
+              }
+            ],
+            "description": "An array of prices, for when the recipe may be purchased with Bells, Nook Miles, etc. The majority of recipes cannot be bought (in which case this array will be empty)."
+          },
+          "sell": {
+            "type": "integer",
+            "example": 200,
+            "description": "The number of Bells the sea creature can be sold to Nook's store for."
+          },
+          "recipes_to_unlock": {
+            "type": "integer",
+            "example": 0,
+            "description": "How many recipes the player has to have learned to unlock this one."
+          },
+          "availability": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "from": {
+                  "type": "string"
+                },
+                "note": {
+                  "type": "string"
+                }
+              }
+            },
+            "example": [
+              {
+                "from": "Tom Nook",
+                "note": "Obtained through Tom Nook's DIY Workshop at the beginning of the game."
+              },
+              {
+                "from": "Nook's Cranny",
+                "note": ""
+              }
+            ],
+            "description": "Where the recipe may be obtained from. `from` is a brief description of the source; `note`, when provided, provides additional details."
+          },
+          "materials": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "count": {
+                  "type": "integer"
+                }
+              }
+            },
+            "example": [
+              {
+                "name": "Tree Branch",
+                "count": 5
+              },
+              {
+                "name": "Stone",
+                "count": 1
+              }
+            ],
+            "description": "The list of materials required to craft the item."
           }
         }
       }
