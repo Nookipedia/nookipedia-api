@@ -806,8 +806,8 @@ def format_art(data):
         data['has_fake'] = False
 
     # Integers
-    data['buy_price'] = int(data['buy_price'])
-    data['sell_price'] = int(data['sell_price'])
+    data['buy'] = int(data['buy'])
+    data['sell'] = int(data['sell'])
 
     # Floats
     data['width'] = float(data['width'])
@@ -1084,10 +1084,9 @@ def get_nh_art(art):
     authorize(DB_KEYS, request)
 
     art = art.replace('_', ' ')
-
     limit = '1'
     tables = 'nh_art'
-    fields = 'name,_pageName=url,image_url,has_fake,fake_image_url,art_name,author,year,art_style,description,buy_price,sell_price,availability,authenticity,width,length'
+    fields = 'name,_pageName=url,image_url,has_fake,fake_image_url,art_name,author,year,art_style,description,buy_price=buy,sell,availability,authenticity,width,length'
     where = f'name="{art}"'
     params = {'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where, 'limit': limit}
 
@@ -1107,7 +1106,7 @@ def get_nh_art_all():
     if request.args.get('excludedetails', 'false') == 'true':
         fields = 'name'
     else:
-        fields = 'name,_pageName=url,image_url,has_fake,fake_image_url,art_name,author,year,art_style,description,buy_price,sell_price,availability,authenticity,width,length'
+        fields = 'name,_pageName=url,image_url,has_fake,fake_image_url,art_name,author,year,art_style,description,buy_price=buy,sell,availability,authenticity,width,length'
 
     return get_art_list(limit, tables, fields)
 
