@@ -1083,9 +1083,6 @@ def get_nh_sea(sea):
 def get_nh_art(art):
     authorize(DB_KEYS, request)
 
-    if request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] in ('1.0', '1.1', '1.2'):
-        abort(404, description=error_response('Resource not found.', 'Please ensure requested resource exists.'))
-
     art = art.replace('_', ' ')
 
     limit = '1'
@@ -1105,9 +1102,6 @@ def get_nh_art(art):
 def get_nh_art_all():
     authorize(DB_KEYS, request)
 
-    if request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] in ('1.0', '1.1', '1.2'):
-        abort(404, description=error_response('Resource not found.', 'Please ensure requested resource exists.'))
-
     limit = '50'
     tables = 'nh_art'
     if request.args.get('excludedetails', 'false') == 'true':
@@ -1121,9 +1115,6 @@ def get_nh_art_all():
 @app.route('/nh/recipe/<string:recipe>', methods=['GET'])
 def get_nh_recipe(recipe):
     authorize(DB_KEYS, request)
-
-    if 'Accept-Version' in request.headers and request.headers['Accept-Version'][:3] in ('1.0', '1.1', '1.2', '1.3'):
-        abort(404, description=error_response('Resource not found.', 'Please ensure requested resource exists.'))
 
     recipe = recipe.replace('_', ' ')
     limit = '1'
@@ -1142,9 +1133,6 @@ def get_nh_recipe(recipe):
 @app.route('/nh/recipe', methods=['GET'])
 def get_nh_recipe_all():
     authorize(DB_KEYS, request)
-
-    if 'Accept-Version' in request.headers and request.headers['Accept-Version'][:3] in ('1.0', '1.1', '1.2', '1.3'):
-        abort(404, description=error_response('Resource not found.', 'Please ensure requested resource exists.'))
 
     limit = '600'
     tables = 'nh_recipe'
