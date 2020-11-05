@@ -1111,7 +1111,7 @@ def get_nh_art_all():
     return get_art_list(limit, tables, fields)
 
 
-@app.route('/nh/recipe/<string:recipe>', methods=['GET'])
+@app.route('/nh/recipes/<string:recipe>', methods=['GET'])
 def get_nh_recipe(recipe):
     authorize(DB_KEYS, request)
 
@@ -1129,7 +1129,7 @@ def get_nh_recipe(recipe):
         return jsonify(format_recipe(cargo_results[0]))
 
 
-@app.route('/nh/recipe', methods=['GET'])
+@app.route('/nh/recipes', methods=['GET'])
 def get_nh_recipe_all():
     authorize(DB_KEYS, request)
 
