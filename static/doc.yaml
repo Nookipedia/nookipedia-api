@@ -908,7 +908,7 @@ paths:
             response time if calling this endpoint in between cache refreshes.
       responses:
         '200':
-          description: A JSON array of artwork.
+          description: A JSON array of recipes.
           content:
             application/json:
               schema:
@@ -976,7 +976,7 @@ paths:
             response time if calling this endpoint in between cache refreshes.
       responses:
         '200':
-          description: A JSON object describing the artwork.
+          description: A JSON object describing the recipe.
           content:
             application/json:
               schema:
