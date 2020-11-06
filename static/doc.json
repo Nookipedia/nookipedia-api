@@ -177,7 +177,7 @@
             "schema": {
               "type": "integer"
             },
-            "description": "Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL. When asking for a large list of villagers, this parameter is generally not recommended as the generation of each custom-sized thumbnail requires an additional network call to generate, which can result in a very long response time."
+            "description": "Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL. Note that requesting specific image sizes for long lists may result in a very long response time."
           }
         ],
         "responses": {
@@ -230,7 +230,7 @@
     "/nh/fish": {
       "get": {
         "summary": "All New Horizons fish",
-        "description": "Get a list of all fish and their details in *New Horizons*. Note that while cached, this endpoint will be very responsive; however, hitting the endpoint in between cache refreshes can result in a response time of 5 to 15 seconds.",
+        "description": "Get a list of all fish and their details in *New Horizons*.",
         "parameters": [
           {
             "in": "header",
@@ -276,7 +276,7 @@
             "schema": {
               "type": "integer"
             },
-            "description": "Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL. This parameter is generally not recommended unless you absolutely need it, as each returned thumbnail link with a custom size requires an additional network call, which can result in a long response time if calling this endpoint in between cache refreshes."
+            "description": "Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL. Note that requesting specific image sizes for long lists may result in a very long response time."
           }
         ],
         "responses": {
@@ -406,7 +406,7 @@
     "/nh/bugs": {
       "get": {
         "summary": "All New Horizons bugs",
-        "description": "Get a list of all bugs and their details in *Animal Crossing: New Horizons*. Note that while cached, this endpoint will be very responsive; however, hitting the endpoint in between cache refreshes can result in a response time of 5 to 15 seconds.",
+        "description": "Get a list of all bugs and their details in *Animal Crossing: New Horizons*.",
         "parameters": [
           {
             "in": "header",
@@ -452,7 +452,7 @@
             "schema": {
               "type": "integer"
             },
-            "description": "Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL. This parameter is generally not recommended unless you absolutely need it, as each returned thumbnail link with a custom size requires an additional network call, which can result in a long response time if calling this endpoint in between cache refreshes."
+            "description": "Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL. Note that requesting specific image sizes for long lists may result in a very long response time."
           }
         ],
         "responses": {
@@ -582,7 +582,7 @@
     "/nh/sea": {
       "get": {
         "summary": "All New Horizons sea creatures",
-        "description": "Get a list of all sea creatures and their details in *Animal Crossing: New Horizons*. Note that while cached, this endpoint will be very responsive; however, hitting the endpoint in between cache refreshes can result in a response time of 5 to 15 seconds.",
+        "description": "Get a list of all sea creatures and their details in *Animal Crossing: New Horizons*.",
         "parameters": [
           {
             "in": "header",
@@ -628,7 +628,7 @@
             "schema": {
               "type": "integer"
             },
-            "description": "Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL. This parameter is generally not recommended unless you absolutely need it, as each returned thumbnail link with a custom size requires an additional network call, which can result in a long response time if calling this endpoint in between cache refreshes."
+            "description": "Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL. Note that requesting specific image sizes for long lists may result in a very long response time."
           }
         ],
         "responses": {
@@ -804,7 +804,7 @@
             "schema": {
               "type": "integer"
             },
-            "description": "Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL. This parameter is generally not recommended unless you absolutely need it, as each returned thumbnail link with a custom size requires an additional network call, which can result in a long response time if calling this endpoint in between cache refreshes."
+            "description": "Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL. Note that requesting specific image sizes for long lists may result in a very long response time."
           }
         ],
         "responses": {
@@ -884,7 +884,7 @@
             "schema": {
               "type": "integer"
             },
-            "description": "Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL. This parameter is generally not recommended unless you absolutely need it, as each returned thumbnail link with a custom size requires an additional network call, which can result in a long response time if calling this endpoint in between cache refreshes."
+            "description": "Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL."
           }
         ],
         "responses": {
@@ -970,7 +970,7 @@
             "schema": {
               "type": "integer"
             },
-            "description": "Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL. This parameter is generally not recommended unless you absolutely need it, as each returned thumbnail link with a custom size requires an additional network call, which can result in a long response time if calling this endpoint in between cache refreshes."
+            "description": "Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL. Note that requesting specific image sizes for long lists may result in a very long response time."
           }
         ],
         "responses": {
@@ -1050,7 +1050,7 @@
             "schema": {
               "type": "integer"
             },
-            "description": "Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL. This parameter is generally not recommended unless you absolutely need it, as each returned thumbnail link with a custom size requires an additional network call, which can result in a long response time if calling this endpoint in between cache refreshes."
+            "description": "Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL."
           }
         ],
         "responses": {

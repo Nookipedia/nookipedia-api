@@ -196,10 +196,8 @@ paths:
             the linked image(s) returned by the API will be full-resolution.
             Note that images can only be reduced in size; specifying a width
             greater than than the maximum size will return the default full-size
-            image URL. When asking for a large list of villagers, this parameter
-            is generally not recommended as the generation of each custom-sized
-            thumbnail requires an additional network call to generate, which can
-            result in a very long response time.
+            image URL. Note that requesting specific image sizes for long lists
+            may result in a very long response time.
       responses:
         '200':
           description: A JSON array of villagers.
@@ -230,11 +228,7 @@ paths:
   /nh/fish:
     get:
       summary: All New Horizons fish
-      description: >-
-        Get a list of all fish and their details in *New Horizons*. Note that
-        while cached, this endpoint will be very responsive; however, hitting
-        the endpoint in between cache refreshes can result in a response time of
-        5 to 15 seconds.
+      description: Get a list of all fish and their details in *New Horizons*.
       parameters:
         - in: header
           name: X-API-KEY
@@ -291,10 +285,8 @@ paths:
             the linked image(s) returned by the API will be full-resolution.
             Note that images can only be reduced in size; specifying a width
             greater than than the maximum size will return the default full-size
-            image URL. This parameter is generally not recommended unless you
-            absolutely need it, as each returned thumbnail link with a custom
-            size requires an additional network call, which can result in a long
-            response time if calling this endpoint in between cache refreshes.
+            image URL. Note that requesting specific image sizes for long lists
+            may result in a very long response time.
       responses:
         '200':
           description: A JSON array of fish.
@@ -390,9 +382,7 @@ paths:
       summary: All New Horizons bugs
       description: >-
         Get a list of all bugs and their details in *Animal Crossing: New
-        Horizons*. Note that while cached, this endpoint will be very
-        responsive; however, hitting the endpoint in between cache refreshes can
-        result in a response time of 5 to 15 seconds.
+        Horizons*.
       parameters:
         - in: header
           name: X-API-KEY
@@ -449,10 +439,8 @@ paths:
             the linked image(s) returned by the API will be full-resolution.
             Note that images can only be reduced in size; specifying a width
             greater than than the maximum size will return the default full-size
-            image URL. This parameter is generally not recommended unless you
-            absolutely need it, as each returned thumbnail link with a custom
-            size requires an additional network call, which can result in a long
-            response time if calling this endpoint in between cache refreshes.
+            image URL. Note that requesting specific image sizes for long lists
+            may result in a very long response time.
       responses:
         '200':
           description: A JSON array of bugs.
@@ -548,9 +536,7 @@ paths:
       summary: All New Horizons sea creatures
       description: >-
         Get a list of all sea creatures and their details in *Animal Crossing:
-        New Horizons*. Note that while cached, this endpoint will be very
-        responsive; however, hitting the endpoint in between cache refreshes can
-        result in a response time of 5 to 15 seconds.
+        New Horizons*.
       parameters:
         - in: header
           name: X-API-KEY
@@ -608,10 +594,8 @@ paths:
             the linked image(s) returned by the API will be full-resolution.
             Note that images can only be reduced in size; specifying a width
             greater than than the maximum size will return the default full-size
-            image URL. This parameter is generally not recommended unless you
-            absolutely need it, as each returned thumbnail link with a custom
-            size requires an additional network call, which can result in a long
-            response time if calling this endpoint in between cache refreshes.
+            image URL. Note that requesting specific image sizes for long lists
+            may result in a very long response time.
       responses:
         '200':
           description: A JSON array of sea creatures.
@@ -756,10 +740,8 @@ paths:
             the linked image(s) returned by the API will be full-resolution.
             Note that images can only be reduced in size; specifying a width
             greater than than the maximum size will return the default full-size
-            image URL. This parameter is generally not recommended unless you
-            absolutely need it, as each returned thumbnail link with a custom
-            size requires an additional network call, which can result in a long
-            response time if calling this endpoint in between cache refreshes.
+            image URL. Note that requesting specific image sizes for long lists
+            may result in a very long response time.
       responses:
         '200':
           description: A JSON array of artwork.
@@ -824,10 +806,7 @@ paths:
             the linked image(s) returned by the API will be full-resolution.
             Note that images can only be reduced in size; specifying a width
             greater than than the maximum size will return the default full-size
-            image URL. This parameter is generally not recommended unless you
-            absolutely need it, as each returned thumbnail link with a custom
-            size requires an additional network call, which can result in a long
-            response time if calling this endpoint in between cache refreshes.
+            image URL.
       responses:
         '200':
           description: A JSON object describing the artwork.
@@ -902,10 +881,8 @@ paths:
             the linked image(s) returned by the API will be full-resolution.
             Note that images can only be reduced in size; specifying a width
             greater than than the maximum size will return the default full-size
-            image URL. This parameter is generally not recommended unless you
-            absolutely need it, as each returned thumbnail link with a custom
-            size requires an additional network call, which can result in a long
-            response time if calling this endpoint in between cache refreshes.
+            image URL. Note that requesting specific image sizes for long lists
+            may result in a very long response time.
       responses:
         '200':
           description: A JSON array of recipes.
@@ -970,10 +947,7 @@ paths:
             the linked image(s) returned by the API will be full-resolution.
             Note that images can only be reduced in size; specifying a width
             greater than than the maximum size will return the default full-size
-            image URL. This parameter is generally not recommended unless you
-            absolutely need it, as each returned thumbnail link with a custom
-            size requires an additional network call, which can result in a long
-            response time if calling this endpoint in between cache refreshes.
+            image URL.
       responses:
         '200':
           description: A JSON object describing the recipe.
