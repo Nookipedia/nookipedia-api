@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Nookipedia
   description: >-
-    The Nookipedia API provides endpoints for retrieving Animal Crossing data
+    The Nookipedia API provides endpoints for retrieving *Animal Crossing* data
     pulled from the [Nookipedia wiki](https://nookipedia.com/wiki/Main_Page). A
     couple of the key benefits of using the Nookipedia API is access to data
     spanning the entire *Animal Crossing* series, as well as information that is
@@ -28,8 +28,8 @@ paths:
     get:
       summary: Villagers
       description: >-
-        This endpoint retrieves villager information from the entire Animal
-        Crossing series, with the option to filter by species, personality,
+        This endpoint retrieves villager information from the entire *Animal
+        Crossing* series, with the option to filter by species, personality,
         game, and/or birthday. Filters use the AND operator (e.g. asking for
         villagers who have species `frog` and personality `smug` will return all
         smug frogs). Note that villagers only include the animals that act as
@@ -147,9 +147,9 @@ paths:
                 - HHD
                 - PC
           description: >-
-            Retrieve villagers that appear in all listed games. If you want only
-            villagers that appear in both *New Horizons* and *Pocket Camp*, you
-            would send in `?game=nh&game=pc`.
+            Retrieve villagers that appear in all listed games. For example, if
+            you want only villagers that appear in both *New Horizons* and
+            *Pocket Camp*, you would send in `?game=nh&game=pc`.
         - in: query
           name: birthmonth
           required: false
@@ -174,7 +174,7 @@ paths:
             type: string
           description: >-
             When set to `true`, an `nh_details` object will be included that
-            contains New Horizons details about the villager. If the villager
+            contains *New Horizons* details about the villager. If the villager
             does not appear in *New Horizons*, the returned `nh_details` field
             will be set to null.
         - in: query
@@ -231,10 +231,10 @@ paths:
     get:
       summary: All New Horizons fish
       description: >-
-        Get a list of all fish and their details in *Animal Crossing: New
-        Horizons*. Note that while cached, this endpoint will be very
-        responsive; however, hitting the endpoint in between cache refreshes can
-        result in a response time of 5 to 15 seconds.
+        Get a list of all fish and their details in *New Horizons*. Note that
+        while cached, this endpoint will be very responsive; however, hitting
+        the endpoint in between cache refreshes can result in a response time of
+        5 to 15 seconds.
       parameters:
         - in: header
           name: X-API-KEY
@@ -847,7 +847,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error500'
-  /nh/recipe:
+  /nh/recipes:
     get:
       summary: All New Horizons recipes
       description: >-
@@ -927,7 +927,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error500'
-  '/nh/recipe/{item}':
+  '/nh/recipes/{item}':
     get:
       summary: Single New Horizons recipe
       description: >-
@@ -1064,13 +1064,36 @@ components:
           type: string
           example: Ribbot
           description: Name of the villager.
+        alt_name:
+          type: string
+          example: ''
+          description: >-
+            A previous name for the villager. A very small number of villagers
+            changed names between earlier games, such as Sally being known as
+            Hazel in the original game.
+        title_color:
+          type: string
+          example: bfbfbf
+          description: >-
+            The HTML color code of the background of the villager's name badge
+            that appears above their dialogue box when spoken to in-game. Note
+            that to date, only *New Horizons* villagers have this field
+            populated. This field may be useful for styling, such as the accent
+            color for a Discord embed.
+        text_color:
+          type: string
+          example: 5e5e5e
+          description: >-
+            The HTML color code of the text of the villager's name badge that
+            appears above their dialogue box when spoken to in-game. Note that
+            to date, only *New Horizons* villagers have this field populated.
         id:
           type: string
           example: flg01
           description: >-
             The game's internal identifier for the villager. Not all villagers
-            have IDs; villagers who appeared in any game including or after Wild
-            World have a consistent ID between games.
+            have IDs; villagers who appeared in any game including or after
+            *Wild World* have a consistent ID between games.
         image_url:
           type: string
           example: 'https://dodo.ac/np/images/9/94/Ribbot_NH.png'
@@ -1138,8 +1161,8 @@ components:
           type: string
           example: Male
           description: >-
-            Gender of the villager. In Animal Crossing, only male and female are
-            used.
+            Gender of the villager. In *Animal Crossing*, only male and female
+            are used.
           enum:
             - Male
             - Female
@@ -1174,17 +1197,18 @@ components:
           description: >-
             The villager's quote as it appears on the back of their in-game
             portrait item. This will be the quote from the latest game (i.e. if
-            the villager had varying quotes between Wild World and New Horizons,
-            this will be the New Horizons quote). For villagers from older games
-            that do not have a quote, this field will be an empty string.
+            the villager had varying quotes between *Wild World* and *New
+            Horizons*, this will be the *New Horizons* quote). For villagers
+            from older games that do not have a quote, this field will be an
+            empty string.
         phrase:
           type: string
           example: zzrrbbit
           description: >-
             The villager's default phrase they use throughout conversation. This
             will be the phrase from the latest game (i.e. if the villager had
-            varying phrases between Wild World and New Horizons, this will be
-            the New Horizons quote).
+            varying phrases between *Wild World* and *New Horizons*, this will
+            be the *New Horizons* quote).
         prev_phrases:
           type: array
           items:
@@ -1192,34 +1216,35 @@ components:
           example:
             - toady
           description: >-
-            Any phrases used in previous Animal Crossing installations. May be
+            Any phrases used in previous *Animal Crossing* installations. May be
             empty.
         clothing:
           type: string
           example: Simple Parka
           description: >-
             The villager's default clothing. This will be the clothing from the
-            latest game (i.e. if the villager had varying phrases between Wild
-            World and New Horizons, this will be the New Horizons clothing).
+            latest game (i.e. if the villager had varying phrases between *Wild
+            World* and *New Horizons*, this will be the *New Horizons*
+            clothing).
         islander:
           type: boolean
           example: false
           description: >-
-            Whether the villager was an island in Animal Crossing for GameCube.
-            Only a small number of villagers (36) were islanders.
+            Whether the villager was an island in *Animal Crossing* for
+            GameCube. Only a small number of villagers (36) were islanders.
         debut:
           type: string
           example: DNM
           description: >-
-            The first Animal Crossing game the villager appeared in. `DNM` is
-            Doubutsu no Mori for the Nintendo 64 (Japan-exclusive); `AC` is
-            Animal Crossing for GameCube; `E_PLUS` is Doubutsu no Mori e+ for
-            GameCube (expanded port of AC, Japan-exclusive); `WW` is Wild World
-            for the DS; `CF` is City Folk for Wii; `NL` is New Leaf for 3DS;
-            `WA` is Welcome amiibo, the New Leaf expansion; `NH` is New Horizons
-            for Switch; `FILM` is the Doubutsu no Mori Japan-exclusive film;
-            `HHD` is Happy Home Designer for the Wii; and `PC` is Pocket Camp
-            for mobile.
+            The first *Animal Crossing* game the villager appeared in. `DNM` is
+            *Doubutsu no Mori* for the Nintendo 64 (Japan-exclusive); `AC` is
+            *Animal Crossing* for GameCube; `E_PLUS` is *Doubutsu no Mori e+*
+            for GameCube (expanded port of AC, Japan-exclusive); `WW` is *Wild
+            World* for the DS; `CF` is *City Folk* for Wii; `NL` is *New Leaf*
+            for 3DS; `WA` is *Welcome amiibo*, the *New Leaf* expansion; `NH` is
+            *New Horizons* for Switch; `FILM` is the *Doubutsu no Mori*
+            Japan-exclusive film; `HHD` is *Happy Home Designer* for the Wii;
+            and `PC` is *Pocket Camp* for mobile.
           enum:
             - DNM
             - AC
@@ -1260,14 +1285,15 @@ components:
             - HHD
             - PC
           description: >-
-            List of official media villager appeared in. `DNM` is Doubutsu no
-            Mori for the Nintendo 64 (Japan-exclusive); `AC` is Animal Crossing
-            for GameCube; `E_PLUS` is Doubutsu no Mori e+ for GameCube (expanded
-            port of AC, Japan-exclusive); `WW` is Wild World for the DS; `CF` is
-            City Folk for Wii; `NL` is New Leaf for 3DS; `WA` is Welcome amiibo,
-            the New Leaf expansion; `NH` is New Horizons for Switch; `FILM` is
-            the Doubutsu no Mori Japan-exclusive film; `HHD` is Happy Home
-            Designer for the Wii; and `PC` is Pocket Camp for mobile.
+            List of official media the villager appeared in. `DNM` is *Doubutsu
+            no Mori* for the Nintendo 64 (Japan-exclusive); `AC` is *Animal
+            Crossing* for GameCube; `E_PLUS` is *Doubutsu no Mori e+* for
+            GameCube (expanded port of AC, Japan-exclusive); `WW` is *Wild
+            World* for the DS; `CF` is *City Folk* for Wii; `NL` is *New Leaf*
+            for 3DS; `WA` is *Welcome amiibo*, the *New Leaf* expansion; `NH` is
+            *New Horizons* for Switch; `FILM` is the *Doubutsu no Mori*
+            Japan-exclusive film; `HHD` is *Happy Home Designer* for the Wii;
+            and `PC` is *Pocket Camp* for mobile.
         nh_details:
           type: object
           description: >-
@@ -1278,7 +1304,7 @@ components:
             image_url:
               type: string
               example: 'https://dodo.ac/np/images/9/94/Ribbot_NH.png'
-              description: Image of the villager from New Horizons.
+              description: Image of the villager from *New Horizons*.
             photo_url:
               type: string
               example: 'https://dodo.ac/np/images/0/03/RibbotPicACNH.png'
@@ -1304,7 +1330,7 @@ components:
               type: string
               example: B
               description: >-
-                Each personality in New Horizons has two sub-personalities,
+                Each personality in *New Horizons* has two sub-personalities,
                 currently referred to as just A and B. The effect of a
                 sub-personality is currently unknown.
               enum:
