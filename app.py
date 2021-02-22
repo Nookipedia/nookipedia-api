@@ -305,7 +305,7 @@ def month_to_string(month):
 #################################
 
 # Make a call to Nookipedia's Cargo API using supplied parameters:
-@cache.memoize(3600)
+@cache.memoize(43200)
 def call_cargo(parameters, request_args):  # Request args are passed in just for the sake of caching
     cargoquery = []
     try:
@@ -387,6 +387,12 @@ def format_villager(data):
     games = ['dnm', 'ac', 'e_plus', 'ww', 'cf', 'nl', 'wa', 'nh', 'film', 'hhd', 'pc']
 
     for obj in data:
+        if request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] in ('1.0', '1.1', '1.2', '1.3'):
+            if obj['personality'] == 'Big sister':
+                obj['personality'] = 'Sisterly'
+            if obj['species'] == 'Bear cub':
+                obj['species'] = 'Cub'
+
         # Set islander to Boolean:
         if obj['islander'] == '0':
             obj['islander'] = False
@@ -512,10 +518,13 @@ def get_villager_list(limit, tables, join, fields):
 
     # Filter by personality:
     if request.args.get('personality'):
-        personality_list = ['lazy', 'jock', 'cranky', 'smug', 'normal', 'peppy', 'snooty', 'sisterly']
+        personality_list = ['lazy', 'jock', 'cranky', 'smug', 'normal', 'peppy', 'snooty', 'sisterly', 'big sister']
         personality = request.args.get('personality').lower()
         if personality not in personality_list:
-            abort(400, description=error_response("Could not recognize provided personality.", "Ensure personality is either lazy, jock, cranky, smug, normal, peppy, snooty, or sisterly."))
+            abort(400, description=error_response("Could not recognize provided personality.", "Ensure personality is either lazy, jock, cranky, smug, normal, peppy, snooty, or sisterly/big sister."))
+
+        if personality == 'sisterly':
+            personality = 'big sister'
 
         if where:
             where = where + ' AND villager.personality = "' + personality + '"'
@@ -524,10 +533,13 @@ def get_villager_list(limit, tables, join, fields):
 
     # Filter by species:
     if request.args.get('species'):
-        species_list = ['alligator', 'anteater', 'bear', 'bird', 'bull', 'cat', 'cub', 'chicken', 'cow', 'deer', 'dog', 'duck', 'eagle', 'elephant', 'frog', 'goat', 'gorilla', 'hamster', 'hippo', 'horse', 'koala', 'kangaroo', 'lion', 'monkey', 'mouse', 'octopus', 'ostrich', 'penguin', 'pig', 'rabbit', 'rhino', 'sheep', 'squirrel', 'tiger', 'wolf']
+        species_list = ['alligator', 'anteater', 'bear', 'bear cub', 'bird', 'bull', 'cat', 'cub', 'chicken', 'cow', 'deer', 'dog', 'duck', 'eagle', 'elephant', 'frog', 'goat', 'gorilla', 'hamster', 'hippo', 'horse', 'koala', 'kangaroo', 'lion', 'monkey', 'mouse', 'octopus', 'ostrich', 'penguin', 'pig', 'rabbit', 'rhino', 'sheep', 'squirrel', 'tiger', 'wolf']
         species = request.args.get('species').lower()
         if species not in species_list:
             abort(400, description=error_response("Could not recognize provided species.", "Ensure provided species is valid."))
+
+        if species == 'cub':
+            species = 'bear cub'
 
         if where:
             where = where + ' AND villager.species = "' + species + '"'
