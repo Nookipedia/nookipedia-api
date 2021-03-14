@@ -533,13 +533,15 @@ def get_villager_list(limit, tables, join, fields):
 
     # Filter by species:
     if request.args.get('species'):
-        species_list = ['alligator', 'anteater', 'bear', 'bear cub', 'bird', 'bull', 'cat', 'cub', 'chicken', 'cow', 'deer', 'dog', 'duck', 'eagle', 'elephant', 'frog', 'goat', 'gorilla', 'hamster', 'hippo', 'horse', 'koala', 'kangaroo', 'lion', 'monkey', 'mouse', 'octopus', 'ostrich', 'penguin', 'pig', 'rabbit', 'rhino', 'sheep', 'squirrel', 'tiger', 'wolf']
+        species_list = ['alligator', 'anteater', 'bear', 'bear cub', 'bird', 'bull', 'cat', 'cub', 'chicken', 'cow', 'deer', 'dog', 'duck', 'eagle', 'elephant', 'frog', 'goat', 'gorilla', 'hamster', 'hippo', 'horse', 'koala', 'kangaroo', 'lion', 'monkey', 'mouse', 'octopus', 'ostrich', 'penguin', 'pig', 'rabbit', 'rhino', 'rhinoceros', 'sheep', 'squirrel', 'tiger', 'wolf']
         species = request.args.get('species').lower()
         if species not in species_list:
             abort(400, description=error_response("Could not recognize provided species.", "Ensure provided species is valid."))
 
         if species == 'cub':
             species = 'bear cub'
+		elif species == 'rhino':
+			species = 'rhinoceros'
 
         if where:
             where = where + ' AND villager.species = "' + species + '"'
