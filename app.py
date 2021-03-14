@@ -392,6 +392,8 @@ def format_villager(data):
                 obj['personality'] = 'Sisterly'
             if obj['species'] == 'Bear cub':
                 obj['species'] = 'Cub'
+            if obj['species'] == 'Rhino':
+                obj['species'] = 'Rhinoceros'
 
         # Set islander to Boolean:
         if obj['islander'] == '0':
@@ -540,8 +542,8 @@ def get_villager_list(limit, tables, join, fields):
 
         if species == 'cub':
             species = 'bear cub'
-		elif species == 'rhino':
-			species = 'rhinoceros'
+        elif species == 'rhino':
+            species = 'rhinoceros'
 
         if where:
             where = where + ' AND villager.species = "' + species + '"'
