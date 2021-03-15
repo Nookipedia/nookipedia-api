@@ -392,8 +392,8 @@ def format_villager(data):
                 obj['personality'] = 'Sisterly'
             if obj['species'] == 'Bear cub':
                 obj['species'] = 'Cub'
-            if obj['species'] == 'Rhino':
-                obj['species'] = 'Rhinoceros'
+            if obj['species'] == 'Rhinoceros':
+                obj['species'] = 'Rhino'
 
         # Set islander to Boolean:
         if obj['islander'] == '0':
