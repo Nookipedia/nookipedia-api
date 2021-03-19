@@ -496,7 +496,7 @@ def get_villager_list(limit, tables, join, fields):
 
     # Filter by name:
     if request.args.get('name'):
-        villager = request.args.get('name').replace('_', ' ')
+        villager = request.args.get('name').replace('_', ' ').capitalize()
         if where:
             where = where + ' AND villager.name = "' + villager + '"'
         else:
