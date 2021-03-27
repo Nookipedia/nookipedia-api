@@ -2,6 +2,7 @@ import requests
 import sqlite3
 import uuid
 import json
+import html
 import configparser
 from datetime import datetime
 from flask import Flask
@@ -219,6 +220,17 @@ def insert_db(query, args=()):
 # UTILITIES
 #################################
 
+# Unescape HTML from all field values:
+def deep_unescape(data):
+    if isinstance(data, str):
+        return html.unescape(data)
+    elif isinstance(data, (tuple, list)):
+        return [deep_unescape(e) for e in data]
+    elif isinstance(data, dict):
+        return {k:deep_unescape(v) for k,v in data.items()}
+    else: 
+        return data
+
 # Convert month query parameter input into integer:
 # Acceptable input: 'current', '1', '01', 'jan', 'january'
 def month_to_int(month):
@@ -341,6 +353,8 @@ def call_cargo(parameters, request_args):  # Request args are passed in just for
             # Replace all spaces in keys with underscores
             for key in obj['title']:
                 item[key.replace(' ', '_')] = obj['title'][key]
+
+            item = deep_unescape(item)
 
             # Create url to page
             if 'url' in item:
