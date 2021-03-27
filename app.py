@@ -615,8 +615,8 @@ def months_to_array(data):
                 del obj['n_availability']
                 obj['south']['months'] = obj['s_availability']
                 del obj['s_availability']
-            obj['north']['months_array'] = n_months_array
-            obj['south']['months_array'] = s_months_array
+                obj['north']['months_array'] = n_months_array
+                obj['south']['months_array'] = s_months_array
 
         n_months_array = []
         s_months_array = []
