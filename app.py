@@ -335,18 +335,18 @@ def call_cargo(parameters, request_args):  # Request args are passed in just for
     try:
         data = []
         # Check if user requested specific image size and modify accordingly:
-        if request.args.get('thumbsize'):
-            for obj in cargoquery:
-                item = {}
+        for obj in cargoquery:
+            item = {}
 
-                # Replace all spaces in keys with underscores
-                for key in obj['title']:
-                    item[key.replace(' ', '_')] = obj['title'][key]
+            # Replace all spaces in keys with underscores
+            for key in obj['title']:
+                item[key.replace(' ', '_')] = obj['title'][key]
 
-                # Create url to page
-                if 'url' in item:
-                    item['url'] = 'https://nookipedia.com/wiki/' + item['url'].replace(' ', '_')
+            # Create url to page
+            if 'url' in item:
+                item['url'] = 'https://nookipedia.com/wiki/' + item['url'].replace(' ', '_')
 
+            if request.args.get('thumbsize'):
                 # If image, fetch the CDN thumbnail URL:
                 try:
                     print(str(obj['title']))
@@ -363,20 +363,7 @@ def call_cargo(parameters, request_args):  # Request args are passed in just for
                 except:
                     abort(500, description=error_response("Error while getting image CDN thumbnail URL.", "Failure occured with the following parameters: {}.".format(parameters)))
 
-                data.append(item)
-        else:
-            for obj in cargoquery:
-                item = {}
-
-                # Replace all spaces in keys with underscores
-                for key in obj['title']:
-                    item[key.replace(' ', '_')] = obj['title'][key]
-
-                # Create url to page
-                if 'url' in item:
-                    item['url'] = 'https://nookipedia.com/wiki/' + item['url'].replace(' ', '_')
-
-                data.append(item)
+            data.append(item)
 
         return data
     except:
