@@ -1150,7 +1150,7 @@ def get_nh_recipe(recipe):
 def get_nh_recipe_all():
     authorize(DB_KEYS, request)
 
-    limit = '600'
+    limit = '800'
     tables = 'nh_recipe'
     fields = '_pageName=url,en_name=name,image_url,serial_id,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,recipes_to_unlock,diy_availability1,diy_availability1_note,diy_availability2,diy_availability2_note,material1,material1_num,material2,material2_num,material3,material3_num,material4,material4_num,material5,material5_num,material6,material6_num'
 
