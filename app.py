@@ -13,6 +13,7 @@ from flask import current_app
 from flask import g
 from flask_cors import CORS
 from flask_caching import Cache
+from pylibmc import Client as PylibmcClient
 import flask_monitoringdashboard as dashboard
 
 #################################
@@ -26,6 +27,8 @@ config.read('config.ini')
 # SET CONSTANTS:
 BASE_URL_WIKI = config.get('APP', 'BASE_URL_WIKI')
 BASE_URL_API = config.get('APP', 'BASE_URL_API')
+BOT_USERNAME = config.get('AUTH', 'BOT_USERNAME')
+BOT_PASS = config.get('AUTH', 'BOT_PASS')
 DATABASE = config.get('DB', 'DATABASE')
 DB_KEYS = config.get('DB', 'DB_KEYS')
 DB_ADMIN_KEYS = config.get('DB', 'DB_ADMIN_KEYS')
@@ -37,8 +40,14 @@ app.config['JSON_SORT_KEYS'] = False  # Prevent from automatically sorting JSON 
 app.config['SECRET_KEY'] = config.get('APP', 'SECRET_KEY')
 
 # SET CACHE:
-cache = Cache(config={'CACHE_TYPE': 'simple'})
+cache = Cache(config={
+    'CACHE_TYPE': 'memcached',
+    'CACHE_MEMCACHED_SERVERS': PylibmcClient(['127.0.0.1'])
+})
 cache.init_app(app)
+
+# SET COOKIE STORE FOR SESSION DATA:
+cache.set('session', None)
 
 # SET UP DASHBOARD:
 DASHBOARD_CONFIGS = config.get('APP', 'DASHBOARD_CONFIGS')
@@ -181,6 +190,42 @@ def authorize(db, request):
         abort(401, description=error_response("Failed to validate UUID.", "UUID is either missing or invalid; or, unspecified server occured."))
 
 
+# Login to MediaWiki as a bot account:
+def mw_login():
+    try:
+        params = { 'action': 'query', 'meta': 'tokens', 'type': 'login', 'format': 'json' }
+        r = requests.get(url=BASE_URL_API, params=params)
+        try:
+            login_token = r.json()['query']['tokens']['logintoken']
+        except:
+            print('Failed to login to MediaWiki (could not retrieve login token).')
+            return False
+
+        if login_token:
+            data = { 'action': 'login', 'lgname': BOT_USERNAME, 'lgpassword': BOT_PASS, 'lgtoken': login_token, 'format': 'json' }
+            r = requests.post(url=BASE_URL_API, data=data, cookies=requests.utils.dict_from_cookiejar(r.cookies))
+            rJson = r.json()
+
+            if 'login' not in rJson:
+                print('Failed to login to MediaWiki (POST to login failed): ' + str(rJson))
+                return False
+            if 'result' not in rJson['login']:
+                print('Failed to login to MediaWiki (POST to login failed): ' + str(rJson))
+                return False
+            if rJson['login']['result'] == 'Success':
+                print('Successfully logged into MediaWiki API.')
+                cache.set('session', { 'token': login_token, 'cookie': r.cookies }, 2592000) # Expiration set to max of 30 days
+                return True
+            else:
+                print('Failed to login to MediaWiki (POST to login failed): ' + str(rJson))
+                return False
+        else:
+            print('Failed to login to MediaWiki (could not retrieve login token).')
+            return False
+    except:
+        print('Failed to login to MediaWiki.')
+        return False
+
 #################################
 # DATABASE FUNCTIONS
 #################################
@@ -319,23 +364,64 @@ def month_to_string(month):
 # Make a call to Nookipedia's Cargo API using supplied parameters:
 @cache.memoize(43200)
 def call_cargo(parameters, request_args):  # Request args are passed in just for the sake of caching
+    # cargoquery holds all queried items
     cargoquery = []
+
+    # Default query size limit is 50 but can be changed by incoming params:
+    cargolimit = int(parameters.get('limit', '50'))
+
+    # Copy the passed-in parameters:
+    nestedparameters = parameters.copy()
+
     try:
-        # The default query size is 50 normally, we can actually change it here if we wanted
-        cargolimit = int(parameters.get('limit', '50'))
-        # Copy the current parameters, we'll be changing them a bit in the loop but we want the original still
-        nestedparameters = parameters.copy()
-        # Set up the offset, if our cargolimit is more than cargomax we'll end up doing more than one query with an offset
         while True:
-            nestedparameters['limit'] = str(cargolimit-len(cargoquery))  # Get cargomax items or less at a time
-            if nestedparameters['limit'] == '0':  # Check if we've hit the limit
+            # Subtract number of queried items from limit:
+            nestedparameters['limit'] = str(cargolimit-len(cargoquery))
+
+            # If no items are left to query, break
+            if nestedparameters['limit'] == '0':
                 break
+
+            # Set offset to number of items queried so far:
             nestedparameters['offset'] = str(len(cargoquery))
-            r = requests.get(url=BASE_URL_API, params=nestedparameters)
+
+            # Check if we should authenticate to the wiki (500 is limit for unauthenticated queries):
+            if BOT_USERNAME and int(parameters.get('limit', '50')) > 500:
+                nestedparameters['assert'] = 'bot'
+                session = cache.get('session') # Get session from memcache
+                
+                # Session may be null from startup or cache explusion:
+                if not session:
+                    mw_login()
+                    session = cache.get('session')
+
+                # Make authorized request:
+                r = requests.get(url=BASE_URL_API, params=nestedparameters, headers={'Authorization': 'Bearer ' + session['token']}, cookies=session['cookie'])
+                if 'error' in r.json():
+                    # Error may be due to invalid token; re-try login:
+                    if mw_login():
+                        session = cache.get('session')
+                        r = requests.get(url=BASE_URL_API, params=nestedparameters, headers={'Authorization': 'Bearer ' + session['token']}, cookies=session['cookie'])
+                        
+                        # If it errors again, make request without auth:
+                        if 'error' in r.json():
+                            del nestedparameters['assert']
+                            r = requests.get(url=BASE_URL_API, params=nestedparameters)
+                    else:
+                        del nestedparameters['assert']
+                        r = requests.get(url=BASE_URL_API, params=nestedparameters)
+            else:
+                r = requests.get(url=BASE_URL_API, params=nestedparameters)
+
             cargochunk = r.json()['cargoquery']
-            if len(cargochunk) == 0:  # Check if we've hit the end
+            if len(cargochunk) == 0:  # If nothing was returned, break
                 break
+
             cargoquery.extend(cargochunk)
+
+            # If queried items are < limit and there are no warnings, we've received everything:
+            if ('warnings' not in r.json()) and (len(cargochunk) < cargolimit):
+                break
         print('Return: {}'.format(str(r)))
     except:
         print('Return: {}'.format(str(r)))
