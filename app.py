@@ -228,7 +228,7 @@ def deep_unescape(data):
         return [deep_unescape(e) for e in data]
     elif isinstance(data, dict):
         return {k:deep_unescape(v) for k,v in data.items()}
-    else: 
+    else:
         return data
 
 # Convert month query parameter input into integer:
@@ -929,6 +929,51 @@ def get_recipe_list(limit, tables, fields):
             results_array.append(format_recipe(recipe))
     return jsonify(results_array)
 
+def format_event(data):
+    return data
+
+def get_event_list(limit, tables, fields):
+    where = None
+
+    # Filter by month:
+    if request.args.get('eventmonth'):
+        month = month_to_int(request.args.get('eventmonth'))
+        if where:
+            where = where + ' AND MONTH(date) = "' + month + '"'
+        else:
+            where = 'MONTH(date) = "' + month + '"'
+
+    # Filter by day:
+    if request.args.get('eventday'):
+        day = request.args.get('eventday')
+        if where:
+            where = where + ' AND DAYOFMONTH(date) = "' + day + '"'
+        else:
+            where = 'DAYOFMONTH(date) = "' + day + '"'
+
+    # Filter by year:
+    if request.args.get('eventyear'):
+        day = request.args.get('eventyear')
+        if where:
+            where = where + ' AND YEAR(date) = "' + day + '"'
+        else:
+            where = 'YEAR(date) = "' + day + '"'
+
+    if where:
+        params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields, 'where': where}
+    else:
+        params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields}
+
+    cargo_results = call_cargo(params, request.args)
+    results_array = []
+    if request.args.get('excludedetails') == 'true':
+        for event in cargo_results:
+            results_array.append(event['event'])
+    else:
+        for event in cargo_results:
+            results_array.append(format_event(event))
+    return jsonify(results_array)
+
 
 #################################
 # STATIC RENDERS
@@ -1155,6 +1200,17 @@ def get_nh_recipe_all():
     fields = '_pageName=url,en_name=name,image_url,serial_id,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,recipes_to_unlock,diy_availability1,diy_availability1_note,diy_availability2,diy_availability2_note,material1,material1_num,material2,material2_num,material3,material3_num,material4,material4_num,material5,material5_num,material6,material6_num'
 
     return get_recipe_list(limit, tables, fields)
+
+
+@app.route('/nh/events', methods=['GET'])
+def get_nh_event_all():
+    authorize(DB_KEYS, request)
+
+    limit = '800'
+    tables = 'nh_calendar'
+    fields = 'date,event,link=event_name'
+
+    return get_event_list(limit, tables, fields)
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1')
