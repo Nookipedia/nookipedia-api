@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "title": "Nookipedia",
-    "description": "The Nookipedia API provides endpoints for retrieving *Animal Crossing* data pulled from the [Nookipedia wiki](https://nookipedia.com/wiki/Main_Page). A couple of the key benefits of using the Nookipedia API is access to data spanning the entire *Animal Crossing* series, as well as information that is constantly updated and expanding as editors work on the wiki.<br><br>This API launched in July 2020 and is under active development. At the moment, we currently have endpoints to retrieve information about *Animal Crossing* villagers, as well as *Animal Crossing: New Horizons* bugs, fish, sea creatures, artworks, and recipes. Coming soon are endpoints for *New Horizons* furniture, clothing, and fossils, as well as critters from previous games.<br><br>Access to the Nookipedia API requires obtaining a key. This is so we can manage our scale and provide better support for our users. To request access to the API, please fill out [this form](https://forms.gle/wLwtXLerKhfDrRLY8).<br><br>This API is 'version 2' of our [original API](https://nookipedia.com/api/). While the previous API scraped information directly from the wiki, this new edition of the API pulls data from a structured and constrained database, resulting in higher-quality data, better searching, and support for filtering.",
+    "description": "The Nookipedia API provides endpoints for retrieving *Animal Crossing* data pulled from the [Nookipedia wiki](https://nookipedia.com/wiki/Main_Page). A couple of the key benefits of using the Nookipedia API is access to data spanning the entire *Animal Crossing* series, as well as information that is constantly updated and expanding as editors work on the wiki.<br><br>This API launched in July 2020 and is under active development. At the moment, we currently have endpoints to retrieve information about *Animal Crossing* villagers, as well as *Animal Crossing: New Horizons* bugs, fish, sea creatures, artworks, recipes, and events. Coming soon are endpoints for *New Horizons* furniture, clothing, and fossils, as well as critters from previous games.<br><br>Access to the Nookipedia API requires obtaining a key. This is so we can manage our scale and provide better support for our users. To request access to the API, please fill out [this form](https://forms.gle/wLwtXLerKhfDrRLY8).<br><br>This API is 'version 2' of our [original API](https://nookipedia.com/api/). While the previous API scraped information directly from the wiki, this new edition of the API pulls data from a structured and constrained database, resulting in higher-quality data, better searching, and support for filtering.",
     "version": "1.3.0"
   },
   "servers": [
@@ -1086,6 +1086,104 @@
           }
         }
       }
+    },
+    "/nh/events": {
+      "get": {
+        "summary": "All New Horizons events",
+        "description": "Get a list of all ongoing or upcoming events in *Animal Crossing: New Horizons*.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-API-KEY",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Your UUID secret key, granted to you by the Nookipedia team. Required for accessing the API."
+          },
+          {
+            "in": "header",
+            "name": "Accept-Version",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The version of the API you are calling, written as `1.0.0`. This is specified as required as good practice, but it is not actually enforced by the API. If you do not specify a version, you will be served the latest version, which may eventually result in breaking changes."
+          },
+          {
+            "in": "query",
+            "name": "eventyear",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Specify a year of the event."
+          },
+          {
+            "in": "query",
+            "name": "eventmonth",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Specify a month of the event."
+          },
+          {
+            "in": "query",
+            "name": "evenday",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Specify a day of the event."
+          },
+          {
+            "in": "query",
+            "name": "excludedetails",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "When set to `true`, only recipe names are returned. Instead of an array of objects with all details, the return will be an array of strings."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A JSON array of events.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NHEvent"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Failed to authenticate user from `X-API-KEY`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error401"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "There was an error fetching the requested data.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1502,6 +1600,11 @@
             "example": "https://dodo.ac/np/images/d/db/Cherry_Salmon_NH_Icon.png",
             "description": "Image of the fish. dodo.ac is Nookipedia's CDN server."
           },
+          "render_url": {
+            "type": "string",
+            "example": "https://dodo.ac/np/images/c/c0/Cherry_Salmon_NH.png",
+            "description": "Render of the fish. dodo.ac is Nookipedia's CDN server."
+          },
           "time": {
             "type": "string",
             "example": "4 PM – 9 AM",
@@ -1811,6 +1914,11 @@
             "example": "https://dodo.ac/np/images/3/37/Grasshopper_NH_Icon.png",
             "description": "Image of the bug. dodo.ac is Nookipedia's CDN server."
           },
+          "render_url": {
+            "type": "string",
+            "example": "https://dodo.ac/np/images/1/1d/Grasshopper_NH.png",
+            "description": "Render of the bug. dodo.ac is Nookipedia's CDN server."
+          },
           "time": {
             "type": "string",
             "example": "8 AM – 5 PM",
@@ -2087,6 +2195,11 @@
             "type": "string",
             "example": "https://dodo.ac/np/images/5/58/Octopus_NH_Icon.png",
             "description": "Image of the sea creature. dodo.ac is Nookipedia's CDN server."
+          },
+          "render_url": {
+            "type": "string",
+            "example": "https://dodo.ac/np/images/2/27/Octopus_NH.png",
+            "description": "Render of the sea creature. dodo.ac is Nookipedia's CDN server."
           },
           "time": {
             "type": "string",
@@ -2567,6 +2680,26 @@
               }
             ],
             "description": "The list of materials required to craft the item."
+          }
+        }
+      },
+      "NHEvent": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "date",
+            "example": "2021-05-01",
+            "description": "The date of the event."
+          },
+          "event": {
+            "type": "string",
+            "example": "May Day event begins",
+            "description": "The description of the event."
+          },
+          "event_name": {
+            "type": "string",
+            "example": "May Day",
+            "description": "The name of the event (for URL)."
           }
         }
       }
