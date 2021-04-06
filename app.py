@@ -935,29 +935,29 @@ def format_event(data):
 def get_event_list(limit, tables, fields):
     where = None
 
+    # Filter by year:
+    if request.args.get('year'):
+        year = request.args.get('year')
+        if where:
+            where = where + ' AND YEAR(date) = "' + year + '"'
+        else:
+            where = 'YEAR(date) = "' + year + '"'
+
     # Filter by month:
-    if request.args.get('eventmonth'):
-        month = month_to_int(request.args.get('eventmonth'))
+    if request.args.get('month'):
+        month = month_to_int(request.args.get('month'))
         if where:
             where = where + ' AND MONTH(date) = "' + month + '"'
         else:
             where = 'MONTH(date) = "' + month + '"'
 
     # Filter by day:
-    if request.args.get('eventday'):
-        day = request.args.get('eventday')
+    if request.args.get('day'):
+        day = request.args.get('day')
         if where:
             where = where + ' AND DAYOFMONTH(date) = "' + day + '"'
         else:
             where = 'DAYOFMONTH(date) = "' + day + '"'
-
-    # Filter by year:
-    if request.args.get('eventyear'):
-        day = request.args.get('eventyear')
-        if where:
-            where = where + ' AND YEAR(date) = "' + day + '"'
-        else:
-            where = 'YEAR(date) = "' + day + '"'
 
     if where:
         params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields, 'where': where}
@@ -1208,7 +1208,7 @@ def get_nh_event_all():
 
     limit = '800'
     tables = 'nh_calendar'
-    fields = 'date,event,link=event_name'
+    fields = 'date,event,link=event_url'
 
     return get_event_list(limit, tables, fields)
 
