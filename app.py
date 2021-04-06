@@ -929,6 +929,123 @@ def get_recipe_list(limit, tables, fields):
             results_array.append(format_recipe(recipe))
     return jsonify(results_array)
 
+def format_furniture(data):
+    #Integers
+    data['hha_base'] = int('0' + data['hha_base'])
+    data['buy1_price'] = int('0' + data['buy1_price'])
+    data['buy2_price'] = int('0' + data['buy2_price'])
+    data['sell'] = int('0' + data['sell'])
+    data['variation_total'] = int('0' + data['variation_total'])
+    data['pattern_total'] = int('0' + data['pattern_total'])
+    data['custom_kits'] = int('0' + data['custom_kits'])
+
+    #Floats
+    data['length'] = float('0' + data['length'])
+    data['width'] = float('0' + data['width'])
+    data['height'] = float('0' + data['height'])
+
+    #Booleans
+    data['customizable'] = data['customizable'] == '1'
+    data['outdoor'] = data['outdoor'] == '1'
+    data['interactable'] = data['interactable'] == '1'
+    data['sound'] = data['sound'] == '1'
+    data['music'] = data['music'] == '1'
+    data['lighting'] = data['lighting'] == '1'
+    data['door_decor'] = data['door_decor'] == '1'
+    data['unlocked'] = data['unlocked'] == '1'
+
+    return data
+
+def get_furniture_list(limit,tables,fields):
+    where = []
+
+    if 'customizable' in request.args:
+        if request.args['customizable'] == 'true':
+            where.append('customizable = "1"')
+        elif request.args['customizable'] == 'false':
+            where.append('customizable = "0"')
+
+    if 'outdoor' in request.args:
+        if request.args['outdoor'] == 'true':
+            where.append('outdoor = "1"')
+        elif request.args['outdoor'] == 'false':
+            where.append('outdoor = "0"')
+
+    if 'interactable' in request.args:
+        if request.args['interactable'] == 'true':
+            where.append('interactable = "1"')
+        elif request.args['interactable'] == 'false':
+            where.append('interactable = "0"')
+
+    if 'sound' in request.args:
+        if request.args['sound'] == 'true':
+            where.append('sound = "1"')
+        elif request.args['sound'] == 'false':
+            where.append('sound = "0"')
+
+    if 'music' in request.args:
+        if request.args['music'] == 'true':
+            where.append('music = "1"')
+        elif request.args['music'] == 'false':
+            where.append('music = "0"')
+
+    if 'lighting' in request.args:
+        if request.args['lighting'] == 'true':
+            where.append('lighting = "1"')
+        elif request.args['lighting'] == 'false':
+            where.append('lighting = "0"')
+
+    if 'doordecor' in request.args:
+        if request.args['doordecor'] == 'true':
+            where.append('door_decor = "1"')
+        elif request.args['doordecor'] == 'false':
+            where.append('door_decor = "0"')
+
+    if 'unlocked' in request.args:
+        if request.args['unlocked'] == 'true':
+            where.append('unlocked = "1"')
+        elif request.args['unlocked'] == 'false':
+            where.append('unlocked = "0"')
+
+    if len(where) == 0:
+        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
+    else:
+        where = ' AND '.join(where)
+        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit, 'where': where }
+
+    cargo_results = call_cargo(params, request.args)
+    ret = [format_furniture(_) for _ in cargo_results]
+    return ret
+
+#The only variation list that had an extra parameter compared to the others
+def get_furniture_variation_list(limit,tables,fields):
+    where = []
+
+    if 'color' in request.args:
+        colors = request.args.getlist('color')
+        if len(colors) == 1: # If they only filtered one color
+            where.append('(color1 = "{0}" OR color2 = "{0}")'.format(colors[0]))
+        elif len(colors) == 2: # If they filtered both colors
+            where.append('((color1 = "{0}" AND color2 = "{1}") OR (color1 = "{1}" AND color2 = "{0}"))'.format(colors[0],colors[1]))
+        else:
+            abort(400, description=error_response('Invalid arguments','Cannot have more than two colors'))
+
+    if 'pattern' in request.args:
+        pattern = request.args['pattern']
+        where.append(f'pattern = "{pattern}"')
+
+    if 'variation' in request.args:
+        variation = request.args['variation']
+        where.append(f'variation = "{variation}"')
+
+    if len(where) == 0:
+        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
+    else:
+        where = ' AND '.join(where)
+        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit, 'where': where }
+
+    cargo_results = call_cargo(params, request.args)
+    return cargo_results
 
 #################################
 # STATIC RENDERS
