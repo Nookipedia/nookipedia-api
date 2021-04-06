@@ -1487,7 +1487,7 @@ def get_nh_furniture(furniture):
     furniture = furniture.replace('_',' ')
     furniture_limit = '1'
     furniture_tables = 'nh_furniture'
-    furniture_fields = 'identifier,en_name,_pageName=url,category,item_series,item_set,theme1,theme2,tag,hha_base,function1,function2,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,variation_total,pattern_total,customizable,custom_kits,custom_body_part,custom_pattern_part,grid_size,length,width,height,outdoor,interactable,sound,music,lighting,door_decor,version_added,unlocked,notes'#'
+    furniture_fields = 'identifier,en_name=name,_pageName=url,category,item_series,item_set,theme1,theme2,tag,hha_base,function1,function2,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,variation_total,pattern_total,customizable,custom_kits,custom_body_part,custom_pattern_part,grid_size,length,width,height,outdoor,interactable,sound,music,lighting,door_decor,version_added,unlocked,notes'#'
     furniture_where = f'en_name = "{furniture}"'
     furniture_params = { 'action': 'cargoquery', 'format': 'json', 'tables': furniture_tables, 'fields': furniture_fields, 'where': furniture_where, 'limit': furniture_limit }
     variation_limit = '10'
@@ -1513,7 +1513,7 @@ def get_nh_furniture_all():
 
     furniture_limit = '1100'
     furniture_tables = 'nh_furniture'
-    furniture_fields = 'identifier,_pageName=url,en_name,category,item_series,item_set,theme1,theme2,tag,hha_base,function1,function2,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,variation_total,pattern_total,customizable,custom_kits,custom_body_part,custom_pattern_part,grid_size,length,width,height,outdoor,interactable,sound,music,lighting,door_decor,version_added,unlocked,notes'#'
+    furniture_fields = 'identifier,_pageName=url,en_name=name,category,item_series,item_set,theme1,theme2,tag,hha_base,function1,function2,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,variation_total,pattern_total,customizable,custom_kits,custom_body_part,custom_pattern_part,grid_size,length,width,height,outdoor,interactable,sound,music,lighting,door_decor,version_added,unlocked,notes'#'
     variation_limit = '5200'
     variation_tables = 'nh_furniture_variation'
     variation_fields = 'identifier,variation,pattern,image_url,color1,color2'
@@ -1534,7 +1534,7 @@ def get_nh_clothing(clothing):
     clothing = clothing.replace('_',' ')
     clothing_limit = '1'
     clothing_tables = 'nh_clothing'
-    clothing_fields = 'identifier,en_name,_pageName=url,category,style1,style2,label1,label2,label3,label4,label5,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,variation_total,vill_equip,version_added,unlocked,notes'
+    clothing_fields = 'identifier,en_name=name,_pageName=url,category,style1,style2,label1,label2,label3,label4,label5,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,variation_total,vill_equip,version_added,unlocked,notes'
     clothing_where = f'en_name = "{clothing}"'
     clothing_params = { 'action': 'cargoquery', 'format': 'json', 'tables': clothing_tables, 'fields': clothing_fields, 'where': clothing_where, 'limit': clothing_limit }
     variation_limit = '10'
@@ -1560,7 +1560,7 @@ def get_nh_clothing_all():
 
     clothing_limit = '1300'
     clothing_tables = 'nh_clothing'
-    clothing_fields = 'identifier,en_name,_pageName=url,category,style1,style2,label1,label2,label3,label4,label5,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,variation_total,vill_equip,version_added,unlocked,notes'
+    clothing_fields = 'identifier,en_name=name,_pageName=url,category,style1,style2,label1,label2,label3,label4,label5,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,variation_total,vill_equip,version_added,unlocked,notes'
     variation_limit = '4900'
     variation_tables = 'nh_clothing_variation'
     variation_fields = 'identifier,variation,image_url,color1,color2'
@@ -1581,7 +1581,7 @@ def get_nh_photo(photo):
     photo = photo.replace('_',' ')
     photo_limit = '1'
     photo_tables = 'nh_photo'
-    photo_fields = 'identifier,en_name,_pageName=url,category,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,customizable,custom_kits,custom_body_part,grid_size,length,width,height,interactable,version_added,unlocked'
+    photo_fields = 'identifier,en_name=name,_pageName=url,category,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,customizable,custom_kits,custom_body_part,grid_size,length,width,height,interactable,version_added,unlocked'
     photo_where = f'en_name = "{photo}"'
     photo_params = { 'action': 'cargoquery', 'format': 'json', 'tables': photo_tables, 'fields': photo_fields, 'where': photo_where, 'limit': photo_limit }
     variation_limit = '10'
@@ -1607,7 +1607,7 @@ def get_nh_photo_all():
 
     photo_limit = '900'
     photo_tables = 'nh_photo'
-    photo_fields = 'identifier,en_name,_pageName=url,category,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,customizable,custom_kits,custom_body_part,grid_size,length,width,height,interactable,version_added,unlocked'
+    photo_fields = 'identifier,en_name=name,_pageName=url,category,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,customizable,custom_kits,custom_body_part,grid_size,length,width,height,interactable,version_added,unlocked'
     variation_limit = '3600'
     variation_tables = 'nh_photo_variation'
     variation_fields = 'identifier,variation,image_url,color1,color2'
@@ -1628,7 +1628,7 @@ def get_nh_tool(tool):
     tool = tool.replace('_',' ')
     tool_limit = '1'
     tool_tables = 'nh_tool'
-    tool_fields = 'identifier,en_name,uses,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,availability3,availability3_note,customizable,custom_kits,custom_body_part,version_added,unlocked,notes'
+    tool_fields = 'identifier,en_name=name,uses,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,availability3,availability3_note,customizable,custom_kits,custom_body_part,version_added,unlocked,notes'
     tool_where = f'en_name = "{tool}"'
     tool_params = { 'action': 'cargoquery', 'format': 'json', 'tables': tool_tables, 'fields': tool_fields, 'where': tool_where, 'limit': tool_limit }
     variation_limit = '10'
@@ -1654,7 +1654,7 @@ def get_nh_tool_all():
 
     tool_limit = '100'
     tool_tables = 'nh_tool'
-    tool_fields = 'identifier,en_name,uses,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,availability3,availability3_note,customizable,custom_kits,custom_body_part,version_added,unlocked,notes'
+    tool_fields = 'identifier,en_name=name,uses,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,availability3,availability3_note,customizable,custom_kits,custom_body_part,version_added,unlocked,notes'
     variation_limit = '300'
     variation_tables = 'nh_tool_variation'
     variation_fields = 'identifier,variation,image_url,color1,color2'
