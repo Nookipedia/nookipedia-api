@@ -1310,13 +1310,22 @@ def get_variation_list(limit,tables,fields):
     cargo_results = call_cargo(params, request.args)
     return cargo_results
 
+def format_variation(data):
+    data['colors'] = []
+    for i in range(1,3):
+        color = f'color{i}'
+        if len(data[color]) > 0:
+            data['colors'].append(data[color])
+        del data[color]
+    return data
+
 def stitch_variation_list(items,variations):
     ret = { _['identifier']:_ for _ in items } # Turn the list of items into a dictionary with the identifier as the key
     for identifier in ret:
         ret[identifier]['variations'] = [] #Initialize every variations list
     for variation in variations:
         if variation['identifier'] in ret:
-            ret[variation['identifier']]['variations'].append(variation)
+            ret[variation['identifier']]['variations'].append(format_variation(variation))
             del variation['identifier']
 
     # Drop the keys, basically undo what we did at the start
@@ -1334,7 +1343,7 @@ def stitch_variation_list(items,variations):
 def stitch_variation(item,variations):
     item['variations'] = []
     for variation in variations:
-        item['variations'].append(variation)
+        item['variations'].append(format_variation(variation))
         del variation['identifier']
     del item['identifier']
     return item
