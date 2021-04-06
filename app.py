@@ -1047,6 +1047,52 @@ def get_furniture_variation_list(limit,tables,fields):
     cargo_results = call_cargo(params, request.args)
     return cargo_results
 
+def format_clothing(data):
+    # Integers
+    data['buy1_price'] = int('0' + data['buy1_price'])
+    data['buy2_price'] = int('0' + data['buy2_price'])
+    data['sell'] = int('0' + data['sell'])
+    data['variation_total'] = int('0' + data['variation_total'])
+
+    # Booleans
+    data['vill_equip'] = data['vill_equip'] == '1'
+    data['unlocked'] = data['unlocked'] == '1'
+
+    # Turn label[1-5] into a list called labels
+    data['labels'] = []
+    for i in range(1,6):
+        label = f'label{i}'
+        if len(data[label]) > 0:
+            data['labels'].append(data[label])
+        del data[label]
+
+    return data
+
+def get_clothing_list(limit,tables,fields):
+    where = []
+
+    if 'villequip' in request.args:
+        if request.args['villequip'] == 'true':
+            where.append('vill_equip = "1"')
+        elif request.args['villequip'] == 'false':
+            where.append('vill_equip = "0"')
+
+    if 'unlocked' in request.args:
+        if request.args['unlocked'] == 'true':
+            where.append('unlocked = "1"')
+        elif request.args['unlocked'] == 'false':
+            where.append('unlocked = "0"')
+
+    if len(where) == 0:
+        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
+    else:
+        where = ' AND '.join(where)
+        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit, 'where': where }
+
+    cargo_results = call_cargo(params, request.args)
+    ret = [format_clothing(_) for _ in cargo_results]
+    return ret
+
 #################################
 # STATIC RENDERS
 #################################
