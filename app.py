@@ -1182,6 +1182,60 @@ def get_tool_list(limit,tables,fields):
     ret = [format_tool(_) for _ in cargo_results]
     return ret
 
+def get_variation_list(limit,tables,fields):
+    where = []
+
+    if 'color' in request.args:
+        colors = request.args.getlist('color')
+        if len(colors) == 1: # If they only filtered one color
+            where.append('(color1 = "{0}" OR color2 = "{0}")'.format(colors[0]))
+        elif len(colors) == 2: # If they filtered both colors
+            where.append('((color1 = "{0}" AND color2 = "{1}") OR (color1 = "{1}" AND color2 = "{0}"))'.format(colors[0],colors[1]))
+        else:
+            abort(400, description=error_response('Invalid arguments','Cannot have more than two colors'))
+
+    if 'variation' in request.args:
+        variation = request.args['variation']
+        where.append(f'variation = "{variation}"')
+
+    if len(where) == 0:
+        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
+    else:
+        where = ' AND '.join(where)
+        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit, 'where': where }
+
+    cargo_results = call_cargo(params, request.args)
+    return cargo_results
+
+def stitch_variation_list(items,variations):
+    ret = { _['identifier']:_ for _ in items } # Turn the list of items into a dictionary with the identifier as the key
+    for identifier in ret:
+        ret[identifier]['variations'] = [] #Initialize every variations list
+    for variation in variations:
+        if variation['identifier'] in ret:
+            ret[variation['identifier']]['variations'].append(variation)
+            del variation['identifier']
+
+    # Drop the keys, basically undo what we did at the start
+    ret = list(ret.values())
+    # Sort the variations, and remove some fields used for formatting
+    processed = []
+    for i in range(len(ret)):
+        piece = ret[i]
+        if len(piece['variations']) == 0: # If we filtered out all the variations, skip this piece
+            continue
+        del piece['identifier']
+        processed.append(piece)
+    return processed
+
+def stitch_variation(item,variations):
+    item['variations'] = []
+    for variation in variations:
+        item['variations'].append(variation)
+        del variation['identifier']
+    del item['identifier']
+    return item
+
 #################################
 # STATIC RENDERS
 #################################
