@@ -1049,8 +1049,6 @@ def get_furniture_variation_list(limit,tables,fields):
 
 def format_clothing(data):
     # Integers
-    data['buy1_price'] = int('0' + data['buy1_price'])
-    data['buy2_price'] = int('0' + data['buy2_price'])
     data['sell'] = int('0' + data['sell'])
     data['variation_total'] = int('0' + data['variation_total'])
 
@@ -1065,6 +1063,33 @@ def format_clothing(data):
         if len(data[label]) > 0:
             data['labels'].append(data[label])
         del data[label]
+
+    data['styles'] = []
+    for i in range(1,3):
+        style = f'style{i}'
+        if len(data[style]) > 0:
+            data['styles'].append(data[style])
+        del data[style]
+
+    data['availability'] = []
+    for i in range(1, 3):
+        if len(data[f'availability{i}']) > 0:
+            data['availability'].append({
+                'from': data[f'availability{i}'],
+                'note': data[f'availability{i}_note']
+            })
+        del data[f'availability{i}']
+        del data[f'availability{i}_note']
+
+    data['buy'] = []
+    for i in range(1, 3):  # Technically overkill, but it'd be easy to add a third buy column if it ever matters
+        if len(data[f'buy{i}_price']) > 0:
+            data['buy'].append({
+                'price': int(data[f'buy{i}_price']),
+                'currency': data[f'buy{i}_currency']
+            })
+        del data[f'buy{i}_price']
+        del data[f'buy{i}_currency']
 
     return data
 
