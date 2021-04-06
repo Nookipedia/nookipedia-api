@@ -1095,8 +1095,6 @@ def get_clothing_list(limit,tables,fields):
 
 def format_photo(data):
     # Integers
-    data['buy1_price'] = int('0' + data['buy1_price'])
-    data['buy2_price'] = int('0' + data['buy2_price'])
     data['sell'] = int('0' + data['sell'])
     data['custom_kits'] = int('0' + data['custom_kits'])
 
@@ -1109,6 +1107,31 @@ def format_photo(data):
     data['length'] = float('0' + data['length'])
     data['width'] = float('0' + data['width'])
     data['height'] = float('0' + data['height'])
+
+    grid_width, grid_height = data['grid_size'].split("\u00d7") # \u00d7 is the multiplication sign, so 1.0x1.0 => [1.0,1.0]
+    data['grid_width'] = float(grid_width)
+    data['grid_height'] = float(grid_height)
+    del data['grid_size']
+
+    data['availability'] = []
+    for i in range(1, 3):
+        if len(data[f'availability{i}']) > 0:
+            data['availability'].append({
+                'from': data[f'availability{i}'],
+                'note': data[f'availability{i}_note']
+            })
+        del data[f'availability{i}']
+        del data[f'availability{i}_note']
+
+    data['buy'] = []
+    for i in range(1, 3):  # Technically overkill, but it'd be easy to add a third buy column if it ever matters
+        if len(data[f'buy{i}_price']) > 0:
+            data['buy'].append({
+                'price': int(data[f'buy{i}_price']),
+                'currency': data[f'buy{i}_currency']
+            })
+        del data[f'buy{i}_price']
+        del data[f'buy{i}_currency']
 
     return data
 
