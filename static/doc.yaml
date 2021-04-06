@@ -995,33 +995,21 @@ paths:
             served the latest version, which may eventually result in breaking
             changes.
         - in: query
-<<<<<<< HEAD
           name: year
-=======
-          name: eventyear
->>>>>>> 9394e47ef97cd77984d1962df7a56936ca9e6c24
           required: false
           schema:
             type: string
           description: >-
             Specify a year of the event.
         - in: query
-<<<<<<< HEAD
           name: month
-=======
-          name: eventmonth
->>>>>>> 9394e47ef97cd77984d1962df7a56936ca9e6c24
           required: false
           schema:
             type: string
           description: >-
             Specify a month of the event.
         - in: query
-<<<<<<< HEAD
           name: day
-=======
-          name: eventday
->>>>>>> 9394e47ef97cd77984d1962df7a56936ca9e6c24
           required: false
           schema:
             type: string
@@ -2452,14 +2440,7 @@ components:
           type: string
           example: May Day event begins
           description: The description of the event.
-<<<<<<< HEAD
         event_url:
           type: string
           example: May Day
           description: The article name of the event.
-=======
-        event_name:
-          type: string
-          example: May Day
-          description: The name of the event (for URL).
->>>>>>> 9394e47ef97cd77984d1962df7a56936ca9e6c24
