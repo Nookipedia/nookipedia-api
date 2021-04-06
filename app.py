@@ -1143,6 +1143,45 @@ def get_photo_list(limit,tables,fields):
     ret = [format_photo(_) for _ in cargo_results]
     return ret
 
+def format_tool(data):
+    # Integers
+    data['buy1_price'] = int('0' + data['buy1_price'])
+    data['buy2_price'] = int('0' + data['buy2_price'])
+    data['sell'] = int('0' + data['sell'])
+    data['custom_kits'] = int('0' + data['custom_kits'])
+    data['hha_base'] = int('0' + data['hha_base'])
+
+    # Booleans
+    data['customizable'] = data['customizable'] == '1'
+    data['unlocked'] = data['unlocked'] == '1'
+
+    return data
+
+def get_tool_list(limit,tables,fields):
+    where = []
+
+    if 'customizable' in request.args:
+        if request.args['customizable'] == 'true':
+            where.append('customizable = "1"')
+        elif request.args['customizable'] == 'false':
+            where.append('customizable = "0"')
+
+    if 'unlocked' in request.args:
+        if request.args['unlocked'] == 'true':
+            where.append('unlocked = "1"')
+        elif request.args['unlocked'] == 'false':
+            where.append('unlocked = "0"')
+
+    if len(where) == 0:
+        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
+    else:
+        where = ' AND '.join(where)
+        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit, 'where': where }
+
+    cargo_results = call_cargo(params, request.args)
+    ret = [format_tool(_) for _ in cargo_results]
+    return ret
+
 #################################
 # STATIC RENDERS
 #################################
