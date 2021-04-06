@@ -1145,8 +1145,6 @@ def get_photo_list(limit,tables,fields):
 
 def format_tool(data):
     # Integers
-    data['buy1_price'] = int('0' + data['buy1_price'])
-    data['buy2_price'] = int('0' + data['buy2_price'])
     data['sell'] = int('0' + data['sell'])
     data['custom_kits'] = int('0' + data['custom_kits'])
     data['hha_base'] = int('0' + data['hha_base'])
@@ -1154,6 +1152,26 @@ def format_tool(data):
     # Booleans
     data['customizable'] = data['customizable'] == '1'
     data['unlocked'] = data['unlocked'] == '1'
+
+    data['availability'] = []
+    for i in range(1, 4):
+        if len(data[f'availability{i}']) > 0:
+            data['availability'].append({
+                'from': data[f'availability{i}'],
+                'note': data[f'availability{i}_note']
+            })
+        del data[f'availability{i}']
+        del data[f'availability{i}_note']
+
+    data['buy'] = []
+    for i in range(1, 3):  # Technically overkill, but it'd be easy to add a third buy column if it ever matters
+        if len(data[f'buy{i}_price']) > 0:
+            data['buy'].append({
+                'price': data[f'buy{i}_price'],
+                'currency': data[f'buy{i}_currency']
+            })
+        del data[f'buy{i}_price']
+        del data[f'buy{i}_currency']
 
     return data
 
