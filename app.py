@@ -1462,5 +1462,52 @@ def get_nh_recipe_all():
 
     return get_recipe_list(limit, tables, fields)
 
+@app.route('/nh/furniture/<string:furniture>',methods=['GET'])
+def get_nh_furniture(furniture):
+    authorize(DB_KEYS, request)
+
+    furniture = furniture.replace('_',' ')
+    furniture_limit = '1'
+    furniture_tables = 'nh_furniture'
+    furniture_fields = 'identifier,en_name,_pageName=url,category,item_series,item_set,theme1,theme2,tag,hha_base,function1,function2,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,variation_total,pattern_total,customizable,custom_kits,custom_body_part,custom_pattern_part,grid_size,length,width,height,outdoor,interactable,sound,music,lighting,door_decor,version_added,unlocked,notes'#'
+    furniture_where = f'en_name = "{furniture}"'
+    furniture_params = { 'action': 'cargoquery', 'format': 'json', 'tables': furniture_tables, 'fields': furniture_fields, 'where': furniture_where, 'limit': furniture_limit }
+    variation_limit = '10'
+    variation_tables = 'nh_furniture_variation'
+    variation_fields = 'identifier,variation,pattern,image_url,color1,color2'
+    variation_where = f'en_name = "{furniture}"'
+    variation_params = { 'action': 'cargoquery', 'format': 'json', 'tables': variation_tables, 'fields': variation_fields, 'where': variation_where, 'limit': variation_limit }
+
+    cargo_results = call_cargo(furniture_params, request.args)
+    if len(cargo_results) == 0:
+        abort(404, description=error_response("No data was found for the given query.", f"MediaWiki Cargo request succeeded by nothing was returned for the parameters: {furniture_params}"))
+    else:
+        piece = format_furniture(cargo_results[0])
+        variations = call_cargo(variation_params, request.args)
+        return jsonify(stitch_variation(piece, variations))
+
+@app.route('/nh/furniture',methods=['GET'])
+def get_nh_furniture_all():
+    authorize(DB_KEYS, request)
+
+    if 'thumbsize' in request.args:
+        abort(400, description=error_response('Invalid arguments','Cannot have thumbsize in a group item request'))
+
+    furniture_limit = '1100'
+    furniture_tables = 'nh_furniture'
+    furniture_fields = 'identifier,_pageName=url,en_name,category,item_series,item_set,theme1,theme2,tag,hha_base,function1,function2,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,variation_total,pattern_total,customizable,custom_kits,custom_body_part,custom_pattern_part,grid_size,length,width,height,outdoor,interactable,sound,music,lighting,door_decor,version_added,unlocked,notes'#'
+    variation_limit = '5200'
+    variation_tables = 'nh_furniture_variation'
+    variation_fields = 'identifier,variation,pattern,image_url,color1,color2'
+
+    furniture_list = get_furniture_list(furniture_limit, furniture_tables, furniture_fields)
+    variation_list = get_furniture_variation_list(variation_limit, variation_tables, variation_fields)
+    stitched = stitch_variation_list(furniture_list, variation_list)
+
+    if request.args.get('excludedetails') == 'true':
+        return jsonify([_['en_name'] for _ in stitched])
+    else:
+        return jsonify(stitched)
+
 if __name__ == '__main__':
     app.run(host='127.0.0.1')
