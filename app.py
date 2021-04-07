@@ -1311,12 +1311,15 @@ def get_variation_list(limit,tables,fields):
     return cargo_results
 
 def format_variation(data):
-    data['colors'] = []
-    for i in range(1,3):
-        color = f'color{i}'
-        if len(data[color]) > 0:
-            data['colors'].append(data[color])
-        del data[color]
+    if 'color1' in data:
+        colors = set()
+        for i in range(1,3):
+            color = f'color{i}'
+            if len(data[color]) > 0:
+                colors.add(data[color])
+            del data[color]
+        colors.discard('None')
+        data['colors'] = list(colors)
     return data
 
 def stitch_variation_list(items,variations):
@@ -1332,8 +1335,7 @@ def stitch_variation_list(items,variations):
     ret = list(ret.values())
     # Sort the variations, and remove some fields used for formatting
     processed = []
-    for i in range(len(ret)):
-        piece = ret[i]
+    for piece in ret:
         if len(piece['variations']) == 0: # If we filtered out all the variations, skip this piece
             continue
         del piece['identifier']
@@ -1727,7 +1729,7 @@ def get_nh_tool(tool):
     tool_params = { 'action': 'cargoquery', 'format': 'json', 'tables': tool_tables, 'fields': tool_fields, 'where': tool_where, 'limit': tool_limit }
     variation_limit = '10'
     variation_tables = 'nh_tool_variation'
-    variation_fields = 'identifier,variation,image_url,color1,color2'
+    variation_fields = 'identifier,variation,image_url'
     variation_where = f'en_name = "{tool}"'
     variation_params = { 'action': 'cargoquery', 'format': 'json', 'tables': variation_tables, 'fields': variation_fields, 'where': variation_where, 'limit': variation_limit }
 
@@ -1751,7 +1753,7 @@ def get_nh_tool_all():
     tool_fields = 'identifier,en_name=name,uses,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,availability3,availability3_note,customizable,custom_kits,custom_body_part,version_added,unlocked,notes'
     variation_limit = '300'
     variation_tables = 'nh_tool_variation'
-    variation_fields = 'identifier,variation,image_url,color1,color2'
+    variation_fields = 'identifier,variation,image_url'
 
     tool_list = get_tool_list(tool_limit, tool_tables, tool_fields)
     variation_list = get_variation_list(variation_limit, variation_tables, variation_fields)
