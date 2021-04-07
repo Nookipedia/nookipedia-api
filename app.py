@@ -937,11 +937,6 @@ def format_furniture(data):
     data['pattern_total'] = int('0' + data['pattern_total'])
     data['custom_kits'] = int('0' + data['custom_kits'])
 
-    #Floats
-    data['length'] = float('0' + data['length'])
-    data['width'] = float('0' + data['width'])
-    data['height'] = float('0' + data['height'])
-
     #Booleans
     data['customizable'] = data['customizable'] == '1'
     data['outdoor'] = data['outdoor'] == '1'
@@ -1164,11 +1159,6 @@ def format_photo(data):
     data['customizable'] = data['customizable'] == '1'
     data['interactable'] = data['interactable'] == '1'
     data['unlocked'] = data['unlocked'] == '1'
-
-    # Floats
-    data['length'] = float('0' + data['length'])
-    data['width'] = float('0' + data['width'])
-    data['height'] = float('0' + data['height'])
 
     grid_width, grid_height = data['grid_size'].split("\u00d7") # \u00d7 is the multiplication sign, so 1.0x1.0 => [1.0,1.0]
     data['grid_width'] = float(grid_width)
@@ -1583,7 +1573,7 @@ def get_nh_furniture(furniture):
     furniture = furniture.replace('_',' ')
     furniture_limit = '1'
     furniture_tables = 'nh_furniture'
-    furniture_fields = 'identifier,en_name=name,_pageName=url,category,item_series,item_set,theme1,theme2,tag,hha_base,function1,function2,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,variation_total,pattern_total,customizable,custom_kits,custom_body_part,custom_pattern_part,grid_size,length,width,height,outdoor,interactable,sound,music,lighting,door_decor,version_added,unlocked,notes'#'
+    furniture_fields = 'identifier,en_name=name,_pageName=url,category,item_series,item_set,theme1,theme2,tag,hha_base,function1,function2,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,variation_total,pattern_total,customizable,custom_kits,custom_body_part,custom_pattern_part,grid_size,outdoor,interactable,sound,music,lighting,door_decor,version_added,unlocked,notes'#'
     furniture_where = f'en_name = "{furniture}"'
     furniture_params = { 'action': 'cargoquery', 'format': 'json', 'tables': furniture_tables, 'fields': furniture_fields, 'where': furniture_where, 'limit': furniture_limit }
     variation_limit = '10'
@@ -1609,7 +1599,7 @@ def get_nh_furniture_all():
 
     furniture_limit = '1100'
     furniture_tables = 'nh_furniture'
-    furniture_fields = 'identifier,_pageName=url,en_name=name,category,item_series,item_set,theme1,theme2,tag,hha_base,function1,function2,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,variation_total,pattern_total,customizable,custom_kits,custom_body_part,custom_pattern_part,grid_size,length,width,height,outdoor,interactable,sound,music,lighting,door_decor,version_added,unlocked,notes'#'
+    furniture_fields = 'identifier,_pageName=url,en_name=name,category,item_series,item_set,theme1,theme2,tag,hha_base,function1,function2,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,variation_total,pattern_total,customizable,custom_kits,custom_body_part,custom_pattern_part,grid_size,outdoor,interactable,sound,music,lighting,door_decor,version_added,unlocked,notes'#'
     variation_limit = '5200'
     variation_tables = 'nh_furniture_variation'
     variation_fields = 'identifier,variation,pattern,image_url,color1,color2'
@@ -1677,7 +1667,7 @@ def get_nh_photo(photo):
     photo = photo.replace('_',' ')
     photo_limit = '1'
     photo_tables = 'nh_photo'
-    photo_fields = 'identifier,en_name=name,_pageName=url,category,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,customizable,custom_kits,custom_body_part,grid_size,length,width,height,interactable,version_added,unlocked'
+    photo_fields = 'identifier,en_name=name,_pageName=url,category,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,customizable,custom_kits,custom_body_part,grid_size,interactable,version_added,unlocked'
     photo_where = f'en_name = "{photo}"'
     photo_params = { 'action': 'cargoquery', 'format': 'json', 'tables': photo_tables, 'fields': photo_fields, 'where': photo_where, 'limit': photo_limit }
     variation_limit = '10'
@@ -1703,7 +1693,7 @@ def get_nh_photo_all():
 
     photo_limit = '900'
     photo_tables = 'nh_photo'
-    photo_fields = 'identifier,en_name=name,_pageName=url,category,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,customizable,custom_kits,custom_body_part,grid_size,length,width,height,interactable,version_added,unlocked'
+    photo_fields = 'identifier,en_name=name,_pageName=url,category,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,customizable,custom_kits,custom_body_part,grid_size,interactable,version_added,unlocked'
     variation_limit = '3600'
     variation_tables = 'nh_photo_variation'
     variation_fields = 'identifier,variation,image_url,color1,color2'
