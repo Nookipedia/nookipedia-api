@@ -929,6 +929,459 @@ def get_recipe_list(limit, tables, fields):
             results_array.append(format_recipe(recipe))
     return jsonify(results_array)
 
+def format_furniture(data):
+    #Integers
+    data['hha_base'] = int('0' + data['hha_base'])
+    data['sell'] = int('0' + data['sell'])
+    data['variation_total'] = int('0' + data['variation_total'])
+    data['pattern_total'] = int('0' + data['pattern_total'])
+    data['custom_kits'] = int('0' + data['custom_kits'])
+
+    #Booleans
+    if data['customizable'] == '0':
+        data['customizable'] = False
+    elif data['customizable'] == '1':
+        data['customizable'] = True
+    if data['outdoor'] == '0':
+        data['outdoor'] = False
+    elif data['outdoor'] == '1':
+        data['outdoor'] = True
+    if data['interactable'] == '0':
+        data['interactable'] = False
+    elif data['interactable'] == '1':
+        data['interactable'] = True
+    if data['sound'] == '0':
+        data['sound'] = False
+    elif data['sound'] == '1':
+        data['sound'] = True
+    if data['music'] == '0':
+        data['music'] = False
+    elif data['music'] == '1':
+        data['music'] = True
+    if data['lighting'] == '0':
+        data['lighting'] = False
+    elif data['lighting'] == '1':
+        data['lighting'] = True
+    if data['door_decor'] == '0':
+        data['door_decor'] = False
+    elif data['door_decor'] == '1':
+        data['door_decor'] = True
+    if data['unlocked'] == '0':
+        data['unlocked'] = False
+    elif data['unlocked'] == '1':
+        data['unlocked'] = True
+
+    grid_width, grid_height = data['grid_size'].split("\u00d7") # \u00d7 is the multiplication sign, so 1.0x1.0 => [1.0,1.0]
+    data['grid_width'] = float(grid_width)
+    data['grid_height'] = float(grid_height)
+    del data['grid_size']
+
+    data['themes'] = []
+    for i in range(1, 3):
+        theme = f'theme{i}'
+        if len(data[theme]) > 0:
+            data['themes'].append(data[theme])
+        del data[theme]
+
+    data['functions'] = []
+    for i in range(1, 3):
+        function = f'function{i}'
+        if len(data[function]) > 0:
+            data['functions'].append(data[function])
+        del data[function]
+
+    data['availability'] = []
+    for i in range(1, 4):
+        if len(data[f'availability{i}']) > 0:
+            data['availability'].append({
+                'from': data[f'availability{i}'],
+                'note': data[f'availability{i}_note']
+            })
+        del data[f'availability{i}']
+        del data[f'availability{i}_note']
+
+    data['buy'] = []
+    for i in range(1, 3):  # Technically overkill, but it'd be easy to add a third buy column if it ever matters
+        if len(data[f'buy{i}_price']) > 0:
+            data['buy'].append({
+                'price': int(data[f'buy{i}_price']),
+                'currency': data[f'buy{i}_currency']
+            })
+        del data[f'buy{i}_price']
+        del data[f'buy{i}_currency']
+
+    return data
+
+def get_furniture_list(limit,tables,fields):
+    where = []
+
+    if len(where) == 0:
+        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
+    else:
+        where = ' AND '.join(where)
+        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit, 'where': where }
+
+    cargo_results = call_cargo(params, request.args)
+    ret = [format_furniture(_) for _ in cargo_results]
+    return ret
+
+#The only variation list that had an extra parameter compared to the others
+def get_furniture_variation_list(limit,tables,fields):
+    where = []
+
+    if 'color' in request.args:
+        colors = request.args.getlist('color')
+        if len(colors) == 1: # If they only filtered one color
+            where.append('(color1 = "{0}" OR color2 = "{0}")'.format(colors[0]))
+        elif len(colors) == 2: # If they filtered both colors
+            where.append('((color1 = "{0}" AND color2 = "{1}") OR (color1 = "{1}" AND color2 = "{0}"))'.format(colors[0],colors[1]))
+        else:
+            abort(400, description=error_response('Invalid arguments','Cannot have more than two colors'))
+
+    if 'pattern' in request.args:
+        pattern = request.args['pattern']
+        where.append(f'pattern = "{pattern}"')
+
+    if 'variation' in request.args:
+        variation = request.args['variation']
+        where.append(f'variation = "{variation}"')
+
+    if len(where) == 0:
+        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'order_by': orderby, 'limit': limit }
+    else:
+        where = ' AND '.join(where)
+        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'order_by': orderby, 'limit': limit, 'where': where }
+
+    cargo_results = call_cargo(params, request.args)
+    return cargo_results
+
+def format_clothing(data):
+    # Integers
+    data['sell'] = int('0' + data['sell'])
+    data['variation_total'] = int('0' + data['variation_total'])
+
+    # Booleans
+    if data['vill_equip'] == '0':
+        data['vill_equip'] = False
+    elif data['vill_equip'] == '1':
+        data['vill_equip'] = True
+    if data['unlocked'] == '0':
+        data['unlocked'] = False
+    elif data['unlocked'] == '1':
+        data['unlocked'] = True
+
+    # Turn label[1-5] into a list called label
+    data['label'] = []
+    for i in range(1,6):
+        label = f'label{i}'
+        if len(data[label]) > 0:
+            data['label'].append(data[label])
+        del data[label]
+
+    data['styles'] = []
+    for i in range(1,3):
+        style = f'style{i}'
+        if len(data[style]) > 0:
+            data['styles'].append(data[style])
+        del data[style]
+
+    data['availability'] = []
+    for i in range(1, 3):
+        if len(data[f'availability{i}']) > 0:
+            data['availability'].append({
+                'from': data[f'availability{i}'],
+                'note': data[f'availability{i}_note']
+            })
+        del data[f'availability{i}']
+        del data[f'availability{i}_note']
+
+    data['buy'] = []
+    for i in range(1, 3):  # Technically overkill, but it'd be easy to add a third buy column if it ever matters
+        if len(data[f'buy{i}_price']) > 0:
+            data['buy'].append({
+                'price': int(data[f'buy{i}_price']),
+                'currency': data[f'buy{i}_currency']
+            })
+        del data[f'buy{i}_price']
+        del data[f'buy{i}_currency']
+
+    return data
+
+def get_clothing_list(limit,tables,fields):
+    where = []
+
+    if len(where) == 0:
+        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
+    else:
+        where = ' AND '.join(where)
+        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit, 'where': where }
+
+    cargo_results = call_cargo(params, request.args)
+    ret = [format_clothing(_) for _ in cargo_results]
+    return ret
+
+def format_photo(data):
+    # Integers
+    data['sell'] = int('0' + data['sell'])
+    data['custom_kits'] = int('0' + data['custom_kits'])
+
+    # Booleans
+    if data['customizable'] == '0':
+        data['customizable'] = False
+    elif data['customizable'] == '1':
+        data['customizable'] = True
+    if data['interactable'] == '0':
+        data['interactable'] = False
+    elif data['interactable'] == '1':
+        data['interactable'] = True
+    if data['unlocked'] == '0':
+        data['unlocked'] = False
+    elif data['unlocked'] == '1':
+        data['unlocked'] = True
+
+    grid_width, grid_height = data['grid_size'].split("\u00d7") # \u00d7 is the multiplication sign, so 1.0x1.0 => [1.0,1.0]
+    data['grid_width'] = float(grid_width)
+    data['grid_height'] = float(grid_height)
+    del data['grid_size']
+
+    data['availability'] = []
+    for i in range(1, 3):
+        if len(data[f'availability{i}']) > 0:
+            data['availability'].append({
+                'from': data[f'availability{i}'],
+                'note': data[f'availability{i}_note']
+            })
+        del data[f'availability{i}']
+        del data[f'availability{i}_note']
+
+    data['buy'] = []
+    for i in range(1, 3):  # Technically overkill, but it'd be easy to add a third buy column if it ever matters
+        if len(data[f'buy{i}_price']) > 0:
+            data['buy'].append({
+                'price': int(data[f'buy{i}_price']),
+                'currency': data[f'buy{i}_currency']
+            })
+        del data[f'buy{i}_price']
+        del data[f'buy{i}_currency']
+
+    return data
+
+def get_photo_list(limit,tables,fields):
+    where = []
+
+    if len(where) == 0:
+        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
+    else:
+        where = ' AND '.join(where)
+        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit, 'where': where }
+
+    cargo_results = call_cargo(params, request.args)
+    ret = [format_photo(_) for _ in cargo_results]
+    return ret
+
+def format_interior(data):
+    # Integers
+    data['sell'] = int('0' + data['sell'])
+
+    # Booleans
+    if data['vfx'] == '0':
+        data['vfx'] = False
+    elif data['vfx'] == '1':
+        data['vfx'] = True
+    if data['unlocked'] == '0':
+        data['unlocked'] = False
+    elif data['unlocked'] == '1':
+        data['unlocked'] = True
+
+    if data['grid_size']:
+        grid_width, grid_height = data['grid_size'].split("\u00d7") # \u00d7 is the multiplication sign, so 1.0x1.0 => [1.0,1.0]
+        data['grid_width'] = float(grid_width)
+        data['grid_height'] = float(grid_height)
+    else:
+        data['grid_width'] = ""
+        data['grid_height'] = ""
+    del data['grid_size']
+
+    data['themes'] = []
+    for i in range(1,3):
+        theme = f'theme{i}'
+        if len(data[theme]) > 0:
+            data['themes'].append(data[theme])
+        del data[theme]
+
+    data['colors'] = []
+    for i in range(1,3):
+        color = f'color{i}'
+        if len(data[color]) > 0:
+            data['colors'].append(data[color])
+        del data[color]
+
+
+    data['availability'] = []
+    for i in range(1, 3):
+        if len(data[f'availability{i}']) > 0:
+            data['availability'].append({
+                'from': data[f'availability{i}'],
+                'note': data[f'availability{i}_note']
+            })
+        del data[f'availability{i}']
+        del data[f'availability{i}_note']
+
+    data['buy'] = []
+    for i in range(1, 3):  # Technically overkill, but it'd be easy to add a third buy column if it ever matters
+        if len(data[f'buy{i}_price']) > 0:
+            data['buy'].append({
+                'price': int(data[f'buy{i}_price']),
+                'currency': data[f'buy{i}_currency']
+            })
+        del data[f'buy{i}_price']
+        del data[f'buy{i}_currency']
+
+    return data
+
+def get_interior_list(limit,tables,fields):
+    where = []
+
+    if 'color' in request.args:
+        colors = request.args.getlist('color')
+        if len(colors) == 1: # If they only filtered one color
+            where.append('(color1 = "{0}" OR color2 = "{0}")'.format(colors[0]))
+        elif len(colors) == 2: # If they filtered both colors
+            where.append('((color1 = "{0}" AND color2 = "{1}") OR (color1 = "{1}" AND color2 = "{0}"))'.format(colors[0],colors[1]))
+        else:
+            abort(400, description=error_response('Invalid arguments','Cannot have more than two colors'))
+
+    if len(where) == 0:
+        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
+    else:
+        where = ' AND '.join(where)
+        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit, 'where': where }
+
+    cargo_results = call_cargo(params, request.args)
+    results_array = []
+    if request.args.get('excludedetails') == 'true':
+        for interior in cargo_results:
+            results_array.append(interior['name'])
+    else:
+        for interior in cargo_results:
+            results_array.append(format_interior(interior))
+    return jsonify(results_array)
+
+def format_tool(data):
+    # Integers
+    data['sell'] = int('0' + data['sell'])
+    data['custom_kits'] = int('0' + data['custom_kits'])
+    data['hha_base'] = int('0' + data['hha_base'])
+
+    # Booleans
+    if data['customizable'] == '0':
+        data['customizable'] = False
+    elif data['customizable'] == '1':
+        data['customizable'] = True
+    if data['unlocked'] == '0':
+        data['unlocked'] = False
+    elif data['unlocked'] == '1':
+        data['unlocked'] = True
+
+    data['availability'] = []
+    for i in range(1, 4):
+        if len(data[f'availability{i}']) > 0:
+            data['availability'].append({
+                'from': data[f'availability{i}'],
+                'note': data[f'availability{i}_note']
+            })
+        del data[f'availability{i}']
+        del data[f'availability{i}_note']
+
+    data['buy'] = []
+    for i in range(1, 3):  # Technically overkill, but it'd be easy to add a third buy column if it ever matters
+        if len(data[f'buy{i}_price']) > 0:
+            data['buy'].append({
+                'price': data[f'buy{i}_price'],
+                'currency': data[f'buy{i}_currency']
+            })
+        del data[f'buy{i}_price']
+        del data[f'buy{i}_currency']
+
+    return data
+
+def get_tool_list(limit,tables,fields):
+    where = []
+
+    if len(where) == 0:
+        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
+    else:
+        where = ' AND '.join(where)
+        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit, 'where': where }
+
+    cargo_results = call_cargo(params, request.args)
+    ret = [format_tool(_) for _ in cargo_results]
+    return ret
+
+def get_variation_list(limit,tables,fields):
+    where = []
+
+    if 'color' in request.args:
+        colors = request.args.getlist('color')
+        if len(colors) == 1: # If they only filtered one color
+            where.append('(color1 = "{0}" OR color2 = "{0}")'.format(colors[0]))
+        elif len(colors) == 2: # If they filtered both colors
+            where.append('((color1 = "{0}" AND color2 = "{1}") OR (color1 = "{1}" AND color2 = "{0}"))'.format(colors[0],colors[1]))
+        else:
+            abort(400, description=error_response('Invalid arguments','Cannot have more than two colors'))
+
+    if 'variation' in request.args:
+        variation = request.args['variation']
+        where.append(f'variation = "{variation}"')
+
+    if len(where) == 0:
+        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'order_by': orderby, 'limit': limit }
+    else:
+        where = ' AND '.join(where)
+        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'order_by': orderby, 'limit': limit, 'where': where }
+
+    cargo_results = call_cargo(params, request.args)
+    return cargo_results
+
+def format_variation(data):
+    if 'color1' in data:
+        colors = set()
+        for i in range(1,3):
+            color = f'color{i}'
+            if len(data[color]) > 0:
+                colors.add(data[color])
+            del data[color]
+        colors.discard('None')
+        data['colors'] = list(colors)
+    return data
+
+def stitch_variation_list(items,variations):
+    ret = { _['identifier']:_ for _ in items } # Turn the list of items into a dictionary with the identifier as the key
+    for identifier in ret:
+        ret[identifier]['variations'] = [] #Initialize every variations list
+    for variation in variations:
+        if variation['identifier'] in ret:
+            ret[variation['identifier']]['variations'].append(format_variation(variation))
+            del variation['identifier']
+
+    # Drop the keys, basically undo what we did at the start
+    ret = list(ret.values())
+    # Sort the variations, and remove some fields used for formatting
+    processed = []
+    for piece in ret:
+        if len(piece['variations']) == 0: # If we filtered out all the variations, skip this piece
+            continue
+        del piece['identifier']
+        processed.append(piece)
+    return processed
+
+def stitch_variation(item,variations):
+    item['variations'] = []
+    for variation in variations:
+        item['variations'].append(format_variation(variation))
+        del variation['identifier']
+    del item['identifier']
+    return item
 
 #################################
 # STATIC RENDERS
@@ -1155,6 +1608,229 @@ def get_nh_recipe_all():
     fields = '_pageName=url,en_name=name,image_url,serial_id,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,recipes_to_unlock,diy_availability1,diy_availability1_note,diy_availability2,diy_availability2_note,material1,material1_num,material2,material2_num,material3,material3_num,material4,material4_num,material5,material5_num,material6,material6_num'
 
     return get_recipe_list(limit, tables, fields)
+
+@app.route('/nh/furniture/<string:furniture>',methods=['GET'])
+def get_nh_furniture(furniture):
+    authorize(DB_KEYS, request)
+
+    furniture = furniture.replace('_',' ')
+    furniture_limit = '1'
+    furniture_tables = 'nh_furniture'
+    furniture_fields = 'identifier,_pageName=url,en_name=name,category,item_series,item_set,theme1,theme2,hha_category,tag,hha_base,lucky,lucky_season,function1,function2,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,availability3,availability3_note,variation_total,pattern_total,customizable,custom_kits,custom_kit_type,custom_body_part,custom_pattern_part,grid_size,length,width,height,outdoor,interactable,animated,sound,music,lighting,door_decor,version_added,unlocked,notes'#'
+    furniture_where = f'en_name = "{furniture}"'
+    furniture_params = { 'action': 'cargoquery', 'format': 'json', 'tables': furniture_tables, 'fields': furniture_fields, 'where': furniture_where, 'limit': furniture_limit }
+    variation_limit = '70'
+    variation_tables = 'nh_furniture_variation'
+    variation_fields = 'identifier,variation,pattern,image_url,color1,color2'
+    variation_where = f'en_name = "{furniture}"'
+    variation_orderby = 'variation_number,pattern_number'
+    variation_params = { 'action': 'cargoquery', 'format': 'json', 'tables': variation_tables, 'fields': variation_fields, 'where': variation_where, 'order_by': variation_orderby, 'limit': variation_limit }
+
+    cargo_results = call_cargo(furniture_params, request.args)
+    if len(cargo_results) == 0:
+        abort(404, description=error_response("No data was found for the given query.", f"MediaWiki Cargo request succeeded by nothing was returned for the parameters: {furniture_params}"))
+    else:
+        piece = format_furniture(cargo_results[0])
+        variations = call_cargo(variation_params, request.args)
+        return jsonify(stitch_variation(piece, variations))
+
+@app.route('/nh/furniture',methods=['GET'])
+def get_nh_furniture_all():
+    authorize(DB_KEYS, request)
+
+    if 'thumbsize' in request.args:
+        abort(400, description=error_response('Invalid arguments','Cannot have thumbsize in a group item request'))
+
+    furniture_limit = '1200'
+    furniture_tables = 'nh_furniture'
+    furniture_fields = 'identifier,_pageName=url,en_name=name,category,item_series,item_set,theme1,theme2,hha_category,tag,hha_base,lucky,lucky_season,function1,function2,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,availability3,availability3_note,variation_total,pattern_total,customizable,custom_kits,custom_kit_type,custom_body_part,custom_pattern_part,grid_size,length,width,height,outdoor,interactable,animated,sound,music,lighting,door_decor,version_added,unlocked,notes'#'
+    variation_limit = '5350'
+    variation_tables = 'nh_furniture_variation'
+    variation_fields = 'identifier,variation,pattern,image_url,color1,color2'
+    variation_orderby = 'variation_number,pattern_number'
+
+    furniture_list = get_furniture_list(furniture_limit, furniture_tables, furniture_fields)
+    variation_list = get_furniture_variation_list(variation_limit, variation_tables, variation_fields, variation_orderby)
+    stitched = stitch_variation_list(furniture_list, variation_list)
+
+    if request.args.get('excludedetails') == 'true':
+        return jsonify([_['en_name'] for _ in stitched])
+    else:
+        return jsonify(stitched)
+
+@app.route('/nh/clothing/<string:clothing>',methods=['GET'])
+def get_nh_clothing(clothing):
+    authorize(DB_KEYS, request)
+
+    clothing = clothing.replace('_',' ')
+    clothing_limit = '1'
+    clothing_tables = 'nh_clothing'
+    clothing_fields = 'identifier,_pageName=url,en_name=name,category,style1,style2,label1,label2,label3,label4,label5,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,variation_total,vill_equip,seasonality,gender,vill_gender,version_added,unlocked,notes'
+    clothing_where = f'en_name = "{clothing}"'
+    clothing_params = { 'action': 'cargoquery', 'format': 'json', 'tables': clothing_tables, 'fields': clothing_fields, 'where': clothing_where, 'limit': clothing_limit }
+    variation_limit = '10'
+    variation_tables = 'nh_clothing_variation'
+    variation_fields = 'identifier,variation,image_url,color1,color2'
+    variation_where = f'en_name = "{clothing}"'
+    variation_orderby = 'variation_number'
+    variation_params = { 'action': 'cargoquery', 'format': 'json', 'tables': variation_tables, 'fields': variation_fields, 'where': variation_where, 'order_by': variation_orderby, 'limit': variation_limit }
+
+    cargo_results = call_cargo(clothing_params, request.args)
+    if len(cargo_results) == 0:
+        abort(404, description=error_response("No data was found for the given query.", f"MediaWiki Cargo request succeeded by nothing was returned for the parameters: {clothing_params}"))
+    else:
+        piece = format_clothing(cargo_results[0])
+        variations = call_cargo(variation_params, request.args)
+        return jsonify(stitch_variation(piece, variations))
+
+@app.route('/nh/clothing',methods=['GET'])
+def get_nh_clothing_all():
+    authorize(DB_KEYS, request)
+
+    if 'thumbsize' in request.args:
+        abort(400, description=error_response('Invalid arguments','Cannot have thumbsize in a group item request'))
+
+    clothing_limit = '1350'
+    clothing_tables = 'nh_clothing'
+    clothing_fields = 'identifier,_pageName=url,en_name=name,category,style1,style2,label1,label2,label3,label4,label5,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,variation_total,vill_equip,seasonality,gender,vill_gender,version_added,unlocked,notes'
+    variation_limit = '5000'
+    variation_tables = 'nh_clothing_variation'
+    variation_fields = 'identifier,variation,image_url,color1,color2'
+    variation_orderby = 'variation_number'
+
+    clothing_list = get_clothing_list(clothing_limit, clothing_tables, clothing_fields)
+    variation_list = get_variation_list(variation_limit, variation_tables, variation_fields, variation_orderby)
+    stitched = stitch_variation_list(clothing_list, variation_list)
+
+    if request.args.get('excludedetails') == 'true':
+        return jsonify([_['en_name'] for _ in stitched])
+    else:
+        return jsonify(stitched)
+
+@app.route('/nh/photo/<string:photo>',methods=['GET'])
+def get_nh_photo(photo):
+    authorize(DB_KEYS, request)
+
+    photo = photo.replace('_',' ')
+    photo_limit = '1'
+    photo_tables = 'nh_photo'
+    photo_fields = 'identifier,_pageName=url,en_name=name,category,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,customizable,custom_kits,custom_body_part,grid_size,length,width,height,interactable,version_added,unlocked'
+    photo_where = f'en_name = "{photo}"'
+    photo_params = { 'action': 'cargoquery', 'format': 'json', 'tables': photo_tables, 'fields': photo_fields, 'where': photo_where, 'limit': photo_limit }
+    variation_limit = '10'
+    variation_tables = 'nh_photo_variation'
+    variation_fields = 'identifier,variation,image_url,color1,color2'
+    variation_where = f'en_name = "{photo}"'
+    variation_orderby = 'variation_number'
+    variation_params = { 'action': 'cargoquery', 'format': 'json', 'tables': variation_tables, 'fields': variation_fields, 'where': variation_where, 'order_by': variation_orderby, 'limit': variation_limit }
+
+    cargo_results = call_cargo(photo_params, request.args)
+    if len(cargo_results) == 0:
+        abort(404, description=error_response("No data was found for the given query.", f"MediaWiki Cargo request succeeded by nothing was returned for the parameters: {photo_params}"))
+    else:
+        piece = format_photo(cargo_results[0])
+        variations = call_cargo(variation_params, request.args)
+        return jsonify(stitch_variation(piece, variations))
+
+@app.route('/nh/photo',methods=['GET'])
+def get_nh_photo_all():
+    authorize(DB_KEYS, request)
+
+    if 'thumbsize' in request.args:
+        abort(400, description=error_response('Invalid arguments','Cannot have thumbsize in a group item request'))
+
+    photo_limit = '900'
+    photo_tables = 'nh_photo'
+    photo_fields = 'identifier,_pageName=url,en_name=name,category,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,customizable,custom_kits,custom_body_part,grid_size,length,width,height,interactable,version_added,unlocked'
+    variation_limit = '3700'
+    variation_tables = 'nh_photo_variation'
+    variation_fields = 'identifier,variation,image_url,color1,color2'
+    variation_orderby = 'variation_number'
+
+    photo_list = get_photo_list(photo_limit, photo_tables, photo_fields)
+    variation_list = get_variation_list(variation_limit, variation_tables, variation_fields, variation_orderby)
+    stitched = stitch_variation_list(photo_list, variation_list)
+
+    if request.args.get('excludedetails') == 'true':
+        return jsonify([_['en_name'] for _ in stitched])
+    else:
+        return jsonify(stitched)
+
+@app.route('/nh/tool/<string:tool>',methods=['GET'])
+def get_nh_tool(tool):
+    authorize(DB_KEYS, request)
+
+    tool = tool.replace('_',' ')
+    tool_limit = '1'
+    tool_tables = 'nh_tool'
+    tool_fields = 'identifier,_pageName=url,en_name=name,uses,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,availability3,availability3_note,customizable,custom_kits,custom_body_part,version_added,unlocked,notes'
+    tool_where = f'en_name = "{tool}"'
+    tool_params = { 'action': 'cargoquery', 'format': 'json', 'tables': tool_tables, 'fields': tool_fields, 'where': tool_where, 'limit': tool_limit }
+    variation_limit = '10'
+    variation_tables = 'nh_tool_variation'
+    variation_fields = 'identifier,variation,image_url'
+    variation_where = f'en_name = "{tool}"'
+    variation_params = { 'action': 'cargoquery', 'format': 'json', 'tables': variation_tables, 'fields': variation_fields, 'where': variation_where, 'order_by': variation_orderby, 'limit': variation_limit }
+    variation_orderby = 'variation_number'
+
+    cargo_results = call_cargo(tool_params, request.args)
+    if len(cargo_results) == 0:
+        abort(404, description=error_response("No data was found for the given query.", f"MediaWiki Cargo request succeeded by nothing was returned for the parameters: {tool_params}"))
+    else:
+        piece = format_tool(cargo_results[0])
+        variations = call_cargo(variation_params, request.args)
+        return jsonify(stitch_variation(piece, variations))
+
+@app.route('/nh/tool',methods=['GET'])
+def get_nh_tool_all():
+    authorize(DB_KEYS, request)
+
+    if 'thumbsize' in request.args:
+        abort(400, description=error_response('Invalid arguments','Cannot have thumbsize in a group item request'))
+
+    tool_limit = '100'
+    tool_tables = 'nh_tool'
+    tool_fields = 'identifier,_pageName=url,en_name=name,uses,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,availability3,availability3_note,customizable,custom_kits,custom_body_part,version_added,unlocked,notes'
+    variation_limit = '300'
+    variation_tables = 'nh_tool_variation'
+    variation_fields = 'identifier,variation,image_url'
+    variation_orderby = 'variation_number'
+
+    tool_list = get_tool_list(tool_limit, tool_tables, tool_fields)
+    variation_list = get_variation_list(variation_limit, variation_tables, variation_fields, variation_orderby)
+    stitched = stitch_variation_list(tool_list, variation_list)
+
+    if request.args.get('excludedetails') == 'true':
+        return jsonify([_['en_name'] for _ in stitched])
+    else:
+        return jsonify(stitched)
+
+@app.route('/nh/interior/<string:interior>', methods=['GET'])
+def get_nh_interior(interior):
+    authorize(DB_KEYS, request)
+
+    interior = interior.replace('_', ' ')
+    limit = '1'
+    tables = 'nh_interior'
+    fields = '_pageName=url,en_name=name,image_url,category,item_series,item_set,theme1,theme2,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,grid_size,vfx,color1,color2,version_added,unlocked,notes'
+    where = f'en_name="{interior}"'
+    params = {'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where, 'limit': limit}
+
+    cargo_results = call_cargo(params, request.args)
+    if len(cargo_results) == 0:
+        abort(404, description=error_response("No data was found for the given query.", f"MediaWiki Cargo request succeeded by nothing was returned for the parameters: {params}"))
+    else:
+        return jsonify(format_interior(cargo_results[0]))
+
+@app.route('/nh/interior', methods=['GET'])
+def get_nh_interior_all():
+    authorize(DB_KEYS, request)
+
+    limit = '650'
+    tables = 'nh_interior'
+    fields = '_pageName=url,en_name=name,image_url,category,item_series,item_set,theme1,theme2,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,grid_size,vfx,color1,color2,version_added,unlocked,notes'
+
+    return get_interior_list(limit, tables, fields)
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1')
