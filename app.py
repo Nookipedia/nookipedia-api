@@ -374,6 +374,11 @@ def call_cargo(parameters, request_args):  # Request args are passed in just for
                     if item.get('has_fake', '0') == '1':
                         r = requests.get(BASE_URL_WIKI + 'Special:FilePath/' + item['fake_image_url'].rsplit('/', 1)[-1] + '?width=' + request.args.get('thumbsize'))
                         item['fake_image_url'] = r.url
+                        
+                    # Same goes for the renders
+                    if 'render_url' in item:
+                        r = requests.get(BASE_URL_WIKI + 'Special:FilePath/' + item['render_url'].rsplit('/', 1)[-1] + '?width=' + request.args.get('thumbsize'))
+                        item['render_url'] = r.url
                 except:
                     abort(500, description=error_response("Error while getting image CDN thumbnail URL.", "Failure occured with the following parameters: {}.".format(parameters)))
 
