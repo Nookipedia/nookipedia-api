@@ -1297,7 +1297,7 @@ def format_tool(data):
     for i in range(1, 3):  # Technically overkill, but it'd be easy to add a third buy column if it ever matters
         if len(data[f'buy{i}_price']) > 0:
             data['buy'].append({
-                'price': data[f'buy{i}_price'],
+                'price': int(data[f'buy{i}_price']),
                 'currency': data[f'buy{i}_currency']
             })
         del data[f'buy{i}_price']
@@ -1317,6 +1317,70 @@ def get_tool_list(limit,tables,fields):
     cargo_results = call_cargo(params, request.args)
     ret = [format_tool(_) for _ in cargo_results]
     return ret
+
+def format_other_item(data):
+    # Integers
+    data['stack'] = int('0' + data['stack'])
+    data['hha_base'] = int('0' + data['hha_base'])
+    data['sell'] = int('0' + data['sell'])
+    data['material_sort'] = int('0' + data['material_sort'])
+    data['material_name_sort'] = int('0' + data['material_name_sort'])
+    data['material_seasonality_sort'] = int('0' + data['material_seasonality_sort'])
+
+    # Booleans
+    if data['is_fence'] == '0':
+        data['is_fence'] = False
+    elif data['is_fence'] == '1':
+        data['is_fence'] = True
+    if data['edible'] == '0':
+        data['edible'] = False
+    elif data['edible'] == '1':
+        data['edible'] = True
+    if data['unlocked'] == '0':
+        data['unlocked'] = False
+    elif data['unlocked'] == '1':
+        data['unlocked'] = True
+
+    data['availability'] = []
+    for i in range(1, 4):
+        if len(data[f'availability{i}']) > 0:
+            data['availability'].append({
+                'from': data[f'availability{i}'],
+                'note': data[f'availability{i}_note']
+            })
+        del data[f'availability{i}']
+        del data[f'availability{i}_note']
+
+    data['buy'] = []
+    for i in range(1, 2):  # Technically overkill, but it'd be easy to add a third buy column if it ever matters
+        if len(data[f'buy{i}_price']) > 0:
+            data['buy'].append({
+                'price': int(data[f'buy{i}_price']),
+                'currency': data[f'buy{i}_currency']
+            })
+        del data[f'buy{i}_price']
+        del data[f'buy{i}_currency']
+
+    return data
+
+def get_other_item_list(limit,tables,fields):
+    where = []
+
+    if len(where) == 0:
+        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
+    else:
+        where = ' AND '.join(where)
+        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit, 'where': where }
+
+    cargo_results = call_cargo(params, request.args)
+    results_array = []
+    if request.args.get('excludedetails') == 'true':
+        for item in cargo_results:
+            results_array.append(item['name'])
+    else:
+        for item in cargo_results:
+            results_array.append(format_other_item(item))
+    return jsonify(results_array)
 
 def get_variation_list(limit,tables,fields):
     where = []
@@ -1831,6 +1895,33 @@ def get_nh_interior_all():
     fields = '_pageName=url,en_name=name,image_url,category,item_series,item_set,theme1,theme2,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,grid_size,vfx,color1,color2,version_added,unlocked,notes'
 
     return get_interior_list(limit, tables, fields)
+
+@app.route('/nh/item/<string:item>', methods=['GET'])
+def get_nh_item(item):
+    authorize(DB_KEYS, request)
+
+    item = item.replace('_', ' ')
+    limit = '1'
+    tables = 'nh_item'
+    fields = '_pageName=url,en_name=name,image_url,stack,hha_base,buy1_price,buy1_currency,sell,is_fence,material_type,material_seasonality,material_sort,material_name_sort,material_seasonality_sort,edible,plant_type,availability1,availability1_note,availability2,availability2_note,availability3,availability3_note,version_added,unlocked,notes'
+    where = f'en_name="{item}"'
+    params = {'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where, 'limit': limit}
+
+    cargo_results = call_cargo(params, request.args)
+    if len(cargo_results) == 0:
+        abort(404, description=error_response("No data was found for the given query.", f"MediaWiki Cargo request succeeded by nothing was returned for the parameters: {params}"))
+    else:
+        return jsonify(format_other_item(cargo_results[0]))
+
+@app.route('/nh/item', methods=['GET'])
+def get_nh_item_all():
+    authorize(DB_KEYS, request)
+
+    limit = '400'
+    tables = 'nh_item'
+    fields = '_pageName=url,en_name=name,image_url,stack,hha_base,buy1_price,buy1_currency,sell,is_fence,material_type,material_seasonality,material_sort,material_name_sort,material_seasonality_sort,edible,plant_type,availability1,availability1_note,availability2,availability2_note,availability3,availability3_note,version_added,unlocked,notes'
+
+    return get_other_item_list(limit, tables, fields)
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1')
