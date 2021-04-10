@@ -1122,6 +1122,7 @@ def get_clothing_list(limit,tables,fields):
 
 def format_photo(data):
     # Integers
+    data['hha_base'] = int('0' + data['hha_base'])
     data['sell'] = int('0' + data['sell'])
     data['custom_kits'] = int('0' + data['custom_kits'])
 
@@ -1181,6 +1182,7 @@ def get_photo_list(limit,tables,fields):
 
 def format_interior(data):
     # Integers
+    data['hha_base'] = int('0' + data['hha_base'])
     data['sell'] = int('0' + data['sell'])
 
     # Booleans
@@ -1778,7 +1780,7 @@ def get_nh_photo(photo):
     photo = photo.replace('_',' ')
     photo_limit = '1'
     photo_tables = 'nh_photo'
-    photo_fields = 'identifier,_pageName=url,en_name=name,category,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,customizable,custom_kits,custom_body_part,grid_size,length,width,height,interactable,version_added,unlocked'
+    photo_fields = 'identifier,_pageName=url,en_name=name,category,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,customizable,custom_kits,custom_body_part,grid_size,length,width,height,interactable,version_added,unlocked'
     photo_where = f'en_name = "{photo}"'
     photo_params = { 'action': 'cargoquery', 'format': 'json', 'tables': photo_tables, 'fields': photo_fields, 'where': photo_where, 'limit': photo_limit }
     variation_limit = '10'
@@ -1805,7 +1807,7 @@ def get_nh_photo_all():
 
     photo_limit = '900'
     photo_tables = 'nh_photo'
-    photo_fields = 'identifier,_pageName=url,en_name=name,category,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,customizable,custom_kits,custom_body_part,grid_size,length,width,height,interactable,version_added,unlocked'
+    photo_fields = 'identifier,_pageName=url,en_name=name,category,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,customizable,custom_kits,custom_body_part,grid_size,length,width,height,interactable,version_added,unlocked'
     variation_limit = '3700'
     variation_tables = 'nh_photo_variation'
     variation_fields = 'identifier,variation,image_url,color1,color2'
@@ -1876,7 +1878,7 @@ def get_nh_interior(interior):
     interior = interior.replace('_', ' ')
     limit = '1'
     tables = 'nh_interior'
-    fields = '_pageName=url,en_name=name,image_url,category,item_series,item_set,theme1,theme2,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,grid_size,vfx,color1,color2,version_added,unlocked,notes'
+    fields = '_pageName=url,en_name=name,image_url,category,item_series,item_set,theme1,theme2,hha_category,tag,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,grid_size,vfx,color1,color2,version_added,unlocked,notes'
     where = f'en_name="{interior}"'
     params = {'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where, 'limit': limit}
 
@@ -1892,7 +1894,7 @@ def get_nh_interior_all():
 
     limit = '650'
     tables = 'nh_interior'
-    fields = '_pageName=url,en_name=name,image_url,category,item_series,item_set,theme1,theme2,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,grid_size,vfx,color1,color2,version_added,unlocked,notes'
+    fields = '_pageName=url,en_name=name,image_url,category,item_series,item_set,theme1,theme2,hha_category,tag,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,grid_size,vfx,color1,color2,version_added,unlocked,notes'
 
     return get_interior_list(limit, tables, fields)
 
