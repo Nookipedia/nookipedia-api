@@ -434,6 +434,7 @@ def format_villager(data):
             if obj['nh'] == '0':
                 obj['nh_details'] = None
             else:
+                obj['nh_house_items'] = json.loads(obj['nh_house_items'])
                 obj['nh_details'] = {
                     'image_url': obj['nh_image_url'],
                     'photo_url': obj['nh_photo_url'],
@@ -448,6 +449,7 @@ def format_villager(data):
                     'hobby': obj['nh_hobby'],
                     'house_interior_url': obj['nh_house_interior_url'],
                     'house_exterior_url': obj['nh_house_exterior_url'],
+                    'house_items': obj['nh_house_items'],
                     'house_wallpaper': obj['nh_wallpaper'],
                     'house_flooring': obj['nh_flooring'],
                     'house_music': obj['nh_music'].replace('amp;', ''),
@@ -476,6 +478,7 @@ def format_villager(data):
             del obj['nh_hobby']
             del obj['nh_house_interior_url']
             del obj['nh_house_exterior_url']
+            del obj['nh_house_items']
             del obj['nh_wallpaper']
             del obj['nh_flooring']
             del obj['nh_music']
@@ -979,7 +982,7 @@ def get_villager_all():
     elif request.args.get('nhdetails') and (request.args.get('nhdetails') == 'true'):
         tables = 'villager,nh_villager,nh_house'
         join = 'villager._pageName=nh_villager._pageName,villager._pageName=nh_house._pageName'
-        fields = 'villager.name,villager._pageName=url,villager.name,villager.alt_name,villager.title_color,villager.text_color,villager.id,villager.image_url,villager.species,villager.personality,villager.gender,villager.birthday_month,villager.birthday_day,villager.sign,villager.quote,villager.phrase,villager.prev_phrase,villager.prev_phrase2,villager.clothing,villager.islander,villager.debut,villager.dnm,villager.ac,villager.e_plus,villager.ww,villager.cf,villager.nl,villager.wa,villager.nh,villager.film,villager.hhd,villager.pc,nh_villager.image_url=nh_image_url,nh_villager.photo_url=nh_photo_url,nh_villager.icon_url=nh_icon_url,nh_villager.quote=nh_quote,nh_villager.sub_personality=nh_sub-personality,nh_villager.catchphrase=nh_catchphrase,nh_villager.clothing=nh_clothing,nh_villager.clothing_variation=nh_clothing_variation,nh_villager.fav_style1=nh_fav_style1,nh_villager.fav_style2=nh_fav_style2,nh_villager.fav_color1=nh_fav_color1,nh_villager.fav_color2=nh_fav_color2,nh_villager.hobby=nh_hobby,nh_house.interior_image_url=nh_house_interior_url,nh_house.exterior_image_url=nh_house_exterior_url,nh_house.wallpaper=nh_wallpaper,nh_house.flooring=nh_flooring,nh_house.music=nh_music,nh_house.music_note=nh_music_note'
+        fields = 'villager.name,villager._pageName=url,villager.name,villager.alt_name,villager.title_color,villager.text_color,villager.id,villager.image_url,villager.species,villager.personality,villager.gender,villager.birthday_month,villager.birthday_day,villager.sign,villager.quote,villager.phrase,villager.prev_phrase,villager.prev_phrase2,villager.clothing,villager.islander,villager.debut,villager.dnm,villager.ac,villager.e_plus,villager.ww,villager.cf,villager.nl,villager.wa,villager.nh,villager.film,villager.hhd,villager.pc,nh_villager.image_url=nh_image_url,nh_villager.photo_url=nh_photo_url,nh_villager.icon_url=nh_icon_url,nh_villager.quote=nh_quote,nh_villager.sub_personality=nh_sub-personality,nh_villager.catchphrase=nh_catchphrase,nh_villager.clothing=nh_clothing,nh_villager.clothing_variation=nh_clothing_variation,nh_villager.fav_style1=nh_fav_style1,nh_villager.fav_style2=nh_fav_style2,nh_villager.fav_color1=nh_fav_color1,nh_villager.fav_color2=nh_fav_color2,nh_villager.hobby=nh_hobby,nh_house.interior_image_url=nh_house_interior_url,nh_house.exterior_image_url=nh_house_exterior_url,nh_house.items=nh_house_items,nh_house.wallpaper=nh_wallpaper,nh_house.flooring=nh_flooring,nh_house.music=nh_music,nh_house.music_note=nh_music_note'
     else:
         fields = 'name,_pageName=url,alt_name,title_color,text_color,id,image_url,species,personality,gender,birthday_month,birthday_day,sign,quote,phrase,prev_phrase,prev_phrase2,clothing,islander,debut,dnm,ac,e_plus,ww,cf,nl,wa,nh,film,hhd,pc'
 
