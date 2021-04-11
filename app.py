@@ -5,6 +5,7 @@ import json
 import html
 import configparser
 from datetime import datetime
+from dateutil import parser
 from flask import Flask
 from flask import abort
 from flask import request
@@ -363,8 +364,6 @@ def call_cargo(parameters, request_args):  # Request args are passed in just for
             if request.args.get('thumbsize'):
                 # If image, fetch the CDN thumbnail URL:
                 try:
-                    print(str(obj['title']))
-
                     # Only fetch the image if this object actually has an image to fetch
                     if 'image_url' in item:
                         r = requests.get(BASE_URL_WIKI + 'Special:FilePath/' + item['image_url'].rsplit('/', 1)[-1] + '?width=' + request.args.get('thumbsize'))
@@ -374,7 +373,7 @@ def call_cargo(parameters, request_args):  # Request args are passed in just for
                     if item.get('has_fake', '0') == '1':
                         r = requests.get(BASE_URL_WIKI + 'Special:FilePath/' + item['fake_image_url'].rsplit('/', 1)[-1] + '?width=' + request.args.get('thumbsize'))
                         item['fake_image_url'] = r.url
-                        
+
                     # Same goes for the renders
                     if 'render_url' in item:
                         r = requests.get(BASE_URL_WIKI + 'Special:FilePath/' + item['render_url'].rsplit('/', 1)[-1] + '?width=' + request.args.get('thumbsize'))
@@ -934,11 +933,24 @@ def get_recipe_list(limit, tables, fields):
             results_array.append(format_recipe(recipe))
     return jsonify(results_array)
 
-def format_event(data):
-    return data
-
 def get_event_list(limit, tables, fields):
     where = None
+
+    # Filter by date:
+    if request.args.get('date'):
+        date = request.args.get('date')
+        today = datetime.today()
+        if date == 'today':
+            where = 'YEAR(date) = ' + today.strftime('%Y') + ' AND MONTH(date) = ' + today.strftime('%m') + ' AND DAYOFMONTH(date) = ' + today.strftime('%d')
+        else:
+            try:
+                parsed_date = parser.parse(date)
+            except:
+                abort(400, description=error_response("Could not recognize provided date.", "Ensure date is of a valid date format, or 'today'."))
+            if parsed_date.strftime('%Y') not in [str(today.year), str(today.year + 1)]:
+                abort(404, description=error_response("No data was found for the given query.", "You must request events from either the current or next year."))
+            else:
+                where = 'YEAR(date) = ' + parsed_date.strftime('%Y') + ' AND MONTH(date) = ' + parsed_date.strftime('%m') + ' AND DAYOFMONTH(date) = ' + parsed_date.strftime('%d')
 
     # Filter by year:
     if request.args.get('year'):
@@ -964,20 +976,35 @@ def get_event_list(limit, tables, fields):
         else:
             where = 'DAYOFMONTH(date) = "' + day + '"'
 
+    # Filter by event:
+    if request.args.get('event'):
+        event = request.args.get('event')
+        if where:
+            where = where + ' AND event = "' + event + '"'
+        else:
+            where = 'event = "' + event + '"'
+
+    # Filter by type:
+    if request.args.get('type'):
+        type = request.args.get('type')
+        if type not in ['Event', 'Nook Shopping', 'Birthday', 'Recipes']:
+            abort(400, description=error_response("Could not recognize provided type.", "Ensure type is either Event, Nook Shopping, Birthday, or Recipes."))
+        if where:
+            where = where + ' AND type = "' + type + '"'
+        else:
+            where = 'type = "' + type + '"'
+
     if where:
         params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields, 'where': where}
     else:
         params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields}
 
     cargo_results = call_cargo(params, request.args)
-    results_array = []
-    if request.args.get('excludedetails') == 'true':
-        for event in cargo_results:
-            results_array.append(event['event'])
-    else:
-        for event in cargo_results:
-            results_array.append(format_event(event))
-    return jsonify(results_array)
+
+    for event in cargo_results:
+        del event['date__precision']
+
+    return jsonify(cargo_results)
 
 
 #################################
@@ -1213,7 +1240,7 @@ def get_nh_event_all():
 
     limit = '800'
     tables = 'nh_calendar'
-    fields = 'date,event,link=event_url'
+    fields = 'event,date,type,link=url'
 
     return get_event_list(limit, tables, fields)
 
