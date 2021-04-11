@@ -1026,7 +1026,7 @@ def get_furniture_list(limit,tables,fields):
     return ret
 
 #The only variation list that had an extra parameter compared to the others
-def get_furniture_variation_list(limit,tables,fields):
+def get_furniture_variation_list(limit,tables,fields,orderby):
     where = []
 
     if 'color' in request.args:
