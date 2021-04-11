@@ -1750,7 +1750,7 @@ def get_nh_clothing(clothing):
     clothing = clothing.replace('_',' ')
     clothing_limit = '1'
     clothing_tables = 'nh_clothing'
-    clothing_fields = 'identifier,_pageName=url,en_name=name,category,style1,style2,label1,label2,label3,label4,label5,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,variation_total,vill_equip,seasonality,gender,vill_gender,version_added,unlocked,notes'
+    clothing_fields = 'identifier,_pageName=url,en_name=name,category,style1,style2,label1,label2,label3,label4,label5,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,variation_total,vill_equip,seasonality,version_added,unlocked,notes'
     clothing_where = f'en_name = "{clothing}"'
     clothing_params = { 'action': 'cargoquery', 'format': 'json', 'tables': clothing_tables, 'fields': clothing_fields, 'where': clothing_where, 'limit': clothing_limit }
     variation_limit = '10'
@@ -1777,7 +1777,7 @@ def get_nh_clothing_all():
 
     clothing_limit = '1350'
     clothing_tables = 'nh_clothing'
-    clothing_fields = 'identifier,_pageName=url,en_name=name,category,style1,style2,label1,label2,label3,label4,label5,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,variation_total,vill_equip,seasonality,gender,vill_gender,version_added,unlocked,notes'
+    clothing_fields = 'identifier,_pageName=url,en_name=name,category,style1,style2,label1,label2,label3,label4,label5,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,variation_total,vill_equip,seasonality,version_added,unlocked,notes'
     variation_limit = '5000'
     variation_tables = 'nh_clothing_variation'
     variation_fields = 'identifier,variation,image_url,color1,color2'
