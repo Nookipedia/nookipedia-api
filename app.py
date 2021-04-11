@@ -1109,6 +1109,26 @@ def format_clothing(data):
 def get_clothing_list(limit,tables,fields):
     where = []
 
+    if 'style' in request.args:
+        styles_list = ['active', 'cool', 'cute', 'elegant', 'gorgeous', 'simple']
+        styles = [style.lower() for style in request.args.getlist('style')]
+        for style in styles:
+            if style not in styles_list:
+                abort(400, description=error_response('Could not recognize provided style.','Style must be active, cool, cute, elegant, gorgeous, or simple.'))
+        if len(styles) == 1: # If they only filtered one style
+            where.append('(style1 = "{0}" OR style2 = "{0}")'.format(styles[0]))
+        elif len(styles) == 2: # If they filtered both styles
+            where.append('((style1 = "{0}" AND style2 = "{1}") OR (style1 = "{1}" AND style2 = "{0}"))'.format(styles[0],styles[1]))
+        else:
+            abort(400, description=error_response('Invalid arguments','Cannot have more than two styles'))
+
+    if 'label' in request.args:
+        label_list = ['comfy', 'everyday', 'fairy tale', 'formal', 'goth', 'outdoorsy', 'party', 'sporty', 'theatrical', 'vacation', 'work']
+        label = request.args.get('label').lower()
+        if label not in label_list:
+            abort(400, description=error_response('Could not recognize provided Label theme.','Label theme must be comfy, everyday, fairy tale, formal, goth, outdoorsy, party, sporty, theatrical, vacation, or work.'))
+        where.append('(label1 = "{0}" OR label2 = "{0}" OR label3 = "{0}" OR label4 = "{0}" OR label5 = "{0}")'.format(label))
+
     if len(where) == 0:
         params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
     else:
