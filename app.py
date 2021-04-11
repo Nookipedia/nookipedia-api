@@ -1238,7 +1238,7 @@ def get_nh_recipe_all():
 def get_nh_event_all():
     authorize(DB_KEYS, request)
 
-    limit = '800'
+    limit = '1200'
     tables = 'nh_calendar'
     fields = 'event,date,type,link=url'
 
