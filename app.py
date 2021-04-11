@@ -442,7 +442,7 @@ def format_villager(data):
                     'sub-personality': obj['nh_sub-personality'],
                     'catchphrase': obj['nh_catchphrase'],
                     'clothing': obj['nh_clothing'],
-                    'clothing_variation': obj['nh_clothing_variation'].replace('amp;', ''),
+                    'clothing_variation': obj['nh_clothing_variation'],
                     'fav_styles': [],
                     'fav_colors': [],
                     'hobby': obj['nh_hobby'],
@@ -450,7 +450,7 @@ def format_villager(data):
                     'house_exterior_url': obj['nh_house_exterior_url'],
                     'house_wallpaper': obj['nh_wallpaper'],
                     'house_flooring': obj['nh_flooring'],
-                    'house_music': obj['nh_music'].replace('amp;', ''),
+                    'house_music': obj['nh_music'],
                     'house_music_note': obj['nh_music_note']
                 }
                 if obj['nh_fav_style1']:
