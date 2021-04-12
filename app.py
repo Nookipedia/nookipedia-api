@@ -1107,6 +1107,10 @@ def format_furniture(data):
         data['customizable'] = False
     elif data['customizable'] == '1':
         data['customizable'] = True
+    if data['lucky'] == '0':
+        data['lucky'] = False
+    elif data['lucky'] == '1':
+        data['lucky'] = True
     # if data['outdoor'] == '0':
     #     data['outdoor'] = False
     # elif data['outdoor'] == '1':
