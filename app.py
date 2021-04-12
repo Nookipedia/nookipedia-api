@@ -1020,7 +1020,7 @@ def get_recipe_list(limit, tables, fields):
     return jsonify(results_array)
 
 
-def get_event_list(limit, tables, fields):
+def get_event_list(limit, tables, fields, orderby):
     where = None
 
     # Filter by date:
@@ -1082,9 +1082,9 @@ def get_event_list(limit, tables, fields):
             where = 'type = "' + type + '"'
 
     if where:
-        params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields, 'where': where}
+        params = {'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'order_by': orderby, 'limit': limit, 'where': where}
     else:
-        params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields}
+        params = {'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'order_by': orderby, 'limit': limit}
 
     cargo_results = call_cargo(params, request.args)
 
@@ -1920,8 +1920,9 @@ def get_nh_event_all():
     limit = '1200'
     tables = 'nh_calendar'
     fields = 'event,date,type,link=url'
+    orderby = 'date'
 
-    return get_event_list(limit, tables, fields)
+    return get_event_list(limit, tables, fields, orderby)
 
 
 @app.route('/nh/furniture/<string:furniture>',methods=['GET'])
