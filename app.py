@@ -942,22 +942,30 @@ def format_furniture(data):
         data['customizable'] = False
     elif data['customizable'] == '1':
         data['customizable'] = True
-    if data['outdoor'] == '0':
-        data['outdoor'] = False
-    elif data['outdoor'] == '1':
-        data['outdoor'] = True
-    if data['sound'] == '0':
-        data['sound'] = False
-    elif data['sound'] == '1':
-        data['sound'] = True
-    if data['music'] == '0':
-        data['music'] = False
-    elif data['music'] == '1':
-        data['music'] = True
-    if data['lighting'] == '0':
-        data['lighting'] = False
-    elif data['lighting'] == '1':
-        data['lighting'] = True
+    # if data['outdoor'] == '0':
+    #     data['outdoor'] = False
+    # elif data['outdoor'] == '1':
+    #     data['outdoor'] = True
+    # if data['sound'] == '0':
+    #     data['sound'] = False
+    # elif data['sound'] == '1':
+    #     data['sound'] = True
+    # if data['interactable'] == '0':
+    #     data['interactable'] = False
+    # elif data['interactable'] == '1':
+    #     data['interactable'] = True
+    # if data['animated'] == '0':
+    #     data['animated'] = False
+    # elif data['animated'] == '1':
+    #     data['animated'] = True
+    # if data['music'] == '0':
+    #     data['music'] = False
+    # elif data['music'] == '1':
+    #     data['music'] = True
+    # if data['lighting'] == '0':
+    #     data['lighting'] = False
+    # elif data['lighting'] == '1':
+    #     data['lighting'] = True
     if data['door_decor'] == '0':
         data['door_decor'] = False
     elif data['door_decor'] == '1':
@@ -1164,6 +1172,10 @@ def format_photo(data):
         data['customizable'] = False
     elif data['customizable'] == '1':
         data['customizable'] = True
+    if data['interactable'] == '0':
+        data['interactable'] = False
+    elif data['interactable'] == '1':
+        data['interactable'] = True
     if data['unlocked'] == '0':
         data['unlocked'] = False
     elif data['unlocked'] == '1':
@@ -1726,7 +1738,7 @@ def get_nh_furniture(furniture):
     furniture = furniture.replace('_',' ')
     furniture_limit = '1'
     furniture_tables = 'nh_furniture'
-    furniture_fields = 'identifier,_pageName=url,en_name=name,category,item_series,item_set,theme1,theme2,hha_category,tag,hha_base,lucky,lucky_season,function1,function2,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,availability3,availability3_note,variation_total,pattern_total,customizable,custom_kits,custom_kit_type,custom_body_part,custom_pattern_part,grid_size,length,width,height,outdoor,animated,sound,music,lighting,door_decor,version_added,unlocked,notes'#'
+    furniture_fields = 'identifier,_pageName=url,en_name=name,category,item_series,item_set,theme1,theme2,hha_category,tag,hha_base,lucky,lucky_season,function1,function2,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,availability3,availability3_note,variation_total,pattern_total,customizable,custom_kits,custom_kit_type,custom_body_part,custom_pattern_part,grid_size,length,width,height,door_decor,version_added,unlocked,notes'#'
     furniture_where = f'en_name = "{furniture}"'
     furniture_params = { 'action': 'cargoquery', 'format': 'json', 'tables': furniture_tables, 'fields': furniture_fields, 'where': furniture_where, 'limit': furniture_limit }
     variation_limit = '70'
@@ -1753,7 +1765,7 @@ def get_nh_furniture_all():
 
     furniture_limit = '1200'
     furniture_tables = 'nh_furniture'
-    furniture_fields = 'identifier,_pageName=url,en_name=name,category,item_series,item_set,theme1,theme2,hha_category,tag,hha_base,lucky,lucky_season,function1,function2,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,availability3,availability3_note,variation_total,pattern_total,customizable,custom_kits,custom_kit_type,custom_body_part,custom_pattern_part,grid_size,length,width,height,outdoor,animated,sound,music,lighting,door_decor,version_added,unlocked,notes'#'
+    furniture_fields = 'identifier,_pageName=url,en_name=name,category,item_series,item_set,theme1,theme2,hha_category,tag,hha_base,lucky,lucky_season,function1,function2,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,availability3,availability3_note,variation_total,pattern_total,customizable,custom_kits,custom_kit_type,custom_body_part,custom_pattern_part,grid_size,length,width,height,door_decor,version_added,unlocked,notes'#'
     variation_limit = '5350'
     variation_tables = 'nh_furniture_variation'
     variation_fields = 'identifier,variation,pattern,image_url,color1,color2'
@@ -1817,14 +1829,14 @@ def get_nh_clothing_all():
     else:
         return jsonify(stitched)
 
-@app.route('/nh/photo/<string:photo>',methods=['GET'])
+@app.route('/nh/photos/<string:photo>',methods=['GET'])
 def get_nh_photo(photo):
     authorize(DB_KEYS, request)
 
     photo = photo.replace('_',' ')
     photo_limit = '1'
     photo_tables = 'nh_photo'
-    photo_fields = 'identifier,_pageName=url,en_name=name,category,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,customizable,custom_kits,custom_body_part,grid_size,length,width,height,version_added,unlocked'
+    photo_fields = 'identifier,_pageName=url,en_name=name,category,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,customizable,custom_kits,custom_body_part,grid_size,interactable,length,width,height,version_added,unlocked'
     photo_where = f'en_name = "{photo}"'
     photo_params = { 'action': 'cargoquery', 'format': 'json', 'tables': photo_tables, 'fields': photo_fields, 'where': photo_where, 'limit': photo_limit }
     variation_limit = '10'
@@ -1842,7 +1854,7 @@ def get_nh_photo(photo):
         variations = call_cargo(variation_params, request.args)
         return jsonify(stitch_variation(piece, variations))
 
-@app.route('/nh/photo',methods=['GET'])
+@app.route('/nh/photos',methods=['GET'])
 def get_nh_photo_all():
     authorize(DB_KEYS, request)
 
@@ -1851,7 +1863,7 @@ def get_nh_photo_all():
 
     photo_limit = '900'
     photo_tables = 'nh_photo'
-    photo_fields = 'identifier,_pageName=url,en_name=name,category,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,customizable,custom_kits,custom_body_part,grid_size,length,width,height,version_added,unlocked'
+    photo_fields = 'identifier,_pageName=url,en_name=name,category,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,customizable,custom_kits,custom_body_part,grid_size,interactable,length,width,height,version_added,unlocked'
     variation_limit = '3700'
     variation_tables = 'nh_photo_variation'
     variation_fields = 'identifier,variation,image_url,color1,color2'
@@ -1866,7 +1878,7 @@ def get_nh_photo_all():
     else:
         return jsonify(stitched)
 
-@app.route('/nh/tool/<string:tool>',methods=['GET'])
+@app.route('/nh/tools/<string:tool>',methods=['GET'])
 def get_nh_tool(tool):
     authorize(DB_KEYS, request)
 
@@ -1891,7 +1903,7 @@ def get_nh_tool(tool):
         variations = call_cargo(variation_params, request.args)
         return jsonify(stitch_variation(piece, variations))
 
-@app.route('/nh/tool',methods=['GET'])
+@app.route('/nh/tools',methods=['GET'])
 def get_nh_tool_all():
     authorize(DB_KEYS, request)
 
@@ -1942,7 +1954,7 @@ def get_nh_interior_all():
 
     return get_interior_list(limit, tables, fields)
 
-@app.route('/nh/item/<string:item>', methods=['GET'])
+@app.route('/nh/items/<string:item>', methods=['GET'])
 def get_nh_item(item):
     authorize(DB_KEYS, request)
 
@@ -1959,7 +1971,7 @@ def get_nh_item(item):
     else:
         return jsonify(format_other_item(cargo_results[0]))
 
-@app.route('/nh/item', methods=['GET'])
+@app.route('/nh/items', methods=['GET'])
 def get_nh_item_all():
     authorize(DB_KEYS, request)
 
