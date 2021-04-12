@@ -34,6 +34,7 @@ This application requires Python 3 and [venv](https://packaging.python.org/guide
 
 This application has the following dependencies from `apt get`:
 * `software-properties-common`
+* `memcached`
 * `sqlite3`
 
 Before running this application:
@@ -58,17 +59,16 @@ sqlite3> .exit 0;
 * In `config.ini`:
   * Fill in the `SECRET_KEY` with a long random string of bytes (used for securely signing the session cookie; [learn more](https://flask.palletsprojects.com/en/1.1.x/config/#SECRET_KEY))
   * Fill in the names for the `DATABASE`, `DB_KEYS`, and `DB_ADMIN_KEYS`
-    with `<desired_db_name>.db`, `<keys_table_name>`, and `<admin_keys_table_name>`.
+    with `<desired_db_name>.db`, `<keys_table_name>`, and `<admin_keys_table_name>` (fill in values respective to what was used to instantiate the database above)
+  * The AUTH section is optional. Nookipedia bot-owners and administrators may authenticate into the wiki to enable higher query limits by generating a username and password at Special:BotPasswords.
 * In `dashboard-config.cfg`, change the dashboard's password to something other than the default `admin`.
 
 ### Local / Dev
-`flask run`. Easy.
+`flask run --host=0.0.0.0`. Easy.
 
 Note that Flask's built-in server is _not_ suitable for production.
 
 ### Production
-As noted above, Flask's built-in server is _not_ suitable for production.
-
 There are a variety of options out there for setting up a proper production server (cloud services, Gunicorn, uWSGI, etc.). Visit [Flask's deployment page](https://flask.palletsprojects.com/en/1.1.x/deploying/) for a list of options.
 
 Nookipedia's API is deployed via uWSGI and nginx. If you'd like to set up something similar and need help, feel free to get in touch.
