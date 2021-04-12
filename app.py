@@ -5,6 +5,7 @@ import json
 import html
 import configparser
 from datetime import datetime
+from dateutil import parser
 from flask import Flask
 from flask import abort
 from flask import request
@@ -13,6 +14,7 @@ from flask import current_app
 from flask import g
 from flask_cors import CORS
 from flask_caching import Cache
+from pylibmc import Client as PylibmcClient
 import flask_monitoringdashboard as dashboard
 
 #################################
@@ -26,6 +28,8 @@ config.read('config.ini')
 # SET CONSTANTS:
 BASE_URL_WIKI = config.get('APP', 'BASE_URL_WIKI')
 BASE_URL_API = config.get('APP', 'BASE_URL_API')
+BOT_USERNAME = config.get('AUTH', 'BOT_USERNAME')
+BOT_PASS = config.get('AUTH', 'BOT_PASS')
 DATABASE = config.get('DB', 'DATABASE')
 DB_KEYS = config.get('DB', 'DB_KEYS')
 DB_ADMIN_KEYS = config.get('DB', 'DB_ADMIN_KEYS')
@@ -37,8 +41,14 @@ app.config['JSON_SORT_KEYS'] = False  # Prevent from automatically sorting JSON 
 app.config['SECRET_KEY'] = config.get('APP', 'SECRET_KEY')
 
 # SET CACHE:
-cache = Cache(config={'CACHE_TYPE': 'simple'})
+cache = Cache(config={
+    'CACHE_TYPE': 'memcached',
+    'CACHE_MEMCACHED_SERVERS': PylibmcClient(['127.0.0.1'])
+})
 cache.init_app(app)
+
+# SET COOKIE STORE FOR SESSION DATA:
+cache.set('session', None)
 
 # SET UP DASHBOARD:
 DASHBOARD_CONFIGS = config.get('APP', 'DASHBOARD_CONFIGS')
@@ -181,6 +191,42 @@ def authorize(db, request):
         abort(401, description=error_response("Failed to validate UUID.", "UUID is either missing or invalid; or, unspecified server occured."))
 
 
+# Login to MediaWiki as a bot account:
+def mw_login():
+    try:
+        params = { 'action': 'query', 'meta': 'tokens', 'type': 'login', 'format': 'json' }
+        r = requests.get(url=BASE_URL_API, params=params)
+        try:
+            login_token = r.json()['query']['tokens']['logintoken']
+        except:
+            print('Failed to login to MediaWiki (could not retrieve login token).')
+            return False
+
+        if login_token:
+            data = { 'action': 'login', 'lgname': BOT_USERNAME, 'lgpassword': BOT_PASS, 'lgtoken': login_token, 'format': 'json' }
+            r = requests.post(url=BASE_URL_API, data=data, cookies=requests.utils.dict_from_cookiejar(r.cookies))
+            rJson = r.json()
+
+            if 'login' not in rJson:
+                print('Failed to login to MediaWiki (POST to login failed): ' + str(rJson))
+                return False
+            if 'result' not in rJson['login']:
+                print('Failed to login to MediaWiki (POST to login failed): ' + str(rJson))
+                return False
+            if rJson['login']['result'] == 'Success':
+                print('Successfully logged into MediaWiki API.')
+                cache.set('session', { 'token': login_token, 'cookie': r.cookies }, 2592000) # Expiration set to max of 30 days
+                return True
+            else:
+                print('Failed to login to MediaWiki (POST to login failed): ' + str(rJson))
+                return False
+        else:
+            print('Failed to login to MediaWiki (could not retrieve login token).')
+            return False
+    except:
+        print('Failed to login to MediaWiki.')
+        return False
+
 #################################
 # DATABASE FUNCTIONS
 #################################
@@ -228,7 +274,7 @@ def deep_unescape(data):
         return [deep_unescape(e) for e in data]
     elif isinstance(data, dict):
         return {k:deep_unescape(v) for k,v in data.items()}
-    else: 
+    else:
         return data
 
 # Convert month query parameter input into integer:
@@ -319,23 +365,64 @@ def month_to_string(month):
 # Make a call to Nookipedia's Cargo API using supplied parameters:
 @cache.memoize(43200)
 def call_cargo(parameters, request_args):  # Request args are passed in just for the sake of caching
+    # cargoquery holds all queried items
     cargoquery = []
+
+    # Default query size limit is 50 but can be changed by incoming params:
+    cargolimit = int(parameters.get('limit', '50'))
+
+    # Copy the passed-in parameters:
+    nestedparameters = parameters.copy()
+
     try:
-        # The default query size is 50 normally, we can actually change it here if we wanted
-        cargolimit = int(parameters.get('limit', '50'))
-        # Copy the current parameters, we'll be changing them a bit in the loop but we want the original still
-        nestedparameters = parameters.copy()
-        # Set up the offset, if our cargolimit is more than cargomax we'll end up doing more than one query with an offset
         while True:
-            nestedparameters['limit'] = str(cargolimit-len(cargoquery))  # Get cargomax items or less at a time
-            if nestedparameters['limit'] == '0':  # Check if we've hit the limit
+            # Subtract number of queried items from limit:
+            nestedparameters['limit'] = str(cargolimit-len(cargoquery))
+
+            # If no items are left to query, break
+            if nestedparameters['limit'] == '0':
                 break
+
+            # Set offset to number of items queried so far:
             nestedparameters['offset'] = str(len(cargoquery))
-            r = requests.get(url=BASE_URL_API, params=nestedparameters)
+
+            # Check if we should authenticate to the wiki (500 is limit for unauthenticated queries):
+            if BOT_USERNAME and int(parameters.get('limit', '50')) > 500:
+                nestedparameters['assert'] = 'bot'
+                session = cache.get('session') # Get session from memcache
+                
+                # Session may be null from startup or cache explusion:
+                if not session:
+                    mw_login()
+                    session = cache.get('session')
+
+                # Make authorized request:
+                r = requests.get(url=BASE_URL_API, params=nestedparameters, headers={'Authorization': 'Bearer ' + session['token']}, cookies=session['cookie'])
+                if 'error' in r.json():
+                    # Error may be due to invalid token; re-try login:
+                    if mw_login():
+                        session = cache.get('session')
+                        r = requests.get(url=BASE_URL_API, params=nestedparameters, headers={'Authorization': 'Bearer ' + session['token']}, cookies=session['cookie'])
+                        
+                        # If it errors again, make request without auth:
+                        if 'error' in r.json():
+                            del nestedparameters['assert']
+                            r = requests.get(url=BASE_URL_API, params=nestedparameters)
+                    else:
+                        del nestedparameters['assert']
+                        r = requests.get(url=BASE_URL_API, params=nestedparameters)
+            else:
+                r = requests.get(url=BASE_URL_API, params=nestedparameters)
+
             cargochunk = r.json()['cargoquery']
-            if len(cargochunk) == 0:  # Check if we've hit the end
+            if len(cargochunk) == 0:  # If nothing was returned, break
                 break
+
             cargoquery.extend(cargochunk)
+
+            # If queried items are < limit and there are no warnings, we've received everything:
+            if ('warnings' not in r.json()) and (len(cargochunk) < cargolimit):
+                break
         print('Return: {}'.format(str(r)))
     except:
         print('Return: {}'.format(str(r)))
@@ -363,8 +450,6 @@ def call_cargo(parameters, request_args):  # Request args are passed in just for
             if request.args.get('thumbsize'):
                 # If image, fetch the CDN thumbnail URL:
                 try:
-                    print(str(obj['title']))
-
                     # Only fetch the image if this object actually has an image to fetch
                     if 'image_url' in item:
                         r = requests.get(BASE_URL_WIKI + 'Special:FilePath/' + item['image_url'].rsplit('/', 1)[-1] + '?width=' + request.args.get('thumbsize'))
@@ -374,6 +459,11 @@ def call_cargo(parameters, request_args):  # Request args are passed in just for
                     if item.get('has_fake', '0') == '1':
                         r = requests.get(BASE_URL_WIKI + 'Special:FilePath/' + item['fake_image_url'].rsplit('/', 1)[-1] + '?width=' + request.args.get('thumbsize'))
                         item['fake_image_url'] = r.url
+
+                    # Same goes for the renders
+                    if 'render_url' in item:
+                        r = requests.get(BASE_URL_WIKI + 'Special:FilePath/' + item['render_url'].rsplit('/', 1)[-1] + '?width=' + request.args.get('thumbsize'))
+                        item['render_url'] = r.url
                 except:
                     abort(500, description=error_response("Error while getting image CDN thumbnail URL.", "Failure occured with the following parameters: {}.".format(parameters)))
 
@@ -929,6 +1019,81 @@ def get_recipe_list(limit, tables, fields):
             results_array.append(format_recipe(recipe))
     return jsonify(results_array)
 
+
+def get_event_list(limit, tables, fields):
+    where = None
+
+    # Filter by date:
+    if request.args.get('date'):
+        date = request.args.get('date')
+        today = datetime.today()
+        if date == 'today':
+            where = 'YEAR(date) = ' + today.strftime('%Y') + ' AND MONTH(date) = ' + today.strftime('%m') + ' AND DAYOFMONTH(date) = ' + today.strftime('%d')
+        else:
+            try:
+                parsed_date = parser.parse(date)
+            except:
+                abort(400, description=error_response("Could not recognize provided date.", "Ensure date is of a valid date format, or 'today'."))
+            if parsed_date.strftime('%Y') not in [str(today.year), str(today.year + 1)]:
+                abort(404, description=error_response("No data was found for the given query.", "You must request events from either the current or next year."))
+            else:
+                where = 'YEAR(date) = ' + parsed_date.strftime('%Y') + ' AND MONTH(date) = ' + parsed_date.strftime('%m') + ' AND DAYOFMONTH(date) = ' + parsed_date.strftime('%d')
+
+    # Filter by year:
+    if request.args.get('year'):
+        year = request.args.get('year')
+        if where:
+            where = where + ' AND YEAR(date) = "' + year + '"'
+        else:
+            where = 'YEAR(date) = "' + year + '"'
+
+    # Filter by month:
+    if request.args.get('month'):
+        month = month_to_int(request.args.get('month'))
+        if where:
+            where = where + ' AND MONTH(date) = "' + month + '"'
+        else:
+            where = 'MONTH(date) = "' + month + '"'
+
+    # Filter by day:
+    if request.args.get('day'):
+        day = request.args.get('day')
+        if where:
+            where = where + ' AND DAYOFMONTH(date) = "' + day + '"'
+        else:
+            where = 'DAYOFMONTH(date) = "' + day + '"'
+
+    # Filter by event:
+    if request.args.get('event'):
+        event = request.args.get('event')
+        if where:
+            where = where + ' AND event = "' + event + '"'
+        else:
+            where = 'event = "' + event + '"'
+
+    # Filter by type:
+    if request.args.get('type'):
+        type = request.args.get('type')
+        if type not in ['Event', 'Nook Shopping', 'Birthday', 'Recipes']:
+            abort(400, description=error_response("Could not recognize provided type.", "Ensure type is either Event, Nook Shopping, Birthday, or Recipes."))
+        if where:
+            where = where + ' AND type = "' + type + '"'
+        else:
+            where = 'type = "' + type + '"'
+
+    if where:
+        params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields, 'where': where}
+    else:
+        params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields}
+
+    cargo_results = call_cargo(params, request.args)
+
+    for event in cargo_results:
+        del event['date__precision']
+
+    return jsonify(cargo_results)
+
+
 def format_furniture(data):
     #Integers
     data['hha_base'] = int('0' + data['hha_base'])
@@ -1016,6 +1181,7 @@ def format_furniture(data):
 
     return data
 
+
 def get_furniture_list(limit,tables,fields):
     where = []
 
@@ -1035,6 +1201,7 @@ def get_furniture_list(limit,tables,fields):
     cargo_results = call_cargo(params, request.args)
     ret = [format_furniture(_) for _ in cargo_results]
     return ret
+
 
 def get_furniture_variation_list(limit,tables,fields,orderby):
     where = []
@@ -1068,6 +1235,7 @@ def get_furniture_variation_list(limit,tables,fields,orderby):
 
     cargo_results = call_cargo(params, request.args)
     return cargo_results
+
 
 def format_clothing(data):
     # Integers
@@ -1121,6 +1289,7 @@ def format_clothing(data):
 
     return data
 
+
 def get_clothing_list(limit,tables,fields):
     where = []
 
@@ -1160,6 +1329,7 @@ def get_clothing_list(limit,tables,fields):
     cargo_results = call_cargo(params, request.args)
     ret = [format_clothing(_) for _ in cargo_results]
     return ret
+
 
 def format_photo(data):
     # Integers
@@ -1208,6 +1378,7 @@ def format_photo(data):
 
     return data
 
+
 def get_photo_list(limit,tables,fields):
     where = []
 
@@ -1227,6 +1398,7 @@ def get_photo_list(limit,tables,fields):
     cargo_results = call_cargo(params, request.args)
     ret = [format_photo(_) for _ in cargo_results]
     return ret
+
 
 def format_interior(data):
     # Integers
@@ -1289,6 +1461,7 @@ def format_interior(data):
 
     return data
 
+
 def get_interior_list(limit,tables,fields):
     where = []
 
@@ -1320,6 +1493,7 @@ def get_interior_list(limit,tables,fields):
         for interior in cargo_results:
             results_array.append(format_interior(interior))
     return jsonify(results_array)
+
 
 def format_tool(data):
     # Integers
@@ -1359,6 +1533,7 @@ def format_tool(data):
 
     return data
 
+
 def get_tool_list(limit,tables,fields):
     where = []
 
@@ -1371,6 +1546,7 @@ def get_tool_list(limit,tables,fields):
     cargo_results = call_cargo(params, request.args)
     ret = [format_tool(_) for _ in cargo_results]
     return ret
+
 
 def format_other_item(data):
     # Integers
@@ -1417,6 +1593,7 @@ def format_other_item(data):
 
     return data
 
+
 def get_other_item_list(limit,tables,fields):
     where = []
 
@@ -1435,6 +1612,7 @@ def get_other_item_list(limit,tables,fields):
         for item in cargo_results:
             results_array.append(format_other_item(item))
     return jsonify(results_array)
+
 
 def get_variation_list(limit,tables,fields,orderby):
     where = []
@@ -1465,6 +1643,7 @@ def get_variation_list(limit,tables,fields,orderby):
     cargo_results = call_cargo(params, request.args)
     return cargo_results
 
+
 def format_variation(data):
     if 'color1' in data:
         colors = set()
@@ -1476,6 +1655,7 @@ def format_variation(data):
         colors.discard('None')
         data['colors'] = list(colors)
     return data
+
 
 def stitch_variation_list(items,variations):
     ret = { _['identifier']:_ for _ in items } # Turn the list of items into a dictionary with the identifier as the key
@@ -1496,6 +1676,7 @@ def stitch_variation_list(items,variations):
         del piece['identifier']
         processed.append(piece)
     return processed
+
 
 def stitch_variation(item,variations):
     item['variations'] = []
@@ -1571,7 +1752,7 @@ def get_nh_fish_all():
     if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
         fields = 'name,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12'
     else:
-        fields = 'name,_pageName=url,number,image_url,catchphrase,catchphrase2,catchphrase3,location,shadow_size,rarity,total_catch,sell_nook,sell_cj,tank_width,tank_length,time,time_n_availability=time_n_months,time_s_availability=time_s_months,time2,time2_n_availability=time2_n_months,time2_s_availability=time2_s_months,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,n_m1_time,n_m2_time,n_m3_time,n_m4_time,n_m5_time,n_m6_time,n_m7_time,n_m8_time,n_m9_time,n_m10_time,n_m11_time,n_m12_time,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,s_m1_time,s_m2_time,s_m3_time,s_m4_time,s_m5_time,s_m6_time,s_m7_time,s_m8_time,s_m9_time,s_m10_time,s_m11_time,s_m12_time'
+        fields = 'name,_pageName=url,number,image_url,render_url,catchphrase,catchphrase2,catchphrase3,location,shadow_size,rarity,total_catch,sell_nook,sell_cj,tank_width,tank_length,time,time_n_availability=time_n_months,time_s_availability=time_s_months,time2,time2_n_availability=time2_n_months,time2_s_availability=time2_s_months,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,n_m1_time,n_m2_time,n_m3_time,n_m4_time,n_m5_time,n_m6_time,n_m7_time,n_m8_time,n_m9_time,n_m10_time,n_m11_time,n_m12_time,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,s_m1_time,s_m2_time,s_m3_time,s_m4_time,s_m5_time,s_m6_time,s_m7_time,s_m8_time,s_m9_time,s_m10_time,s_m11_time,s_m12_time'
 
     return get_critter_list(limit, tables, fields)
 
@@ -1583,7 +1764,7 @@ def get_nh_fish(fish):
     fish = fish.replace('_', ' ')
     limit = '1'
     tables = 'nh_fish'
-    fields = 'name,_pageName=url,number,image_url,catchphrase,catchphrase2,catchphrase3,location,shadow_size,rarity,total_catch,sell_nook,sell_cj,tank_width,tank_length,time,time_n_availability=time_n_months,time_s_availability=time_s_months,time2,time2_n_availability=time2_n_months,time2_s_availability=time2_s_months,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,n_m1_time,n_m2_time,n_m3_time,n_m4_time,n_m5_time,n_m6_time,n_m7_time,n_m8_time,n_m9_time,n_m10_time,n_m11_time,n_m12_time,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,s_m1_time,s_m2_time,s_m3_time,s_m4_time,s_m5_time,s_m6_time,s_m7_time,s_m8_time,s_m9_time,s_m10_time,s_m11_time,s_m12_time'
+    fields = 'name,_pageName=url,number,image_url,render_url,catchphrase,catchphrase2,catchphrase3,location,shadow_size,rarity,total_catch,sell_nook,sell_cj,tank_width,tank_length,time,time_n_availability=time_n_months,time_s_availability=time_s_months,time2,time2_n_availability=time2_n_months,time2_s_availability=time2_s_months,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,n_m1_time,n_m2_time,n_m3_time,n_m4_time,n_m5_time,n_m6_time,n_m7_time,n_m8_time,n_m9_time,n_m10_time,n_m11_time,n_m12_time,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,s_m1_time,s_m2_time,s_m3_time,s_m4_time,s_m5_time,s_m6_time,s_m7_time,s_m8_time,s_m9_time,s_m10_time,s_m11_time,s_m12_time'
     where = 'name="' + fish + '"'
     params = {'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where, 'limit': limit}
 
@@ -1607,7 +1788,7 @@ def get_nh_bug_all():
     if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
         fields = 'name,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12'
     else:
-        fields = 'name,_pageName=url,number,image_url,catchphrase,catchphrase2,location,rarity,total_catch,sell_nook,sell_flick,tank_width,tank_length,time,time_n_availability=time_n_months,time_s_availability=time_s_months,time2,time2_n_availability=time2_n_months,time2_s_availability=time2_s_months,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,n_m1_time,n_m2_time,n_m3_time,n_m4_time,n_m5_time,n_m6_time,n_m7_time,n_m8_time,n_m9_time,n_m10_time,n_m11_time,n_m12_time,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,s_m1_time,s_m2_time,s_m3_time,s_m4_time,s_m5_time,s_m6_time,s_m7_time,s_m8_time,s_m9_time,s_m10_time,s_m11_time,s_m12_time'
+        fields = 'name,_pageName=url,number,image_url,render_url,catchphrase,catchphrase2,location,rarity,total_catch,sell_nook,sell_flick,tank_width,tank_length,time,time_n_availability=time_n_months,time_s_availability=time_s_months,time2,time2_n_availability=time2_n_months,time2_s_availability=time2_s_months,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,n_m1_time,n_m2_time,n_m3_time,n_m4_time,n_m5_time,n_m6_time,n_m7_time,n_m8_time,n_m9_time,n_m10_time,n_m11_time,n_m12_time,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,s_m1_time,s_m2_time,s_m3_time,s_m4_time,s_m5_time,s_m6_time,s_m7_time,s_m8_time,s_m9_time,s_m10_time,s_m11_time,s_m12_time'
 
     return get_critter_list(limit, tables, fields)
 
@@ -1620,7 +1801,7 @@ def get_nh_bug(bug):
     bug = bug.replace('_', ' ')
     limit = '1'
     tables = 'nh_bug'
-    fields = 'name,_pageName=url,number,image_url,catchphrase,catchphrase2,location,rarity,total_catch,sell_nook,sell_flick,tank_width,tank_length,time,time_n_availability=time_n_months,time_s_availability=time_s_months,time2,time2_n_availability=time2_n_months,time2_s_availability=time2_s_months,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,n_m1_time,n_m2_time,n_m3_time,n_m4_time,n_m5_time,n_m6_time,n_m7_time,n_m8_time,n_m9_time,n_m10_time,n_m11_time,n_m12_time,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,s_m1_time,s_m2_time,s_m3_time,s_m4_time,s_m5_time,s_m6_time,s_m7_time,s_m8_time,s_m9_time,s_m10_time,s_m11_time,s_m12_time'
+    fields = 'name,_pageName=url,number,image_url,render_url,catchphrase,catchphrase2,location,rarity,total_catch,sell_nook,sell_flick,tank_width,tank_length,time,time_n_availability=time_n_months,time_s_availability=time_s_months,time2,time2_n_availability=time2_n_months,time2_s_availability=time2_s_months,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,n_m1_time,n_m2_time,n_m3_time,n_m4_time,n_m5_time,n_m6_time,n_m7_time,n_m8_time,n_m9_time,n_m10_time,n_m11_time,n_m12_time,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,s_m1_time,s_m2_time,s_m3_time,s_m4_time,s_m5_time,s_m6_time,s_m7_time,s_m8_time,s_m9_time,s_m10_time,s_m11_time,s_m12_time'
     where = 'name="' + bug + '"'
     params = {'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where, 'limit': limit}
 
@@ -1644,7 +1825,7 @@ def get_nh_sea_all():
     if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
         fields = 'name,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12'
     else:
-        fields = 'name,_pageName=url,number,image_url,catchphrase,catchphrase2,shadow_size,shadow_movement,rarity,total_catch,sell_nook,tank_width,tank_length,time,time_n_availability=time_n_months,time_s_availability=time_s_months,time2,time2_n_availability=time2_n_months,time2_s_availability=time2_s_months,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,n_m1_time,n_m2_time,n_m3_time,n_m4_time,n_m5_time,n_m6_time,n_m7_time,n_m8_time,n_m9_time,n_m10_time,n_m11_time,n_m12_time,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,s_m1_time,s_m2_time,s_m3_time,s_m4_time,s_m5_time,s_m6_time,s_m7_time,s_m8_time,s_m9_time,s_m10_time,s_m11_time,s_m12_time'
+        fields = 'name,_pageName=url,number,image_url,render_url,catchphrase,catchphrase2,shadow_size,shadow_movement,rarity,total_catch,sell_nook,tank_width,tank_length,time,time_n_availability=time_n_months,time_s_availability=time_s_months,time2,time2_n_availability=time2_n_months,time2_s_availability=time2_s_months,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,n_m1_time,n_m2_time,n_m3_time,n_m4_time,n_m5_time,n_m6_time,n_m7_time,n_m8_time,n_m9_time,n_m10_time,n_m11_time,n_m12_time,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,s_m1_time,s_m2_time,s_m3_time,s_m4_time,s_m5_time,s_m6_time,s_m7_time,s_m8_time,s_m9_time,s_m10_time,s_m11_time,s_m12_time'
 
     return get_critter_list(limit, tables, fields)
 
@@ -1657,7 +1838,7 @@ def get_nh_sea(sea):
     sea = sea.replace('_', ' ')
     limit = '1'
     tables = 'nh_sea_creature'
-    fields = 'name,_pageName=url,number,image_url,catchphrase,catchphrase2,shadow_size,shadow_movement,rarity,total_catch,sell_nook,tank_width,tank_length,time,time_n_availability=time_n_months,time_s_availability=time_s_months,time2,time2_n_availability=time2_n_months,time2_s_availability=time2_s_months,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,n_m1_time,n_m2_time,n_m3_time,n_m4_time,n_m5_time,n_m6_time,n_m7_time,n_m8_time,n_m9_time,n_m10_time,n_m11_time,n_m12_time,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,s_m1_time,s_m2_time,s_m3_time,s_m4_time,s_m5_time,s_m6_time,s_m7_time,s_m8_time,s_m9_time,s_m10_time,s_m11_time,s_m12_time'
+    fields = 'name,_pageName=url,number,image_url,render_url,catchphrase,catchphrase2,shadow_size,shadow_movement,rarity,total_catch,sell_nook,tank_width,tank_length,time,time_n_availability=time_n_months,time_s_availability=time_s_months,time2,time2_n_availability=time2_n_months,time2_s_availability=time2_s_months,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,n_m1_time,n_m2_time,n_m3_time,n_m4_time,n_m5_time,n_m6_time,n_m7_time,n_m8_time,n_m9_time,n_m10_time,n_m11_time,n_m12_time,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,s_m1_time,s_m2_time,s_m3_time,s_m4_time,s_m5_time,s_m6_time,s_m7_time,s_m8_time,s_m9_time,s_m10_time,s_m11_time,s_m12_time'
     where = 'name="' + sea + '"'
     params = {'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where, 'limit': limit}
 
@@ -1731,6 +1912,18 @@ def get_nh_recipe_all():
 
     return get_recipe_list(limit, tables, fields)
 
+
+@app.route('/nh/events', methods=['GET'])
+def get_nh_event_all():
+    authorize(DB_KEYS, request)
+
+    limit = '1200'
+    tables = 'nh_calendar'
+    fields = 'event,date,type,link=url'
+
+    return get_event_list(limit, tables, fields)
+
+
 @app.route('/nh/furniture/<string:furniture>',methods=['GET'])
 def get_nh_furniture(furniture):
     authorize(DB_KEYS, request)
@@ -1756,6 +1949,7 @@ def get_nh_furniture(furniture):
         variations = call_cargo(variation_params, request.args)
         return jsonify(stitch_variation(piece, variations))
 
+
 @app.route('/nh/furniture',methods=['GET'])
 def get_nh_furniture_all():
     authorize(DB_KEYS, request)
@@ -1779,6 +1973,7 @@ def get_nh_furniture_all():
         return jsonify([_['en_name'] for _ in stitched])
     else:
         return jsonify(stitched)
+
 
 @app.route('/nh/clothing/<string:clothing>',methods=['GET'])
 def get_nh_clothing(clothing):
@@ -1805,6 +2000,7 @@ def get_nh_clothing(clothing):
         variations = call_cargo(variation_params, request.args)
         return jsonify(stitch_variation(piece, variations))
 
+
 @app.route('/nh/clothing',methods=['GET'])
 def get_nh_clothing_all():
     authorize(DB_KEYS, request)
@@ -1828,6 +2024,7 @@ def get_nh_clothing_all():
         return jsonify([_['en_name'] for _ in stitched])
     else:
         return jsonify(stitched)
+
 
 @app.route('/nh/photos/<string:photo>',methods=['GET'])
 def get_nh_photo(photo):
@@ -1854,6 +2051,7 @@ def get_nh_photo(photo):
         variations = call_cargo(variation_params, request.args)
         return jsonify(stitch_variation(piece, variations))
 
+
 @app.route('/nh/photos',methods=['GET'])
 def get_nh_photo_all():
     authorize(DB_KEYS, request)
@@ -1877,6 +2075,7 @@ def get_nh_photo_all():
         return jsonify([_['en_name'] for _ in stitched])
     else:
         return jsonify(stitched)
+
 
 @app.route('/nh/tools/<string:tool>',methods=['GET'])
 def get_nh_tool(tool):
@@ -1903,6 +2102,7 @@ def get_nh_tool(tool):
         variations = call_cargo(variation_params, request.args)
         return jsonify(stitch_variation(piece, variations))
 
+
 @app.route('/nh/tools',methods=['GET'])
 def get_nh_tool_all():
     authorize(DB_KEYS, request)
@@ -1927,6 +2127,7 @@ def get_nh_tool_all():
     else:
         return jsonify(stitched)
 
+
 @app.route('/nh/interior/<string:interior>', methods=['GET'])
 def get_nh_interior(interior):
     authorize(DB_KEYS, request)
@@ -1944,6 +2145,7 @@ def get_nh_interior(interior):
     else:
         return jsonify(format_interior(cargo_results[0]))
 
+
 @app.route('/nh/interior', methods=['GET'])
 def get_nh_interior_all():
     authorize(DB_KEYS, request)
@@ -1953,6 +2155,7 @@ def get_nh_interior_all():
     fields = '_pageName=url,en_name=name,image_url,category,item_series,item_set,theme1,theme2,hha_category,tag,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,grid_size,vfx,color1,color2,version_added,unlocked,notes'
 
     return get_interior_list(limit, tables, fields)
+
 
 @app.route('/nh/items/<string:item>', methods=['GET'])
 def get_nh_item(item):
@@ -1971,6 +2174,7 @@ def get_nh_item(item):
     else:
         return jsonify(format_other_item(cargo_results[0]))
 
+
 @app.route('/nh/items', methods=['GET'])
 def get_nh_item_all():
     authorize(DB_KEYS, request)
@@ -1980,6 +2184,7 @@ def get_nh_item_all():
     fields = '_pageName=url,en_name=name,image_url,stack,hha_base,buy1_price,buy1_currency,sell,is_fence,material_type,material_seasonality,material_sort,material_name_sort,material_seasonality_sort,edible,plant_type,availability1,availability1_note,availability2,availability2_note,availability3,availability3_note,version_added,unlocked,notes'
 
     return get_other_item_list(limit, tables, fields)
+
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1')
