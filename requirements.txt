@@ -14,6 +14,7 @@ Jinja2==2.11.3
 MarkupSafe==1.1.1
 numpy==1.19.1
 psutil==5.7.2
+python-dateutil==2.8.1
 pytz==2020.1
 requests==2.24.0
 scipy==1.5.2
