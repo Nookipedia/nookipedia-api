@@ -1011,6 +1011,13 @@ def format_furniture(data):
 def get_furniture_list(limit,tables,fields):
     where = []
 
+    if 'category' in request.args:
+        categories_list = ['housewares', 'miscellaneous', 'wall-mounted']
+        category = request.args.get('category').lower()
+        if category not in categories_list:
+            abort(400, description=error_response('Could not recognize provided category.','Ensure category is either housewares, miscellaneous, or wall-mounted.'))
+        where.append('category = "{0}"'.format(category))
+
     if len(where) == 0:
         params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
     else:
@@ -1025,7 +1032,11 @@ def get_furniture_variation_list(limit,tables,fields,orderby):
     where = []
 
     if 'color' in request.args:
-        colors = request.args.getlist('color')
+        colors_list = ['aqua', 'beige', 'black', 'blue', 'brown', 'colorful', 'gray', 'green', 'orange', 'pink', 'purple', 'red', 'white', 'yellow']
+        colors = [color.lower() for color in request.args.getlist('color')]
+        for color in colors:
+            if color not in colors_list:
+                abort(400, description=error_response('Could not recognize provided color.','Ensure style is either aqua, beige, black, blue, brown, colorful, gray, green, orange, pink, purple, red, white, or yellow.'))
         if len(colors) == 1: # If they only filtered one color
             where.append('(color1 = "{0}" OR color2 = "{0}")'.format(colors[0]))
         elif len(colors) == 2: # If they filtered both colors
@@ -1105,12 +1116,19 @@ def format_clothing(data):
 def get_clothing_list(limit,tables,fields):
     where = []
 
+    if 'category' in request.args:
+        categories_list = ['tops', 'bottoms', 'dress-up', 'headware', 'accessories', 'socks', 'shoes', 'bags', 'umbrellas']
+        category = request.args.get('category').lower()
+        if category not in categories_list:
+            abort(400, description=error_response('Could not recognize provided category.','Ensure category is either tops, bottoms, dress-up, headware, accessories, socks, shoes, bags, or umbrellas.'))
+        where.append('category = "{0}"'.format(category))
+
     if 'style' in request.args:
         styles_list = ['active', 'cool', 'cute', 'elegant', 'gorgeous', 'simple']
         styles = [style.lower() for style in request.args.getlist('style')]
         for style in styles:
             if style not in styles_list:
-                abort(400, description=error_response('Could not recognize provided style.','Style must be active, cool, cute, elegant, gorgeous, or simple.'))
+                abort(400, description=error_response('Could not recognize provided style.','Ensure style is either active, cool, cute, elegant, gorgeous, or simple.'))
         if len(styles) == 1: # If they only filtered one style
             where.append('(style1 = "{0}" OR style2 = "{0}")'.format(styles[0]))
         elif len(styles) == 2: # If they filtered both styles
@@ -1122,7 +1140,7 @@ def get_clothing_list(limit,tables,fields):
         label_list = ['comfy', 'everyday', 'fairy tale', 'formal', 'goth', 'outdoorsy', 'party', 'sporty', 'theatrical', 'vacation', 'work']
         label = request.args.get('label').lower()
         if label not in label_list:
-            abort(400, description=error_response('Could not recognize provided Label theme.','Label theme must be comfy, everyday, fairy tale, formal, goth, outdoorsy, party, sporty, theatrical, vacation, or work.'))
+            abort(400, description=error_response('Could not recognize provided Label theme.','Ensure Label theme is either comfy, everyday, fairy tale, formal, goth, outdoorsy, party, sporty, theatrical, vacation, or work.'))
         where.append('(label1 = "{0}" OR label2 = "{0}" OR label3 = "{0}" OR label4 = "{0}" OR label5 = "{0}")'.format(label))
 
     if len(where) == 0:
@@ -1180,6 +1198,13 @@ def format_photo(data):
 
 def get_photo_list(limit,tables,fields):
     where = []
+
+    if 'category' in request.args:
+        categories_list = ['photos', 'posters']
+        category = request.args.get('category').lower()
+        if category not in categories_list:
+            abort(400, description=error_response('Could not recognize provided category.','Ensure category is either photos or posters.'))
+        where.append('category = "{0}"'.format(category))
 
     if len(where) == 0:
         params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
@@ -1256,7 +1281,11 @@ def get_interior_list(limit,tables,fields):
     where = []
 
     if 'color' in request.args:
-        colors = request.args.getlist('color')
+        colors_list = ['aqua', 'beige', 'black', 'blue', 'brown', 'colorful', 'gray', 'green', 'orange', 'pink', 'purple', 'red', 'white', 'yellow']
+        colors = [color.lower() for color in request.args.getlist('color')]
+        for color in colors:
+            if color not in colors_list:
+                abort(400, description=error_response('Could not recognize provided color.','Ensure style is either aqua, beige, black, blue, brown, colorful, gray, green, orange, pink, purple, red, white, or yellow.'))
         if len(colors) == 1: # If they only filtered one color
             where.append('(color1 = "{0}" OR color2 = "{0}")'.format(colors[0]))
         elif len(colors) == 2: # If they filtered both colors
@@ -1399,7 +1428,11 @@ def get_variation_list(limit,tables,fields,orderby):
     where = []
 
     if 'color' in request.args:
-        colors = request.args.getlist('color')
+        colors_list = ['aqua', 'beige', 'black', 'blue', 'brown', 'colorful', 'gray', 'green', 'orange', 'pink', 'purple', 'red', 'white', 'yellow']
+        colors = [color.lower() for color in request.args.getlist('color')]
+        for color in colors:
+            if color not in colors_list:
+                abort(400, description=error_response('Could not recognize provided color.','Ensure style is either aqua, beige, black, blue, brown, colorful, gray, green, orange, pink, purple, red, white, or yellow.'))
         if len(colors) == 1: # If they only filtered one color
             where.append('(color1 = "{0}" OR color2 = "{0}")'.format(colors[0]))
         elif len(colors) == 2: # If they filtered both colors
