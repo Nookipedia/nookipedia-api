@@ -1845,11 +1845,11 @@ components:
       properties:
         name:
           type: string
-          example: Apple Chair
+          example: Antique Vanity
           description: The name of the furniture.
         url:
           type: string
-          example: https://nookipedia.com/wiki/Item:Apple_Chair_(New_Horizons)
+          example: https://nookipedia.com/wiki/Item:Antique_Vanity_(New_Horizons)
           description: Link to the respective Nookipedia article.
         category:
           type: string
@@ -1861,23 +1861,23 @@ components:
             - Wall-Mounted
         item_series:
           type: string
-          example: Fruit Series
+          example: Antique
           description: The [furniture series](https://nookipedia.com/wiki/Series_(furniture)) the item is a part of, if any. A series is a collection of furniture and interior items, all with the same theme. If the item is not part of a series, this will be an empty string.
         item_set:
           type: string
-          example: Apple Set
+          example: ""
           description: The [furniture set](https://nookipedia.com/wiki/Set) the item is a part of, if ay. A set is a smaller collection of related furniture items. If the item is not part of a set, this will be an empty string.
         hha_category:
           type: string
-          example: ""
+          example: Dresser
           description: The HHA category the item is a part of, if any. If the item does not have an HHA category, this will be an empty string.
         hha_base:
           type: integer
-          example: 103
+          example: 251
           description: The base value that the item provides to a player's Happy Home Academy score when placed in their home.
         tag:
           type: string
-          example: Chair
+          example: Dresser
           description: The tag of an item, if any, which denotes a specific use or relation to an event. Tags are determined by Nintendo. Examples include "Chair", "Musical Instrument", and "Mario". If the item does not have a tag, this will be an empty string.
         lucky:
           type: boolean
@@ -1894,6 +1894,156 @@ components:
             - Summer
             - Autumn
             - Winter
+        buy:
+          type: array
+          items:
+            type: object
+            properties:
+              price:
+                type: integer
+              currency:
+                type: string
+          example:
+            - price: 31000
+              currency: Bells
+          description: 'An array of prices, for when the recipe may be purchased with Bells, Nook Miles, etc..'
+        sell:
+          type: integer
+          example: 7750
+          description: The number of Bells the item can be sold to Nook's store for.
+        variation_total:
+          type: integer
+          example: 3
+          description: The number of variations.
+        pattern_total:
+          type: integer
+          example: 0
+          description: The number of default patterns available to customize the item with; for items with customizable patterns, the player may also customize with patterns of their own.
+        customizable:
+          type: boolean
+          example: false
+          description: Whether or not the item is customizable via a crafting table.
+        custom_kits:
+          type: integer
+          example: 0
+          description: The number of `custom_kit_type`s (e.g. Customization Kits) that are needed to customize this item. Value is 0 if the item is not customizable.
+        custom_kit_type:
+          type: string
+          example: ""
+          description: The item that needs to be consumed to customize this item. The vast majority are "Customization Kit", but a small selection of items will require a different item, such as items in the Spooky Series requireing pumpkins.
+        custom_body_part:
+          type: string
+          example: ""
+          description: If the item has variations, this is the name of the furniture part that changes. For example, for many bamboo items, the custom body part is "Bamboo" as the bamboo color is able to be customized.
+        custom_pattern_part: 
+          type: string
+          example: ""
+          description: If the item's pattern can be customized, this is the name of the furniture part that can have a pattern applied to it. For example, for the Baby Chair, the custom pattern part is "Cushion" as the cushion on the chair may have a pattern applied.
+        grid_width:
+          type: number
+          format: float
+          example: 2.0
+          description: The number of widthwise grid spaces this item takes up.
+        grid_length:
+          type: number
+          format: float
+          example: 1.0
+          description: The number of lengthwise grid spaces this item takes up.
+        height:
+          type: number
+          format: float
+          example: 15.98677
+          description: The height of the object. One in-game block is 10 units tall, while the player is 15.1324 units tall.
+        door_decor:
+          type: boolean
+          example: false
+          description: Whether this item may be placed on the exterior door of the player's house.
+        version_added:
+          type: string
+          example: "1.0.0"
+          description: The version of *New Horizons* that the item was added. Items that were included at the game's launch have version "1.0.0".
+        unlocked:
+          type: boolean
+          example: true
+          description: Whether the item is available through legitimate gameplay. Some items are added to the game files in an update, but aren't actually made available until a subsequent update unlocks them.
+        themes:
+          type: array
+          items:
+            type: string
+          example:
+            - "Living Room"
+            - "Expensive"
+          description: A list of [themes](https://nookipedia.com/wiki/Theme_(furniture)) (if any) that the item belongs to.
+        functions:
+          type: array
+          items:
+            type: string
+            enum:
+            - 'Trash'
+            - 'Toilet'
+            - 'Table'
+            - 'Storage'
+            - 'Stereo'
+            - 'Seating'
+            - 'Lighting'
+            - 'Instrument'
+            - 'Dresser'
+            - 'Bed'
+            - 'Audio'
+          example:
+            - "Dresser"
+          description: A list of functionalities (if any) that the item has. For example, furniture that items can be placed on topof will have "Table" as a function..
+        availability:
+          type: array
+          items:
+            type: object
+            properties:
+              from:
+                type: string
+              note:
+                type: string
+          example:
+            - from: Nook's Cranny (Upgraded)
+              note: ""
+          description: Where the furniture may be obtained from (could be multiple sources). `from` is a brief description of the source; `note`, when provided, provides additional details.
+        variations:
+          type: array
+          items:
+            type: object
+            properties:
+              variation:
+                type: string
+              pattern:
+                type: string
+              image_url:
+                type: string
+              colors:
+                type: array
+                items:
+                  type: string
+          example:
+            - variation: Brown
+              pattern: ""
+              image_url: https://dodo.ac/np/images/9/9e/Antique_Vanity_%28Brown%29_NH_Icon.png
+              colors:
+              - Aqua
+              - Brown
+            - variation: Natural
+              pattern: ""
+              image_url: https://dodo.ac/np/images/a/ab/Antique_Vanity_%28Natural%29_NH_Icon.png
+              colors:
+              - Aqua
+              - Beige
+            - variation: Black
+              pattern: ""
+              image_url: https://dodo.ac/np/images/5/55/Antique_Vanity_%28Black%29_NH_Icon.png
+              colors:
+              - Aqua
+              - Black
+        notes:
+          type: string
+          example: ""
+          description: Any additional miscellaneous information about the item, such as a name change from a past update.
     NHRecipe:
       type: object
       properties:
