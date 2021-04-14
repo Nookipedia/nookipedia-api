@@ -1144,9 +1144,9 @@ def format_furniture(data):
     elif data['unlocked'] == '1':
         data['unlocked'] = True
 
-    grid_width, grid_height = data['grid_size'].split("\u00d7") # \u00d7 is the multiplication sign, so 1.0x1.0 => [1.0,1.0]
+    grid_width, grid_length = data['grid_size'].split("\u00d7") # \u00d7 is the multiplication sign, so 1.0x1.0 => [1.0,1.0]
     data['grid_width'] = float(grid_width)
-    data['grid_height'] = float(grid_height)
+    data['grid_length'] = float(grid_length)
     del data['grid_size']
 
     data['themes'] = []
@@ -1355,9 +1355,9 @@ def format_photo(data):
     elif data['unlocked'] == '1':
         data['unlocked'] = True
 
-    grid_width, grid_height = data['grid_size'].split("\u00d7") # \u00d7 is the multiplication sign, so 1.0x1.0 => [1.0,1.0]
+    grid_width, grid_length = data['grid_size'].split("\u00d7") # \u00d7 is the multiplication sign, so 1.0x1.0 => [1.0,1.0]
     data['grid_width'] = float(grid_width)
-    data['grid_height'] = float(grid_height)
+    data['grid_length'] = float(grid_length)
     del data['grid_size']
 
     data['availability'] = []
@@ -1420,12 +1420,12 @@ def format_interior(data):
         data['unlocked'] = True
 
     if data['grid_size']:
-        grid_width, grid_height = data['grid_size'].split("\u00d7") # \u00d7 is the multiplication sign, so 1.0x1.0 => [1.0,1.0]
+        grid_width, grid_length = data['grid_size'].split("\u00d7") # \u00d7 is the multiplication sign, so 1.0x1.0 => [1.0,1.0]
         data['grid_width'] = float(grid_width)
-        data['grid_height'] = float(grid_height)
+        data['grid_length'] = float(grid_length)
     else:
         data['grid_width'] = ""
-        data['grid_height'] = ""
+        data['grid_length'] = ""
     del data['grid_size']
 
     data['themes'] = []
