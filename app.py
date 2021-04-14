@@ -358,6 +358,24 @@ def month_to_string(month):
     except:
         return None
 
+def as_bool(value):
+    if value == '0':
+        return False
+    elif value == '1':
+        return True
+    else:
+        return value
+
+def as_int(value):
+    return int('0' + value)
+
+def as_float(value):
+    return float('0' + value)
+
+def format_as_type(data, formatter, *args):
+    for field in args:
+        if field in data:
+            data[field] = as_bool(data[field])
 
 #################################
 # CARGO HANDLING
@@ -391,7 +409,7 @@ def call_cargo(parameters, request_args):  # Request args are passed in just for
             if BOT_USERNAME and int(parameters.get('limit', '50')) > 500:
                 nestedparameters['assert'] = 'bot'
                 session = cache.get('session') # Get session from memcache
-                
+
                 # Session may be null from startup or cache explusion:
                 if not session:
                     mw_login()
@@ -404,7 +422,7 @@ def call_cargo(parameters, request_args):  # Request args are passed in just for
                     if mw_login():
                         session = cache.get('session')
                         r = requests.get(url=BASE_URL_API, params=nestedparameters, headers={'Authorization': 'Bearer ' + session['token']}, cookies=session['cookie'])
-                        
+
                         # If it errors again, make request without auth:
                         if 'error' in r.json():
                             del nestedparameters['assert']
@@ -526,10 +544,7 @@ def format_villager(data):
                 obj['species'] = 'Rhino'
 
         # Set islander to Boolean:
-        if obj['islander'] == '0':
-            obj['islander'] = False
-        elif obj['islander'] == '1':
-            obj['islander'] = True
+        format_as_type(obj, as_bool, 'islander')
 
         # Capitalize and standardize debut:
         game_switcher = {
@@ -760,17 +775,10 @@ def format_critters(data):
 
         if minimum_version('1.2'):
             # Convert tank width/length to floats:
-            obj['tank_width'] = float(obj['tank_width'])
-            obj['tank_length'] = float(obj['tank_length'])
+            format_as_type(obj, as_float, 'tank_width', 'tank_length')
 
             # Convert some fields to int:
-            obj['number'] = int(obj['number'])
-            obj['sell_nook'] = int(obj['sell_nook'])
-            if 'sell_cj' in obj:
-                obj['sell_cj'] = int(obj['sell_cj'])
-            if 'sell_flick' in obj:
-                obj['sell_flick'] = int(obj['sell_flick'])
-            obj['total_catch'] = int(obj['total_catch'])
+            format_as_type(obj, as_int, 'number', 'sell_nook', 'sell_cj', 'sell_flick', 'total_catch')
 
         # Merge catchphrases into an array:
         catchphrase_array = [obj['catchphrase']]
@@ -946,18 +954,13 @@ def format_art(data):
     # Correct some datatypes
 
     # Booleans
-    if data['has_fake'] == '1':
-        data['has_fake'] = True
-    elif data['has_fake'] == '0':
-        data['has_fake'] = False
+    format_as_type(data, as_bool, 'has_fake')
 
     # Integers
-    data['buy'] = int(data['buy'])
-    data['sell'] = int(data['sell'])
+    format_as_type(data, as_int, 'buy', 'sell')
 
     # Floats
-    data['width'] = float(data['width'])
-    data['length'] = float(data['length'])
+    format_as_type(data, as_float, 'width', 'length')
     return data
 
 
@@ -991,9 +994,9 @@ def format_recipe(data):
     # Correct some datatypes
 
     # Integers
-    data['serial_id'] = int('0' + data['serial_id'])
+    format_as_type(data, as_int, 'serial_id', 'recipes_to_unlock')
+    # This can't be included in the format_as_type because of  \/ that condition
     data['sell'] = int('0' + data['sell']) if data['sell'] != 'NA' else 0
-    data['recipes_to_unlock'] = int('0' + data['recipes_to_unlock'])
 
     # Change the material# and material#_num columns to be one materials column
     data['materials'] = []
@@ -1135,21 +1138,10 @@ def get_event_list(limit, tables, fields, orderby):
 
 def format_furniture(data):
     #Integers
-    data['hha_base'] = int('0' + data['hha_base'])
-    data['sell'] = int('0' + data['sell'])
-    data['variation_total'] = int('0' + data['variation_total'])
-    data['pattern_total'] = int('0' + data['pattern_total'])
-    data['custom_kits'] = int('0' + data['custom_kits'])
+    format_as_type(data, as_int, 'hha_base', 'sell', 'variation_total', 'pattern_total', 'custom_kits')
 
     #Booleans
-    if data['customizable'] == '0':
-        data['customizable'] = False
-    elif data['customizable'] == '1':
-        data['customizable'] = True
-    if data['lucky'] == '0':
-        data['lucky'] = False
-    elif data['lucky'] == '1':
-        data['lucky'] = True
+    format_as_type(data, as_bool, 'customizable', 'lucky', 'door_decor', 'unlocked')
     # if data['outdoor'] == '0':
     #     data['outdoor'] = False
     # elif data['outdoor'] == '1':
@@ -1174,14 +1166,6 @@ def format_furniture(data):
     #     data['lighting'] = False
     # elif data['lighting'] == '1':
     #     data['lighting'] = True
-    if data['door_decor'] == '0':
-        data['door_decor'] = False
-    elif data['door_decor'] == '1':
-        data['door_decor'] = True
-    if data['unlocked'] == '0':
-        data['unlocked'] = False
-    elif data['unlocked'] == '1':
-        data['unlocked'] = True
 
     grid_width, grid_length = data['grid_size'].split("\u00d7") # \u00d7 is the multiplication sign, so 1.0x1.0 => [1.0,1.0]
     data['grid_width'] = float(grid_width)
@@ -1282,18 +1266,10 @@ def get_furniture_variation_list(limit,tables,fields,orderby):
 
 def format_clothing(data):
     # Integers
-    data['sell'] = int('0' + data['sell'])
-    data['variation_total'] = int('0' + data['variation_total'])
+    format_as_type(data, as_int, 'sell', 'variation_total')
 
     # Booleans
-    if data['vill_equip'] == '0':
-        data['vill_equip'] = False
-    elif data['vill_equip'] == '1':
-        data['vill_equip'] = True
-    if data['unlocked'] == '0':
-        data['unlocked'] = False
-    elif data['unlocked'] == '1':
-        data['unlocked'] = True
+    format_as_type(data, as_bool, 'vill_equip', 'unlocked')
 
     # Turn label[1-5] into a list called label
     data['label'] = []
@@ -1376,23 +1352,10 @@ def get_clothing_list(limit,tables,fields):
 
 def format_photo(data):
     # Integers
-    data['hha_base'] = int('0' + data['hha_base'])
-    data['sell'] = int('0' + data['sell'])
-    data['custom_kits'] = int('0' + data['custom_kits'])
+    format_as_type(data, int, 'hha_base', 'sell', 'custom_kits')
 
     # Booleans
-    if data['customizable'] == '0':
-        data['customizable'] = False
-    elif data['customizable'] == '1':
-        data['customizable'] = True
-    if data['interactable'] == '0':
-        data['interactable'] = False
-    elif data['interactable'] == '1':
-        data['interactable'] = True
-    if data['unlocked'] == '0':
-        data['unlocked'] = False
-    elif data['unlocked'] == '1':
-        data['unlocked'] = True
+    format_as_type(data, as_bool, 'customizable', 'interactable', 'unlocked')
 
     grid_width, grid_length = data['grid_size'].split("\u00d7") # \u00d7 is the multiplication sign, so 1.0x1.0 => [1.0,1.0]
     data['grid_width'] = float(grid_width)
@@ -1445,18 +1408,10 @@ def get_photo_list(limit,tables,fields):
 
 def format_interior(data):
     # Integers
-    data['hha_base'] = int('0' + data['hha_base'])
-    data['sell'] = int('0' + data['sell'])
+    format_as_type(data, as_int, 'hha_base', 'sell')
 
     # Booleans
-    if data['vfx'] == '0':
-        data['vfx'] = False
-    elif data['vfx'] == '1':
-        data['vfx'] = True
-    if data['unlocked'] == '0':
-        data['unlocked'] = False
-    elif data['unlocked'] == '1':
-        data['unlocked'] = True
+    format_as_type(data, as_bool, 'vfx', 'unlocked')
 
     if data['grid_size']:
         grid_width, grid_length = data['grid_size'].split("\u00d7") # \u00d7 is the multiplication sign, so 1.0x1.0 => [1.0,1.0]
@@ -1540,19 +1495,10 @@ def get_interior_list(limit,tables,fields):
 
 def format_tool(data):
     # Integers
-    data['sell'] = int('0' + data['sell'])
-    data['custom_kits'] = int('0' + data['custom_kits'])
-    data['hha_base'] = int('0' + data['hha_base'])
+    format_as_type(data, as_int, 'sell', 'custom_kits', 'hha_base')
 
     # Booleans
-    if data['customizable'] == '0':
-        data['customizable'] = False
-    elif data['customizable'] == '1':
-        data['customizable'] = True
-    if data['unlocked'] == '0':
-        data['unlocked'] = False
-    elif data['unlocked'] == '1':
-        data['unlocked'] = True
+    format_as_type(data, as_bool, 'customizable', 'unlocked')
 
     data['availability'] = []
     for i in range(1, 4):
@@ -1593,26 +1539,10 @@ def get_tool_list(limit,tables,fields):
 
 def format_other_item(data):
     # Integers
-    data['stack'] = int('0' + data['stack'])
-    data['hha_base'] = int('0' + data['hha_base'])
-    data['sell'] = int('0' + data['sell'])
-    data['material_sort'] = int('0' + data['material_sort'])
-    data['material_name_sort'] = int('0' + data['material_name_sort'])
-    data['material_seasonality_sort'] = int('0' + data['material_seasonality_sort'])
+    format_as_type(data, as_int, 'stack', 'hha_base', 'sell', 'material_sort', 'material_name_sort', 'material_seasonality_sort')
 
     # Booleans
-    if data['is_fence'] == '0':
-        data['is_fence'] = False
-    elif data['is_fence'] == '1':
-        data['is_fence'] = True
-    if data['edible'] == '0':
-        data['edible'] = False
-    elif data['edible'] == '1':
-        data['edible'] = True
-    if data['unlocked'] == '0':
-        data['unlocked'] = False
-    elif data['unlocked'] == '1':
-        data['unlocked'] = True
+    format_as_type(data, as_bool, 'is_fence','edible', 'unlocked')
 
     data['availability'] = []
     for i in range(1, 4):
