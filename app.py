@@ -1936,7 +1936,7 @@ def get_nh_furniture(furniture):
     furniture = furniture.replace('_',' ')
     furniture_limit = '1'
     furniture_tables = 'nh_furniture'
-    furniture_fields = 'identifier,_pageName=url,en_name=name,category,item_series,item_set,theme1,theme2,hha_category,tag,hha_base,lucky,lucky_season,function1,function2,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,availability3,availability3_note,variation_total,pattern_total,customizable,custom_kits,custom_kit_type,custom_body_part,custom_pattern_part,grid_size,length,width,height,door_decor,version_added,unlocked,notes'#'
+    furniture_fields = 'identifier,_pageName=url,en_name=name,category,item_series,item_set,theme1,theme2,hha_category,tag,hha_base,lucky,lucky_season,function1,function2,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,availability3,availability3_note,variation_total,pattern_total,customizable,custom_kits,custom_kit_type,custom_body_part,custom_pattern_part,grid_size,height,door_decor,version_added,unlocked,notes'#'
     furniture_where = f'en_name = "{furniture}"'
     furniture_params = { 'action': 'cargoquery', 'format': 'json', 'tables': furniture_tables, 'fields': furniture_fields, 'where': furniture_where, 'limit': furniture_limit }
     variation_limit = '70'
@@ -1964,7 +1964,7 @@ def get_nh_furniture_all():
 
     furniture_limit = '1200'
     furniture_tables = 'nh_furniture'
-    furniture_fields = 'identifier,_pageName=url,en_name=name,category,item_series,item_set,theme1,theme2,hha_category,tag,hha_base,lucky,lucky_season,function1,function2,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,availability3,availability3_note,variation_total,pattern_total,customizable,custom_kits,custom_kit_type,custom_body_part,custom_pattern_part,grid_size,length,width,height,door_decor,version_added,unlocked,notes'#'
+    furniture_fields = 'identifier,_pageName=url,en_name=name,category,item_series,item_set,theme1,theme2,hha_category,tag,hha_base,lucky,lucky_season,function1,function2,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,availability3,availability3_note,variation_total,pattern_total,customizable,custom_kits,custom_kit_type,custom_body_part,custom_pattern_part,grid_size,height,door_decor,version_added,unlocked,notes'#'
     variation_limit = '5350'
     variation_tables = 'nh_furniture_variation'
     variation_fields = 'identifier,variation,pattern,image_url,color1,color2'
@@ -2038,7 +2038,7 @@ def get_nh_photo(photo):
     photo = photo.replace('_',' ')
     photo_limit = '1'
     photo_tables = 'nh_photo'
-    photo_fields = 'identifier,_pageName=url,en_name=name,category,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,customizable,custom_kits,custom_body_part,grid_size,interactable,length,width,height,version_added,unlocked'
+    photo_fields = 'identifier,_pageName=url,en_name=name,category,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,customizable,custom_kits,custom_body_part,grid_size,interactable,version_added,unlocked'
     photo_where = f'en_name = "{photo}"'
     photo_params = { 'action': 'cargoquery', 'format': 'json', 'tables': photo_tables, 'fields': photo_fields, 'where': photo_where, 'limit': photo_limit }
     variation_limit = '10'
@@ -2066,7 +2066,7 @@ def get_nh_photo_all():
 
     photo_limit = '900'
     photo_tables = 'nh_photo'
-    photo_fields = 'identifier,_pageName=url,en_name=name,category,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,customizable,custom_kits,custom_body_part,grid_size,interactable,length,width,height,version_added,unlocked'
+    photo_fields = 'identifier,_pageName=url,en_name=name,category,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,customizable,custom_kits,custom_body_part,grid_size,interactable,version_added,unlocked'
     variation_limit = '3700'
     variation_tables = 'nh_photo_variation'
     variation_fields = 'identifier,variation,image_url,color1,color2'
