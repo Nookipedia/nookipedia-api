@@ -377,6 +377,40 @@ def format_as_type(data, formatter, *args):
         if field in data:
             data[field] = formatter(data[field])
 
+def format_coalesced_object_list(data, formatter, name, *fields):
+    for obj in data[name]:
+        for field in fields:
+            if field in obj:
+                obj[field] = formatter(obj[field])
+
+def format_coalesced_list(data, formatter, name):
+    data[name] = [formatter(_) for _ in data[name]]
+
+def coalesce_fields_as_object_list(data, elements, output_name, *fields):
+    names = [_[0] for _ in fields]
+    keys = [tuple([_[1].format(i) for _ in fields]) for i in range(1, elements + 1)]
+    data[output_name] = []
+    # Go through and create a JSON object list
+    for key_group in keys:
+        if len(data[key_group[0]]) == 0:
+            break
+        obj = {names[i]: data[key] for i, key in enumerate(key_group)}
+        data[output_name].append(obj)
+    # Delete the elements afterwards
+    for key_group in keys:
+        for key in key_group:
+            del data[key]
+
+def coalesce_fields_as_list(data, elements, name, field_format):
+    data[name] = []
+    keys = [field_format.format(_) for _ in range(1, elements + 1)]
+    for key in keys:
+        if (len(data[key])) == 0:
+            break
+        data[name].append(data[key])
+    for key in keys:
+        del data[key]
+
 #################################
 # CARGO HANDLING
 #################################
@@ -999,36 +1033,15 @@ def format_recipe(data):
     data['sell'] = int('0' + data['sell']) if data['sell'] != 'NA' else 0
 
     # Change the material# and material#_num columns to be one materials column
-    data['materials'] = []
-    for i in range(1, 7):  # material1 to material6
-        if len(data[f'material{i}']) > 0:
-            data['materials'].append({
-                'name': data[f'material{i}'],
-                'count': int(data[f'material{i}_num'])
-            })
-        del data[f'material{i}']
-        del data[f'material{i}_num']
+    coalesce_fields_as_object_list(data, 6, 'materials', ('name','material{}'), ('count','material{}_num'))
+    format_coalesced_object_list(data, as_int, 'materials', 'count')
 
-    data['availability'] = []
-    for i in range(1, 3):
-        if len(data[f'diy_availability{i}']) > 0:
-            data['availability'].append({
-                'from': data[f'diy_availability{i}'],
-                'note': data[f'diy_availability{i}_note']
-            })
-        del data[f'diy_availability{i}']
-        del data[f'diy_availability{i}_note']
+    coalesce_fields_as_object_list(data, 2, 'availability', ('from', 'diy_availability{}'), ('note', 'diy_availability{}_note'))
 
     # Do the same for buy#_price and buy#_currency columns
-    data['buy'] = []
-    for i in range(1, 3):  # Technically overkill, but it'd be easy to add a third buy column if it ever matters
-        if len(data[f'buy{i}_price']) > 0:
-            data['buy'].append({
-                'price': int(data[f'buy{i}_price']),
-                'currency': data[f'buy{i}_currency']
-            })
-        del data[f'buy{i}_price']
-        del data[f'buy{i}_currency']
+    coalesce_fields_as_object_list(data, 2, 'buy', ('price', 'buy{}_price'), ('currency', 'buy{}_currency'))
+    format_coalesced_object_list(data, as_int, 'buy', 'price')
+    
     return data
 
 
@@ -1172,39 +1185,14 @@ def format_furniture(data):
     data['grid_length'] = float(grid_length)
     del data['grid_size']
 
-    data['themes'] = []
-    for i in range(1, 3):
-        theme = f'theme{i}'
-        if len(data[theme]) > 0:
-            data['themes'].append(data[theme])
-        del data[theme]
+    coalesce_fields_as_list(data, 2, 'themes', 'theme{}')
 
-    data['functions'] = []
-    for i in range(1, 3):
-        function = f'function{i}'
-        if len(data[function]) > 0:
-            data['functions'].append(data[function])
-        del data[function]
+    coalesce_fields_as_list(data, 2, 'functions', 'function{}')
 
-    data['availability'] = []
-    for i in range(1, 4):
-        if len(data[f'availability{i}']) > 0:
-            data['availability'].append({
-                'from': data[f'availability{i}'],
-                'note': data[f'availability{i}_note']
-            })
-        del data[f'availability{i}']
-        del data[f'availability{i}_note']
+    coalesce_fields_as_object_list(data, 3, 'availability', ('from', 'availability{}'), ('note', 'availability{}_note'))
 
-    data['buy'] = []
-    for i in range(1, 3):  # Technically overkill, but it'd be easy to add a third buy column if it ever matters
-        if len(data[f'buy{i}_price']) > 0:
-            data['buy'].append({
-                'price': int(data[f'buy{i}_price']),
-                'currency': data[f'buy{i}_currency']
-            })
-        del data[f'buy{i}_price']
-        del data[f'buy{i}_currency']
+    coalesce_fields_as_object_list(data, 2, 'buy', ('price', 'buy{}_price'), ('currency', 'buy{}_currency'))
+    format_coalesced_object_list(data, as_int, 'buy', 'price')
 
     return data
 
@@ -1272,39 +1260,14 @@ def format_clothing(data):
     format_as_type(data, as_bool, 'vill_equip', 'unlocked')
 
     # Turn label[1-5] into a list called label
-    data['label'] = []
-    for i in range(1,6):
-        label = f'label{i}'
-        if len(data[label]) > 0:
-            data['label'].append(data[label])
-        del data[label]
+    coalesce_fields_as_list(data, 5, 'label', 'label{}')
 
-    data['styles'] = []
-    for i in range(1,3):
-        style = f'style{i}'
-        if len(data[style]) > 0:
-            data['styles'].append(data[style])
-        del data[style]
+    coalesce_fields_as_list(data, 2, 'styles', 'style{}')
 
-    data['availability'] = []
-    for i in range(1, 3):
-        if len(data[f'availability{i}']) > 0:
-            data['availability'].append({
-                'from': data[f'availability{i}'],
-                'note': data[f'availability{i}_note']
-            })
-        del data[f'availability{i}']
-        del data[f'availability{i}_note']
+    coalesce_fields_as_object_list(data, 2, 'availability', ('from', 'availability{}'), ('note', 'availability{}_note'))
 
-    data['buy'] = []
-    for i in range(1, 3):  # Technically overkill, but it'd be easy to add a third buy column if it ever matters
-        if len(data[f'buy{i}_price']) > 0:
-            data['buy'].append({
-                'price': int(data[f'buy{i}_price']),
-                'currency': data[f'buy{i}_currency']
-            })
-        del data[f'buy{i}_price']
-        del data[f'buy{i}_currency']
+    coalesce_fields_as_object_list(data, 2, 'buy', ('price', 'buy{}_price'), ('currency', 'buy{}_currency'))
+    format_coalesced_object_list(data, as_int, 'buy', 'price')
 
     return data
 
@@ -1362,25 +1325,10 @@ def format_photo(data):
     data['grid_length'] = float(grid_length)
     del data['grid_size']
 
-    data['availability'] = []
-    for i in range(1, 3):
-        if len(data[f'availability{i}']) > 0:
-            data['availability'].append({
-                'from': data[f'availability{i}'],
-                'note': data[f'availability{i}_note']
-            })
-        del data[f'availability{i}']
-        del data[f'availability{i}_note']
+    coalesce_fields_as_object_list(data, 2, 'availability', ('from', 'availability{}'), ('note', 'availability{}_note'))
 
-    data['buy'] = []
-    for i in range(1, 3):  # Technically overkill, but it'd be easy to add a third buy column if it ever matters
-        if len(data[f'buy{i}_price']) > 0:
-            data['buy'].append({
-                'price': int(data[f'buy{i}_price']),
-                'currency': data[f'buy{i}_currency']
-            })
-        del data[f'buy{i}_price']
-        del data[f'buy{i}_currency']
+    coalesce_fields_as_object_list(data, 2, 'buy', ('price', 'buy{}_price'), ('currency', 'buy{}_currency'))
+    format_coalesced_object_list(data, as_int, 'buy', 'price')
 
     return data
 
@@ -1422,40 +1370,14 @@ def format_interior(data):
         data['grid_length'] = ""
     del data['grid_size']
 
-    data['themes'] = []
-    for i in range(1,3):
-        theme = f'theme{i}'
-        if len(data[theme]) > 0:
-            data['themes'].append(data[theme])
-        del data[theme]
+    coalesce_fields_as_list(data, 2, 'themes', 'theme{}')
 
-    data['colors'] = []
-    for i in range(1,3):
-        color = f'color{i}'
-        if len(data[color]) > 0:
-            data['colors'].append(data[color])
-        del data[color]
+    coalesce_fields_as_list(data, 2, 'colors', 'color{}')
 
+    coalesce_fields_as_object_list(data, 2, 'availability', ('from', 'availability{}'), ('note', 'availability{}_note'))
 
-    data['availability'] = []
-    for i in range(1, 3):
-        if len(data[f'availability{i}']) > 0:
-            data['availability'].append({
-                'from': data[f'availability{i}'],
-                'note': data[f'availability{i}_note']
-            })
-        del data[f'availability{i}']
-        del data[f'availability{i}_note']
-
-    data['buy'] = []
-    for i in range(1, 3):  # Technically overkill, but it'd be easy to add a third buy column if it ever matters
-        if len(data[f'buy{i}_price']) > 0:
-            data['buy'].append({
-                'price': int(data[f'buy{i}_price']),
-                'currency': data[f'buy{i}_currency']
-            })
-        del data[f'buy{i}_price']
-        del data[f'buy{i}_currency']
+    coalesce_fields_as_object_list(data, 2, 'buy', ('price', 'buy{}_price'), ('currency', 'buy{}_currency'))
+    format_coalesced_object_list(data, as_int, 'buy', 'price')
 
     return data
 
@@ -1500,25 +1422,10 @@ def format_tool(data):
     # Booleans
     format_as_type(data, as_bool, 'customizable', 'unlocked')
 
-    data['availability'] = []
-    for i in range(1, 4):
-        if len(data[f'availability{i}']) > 0:
-            data['availability'].append({
-                'from': data[f'availability{i}'],
-                'note': data[f'availability{i}_note']
-            })
-        del data[f'availability{i}']
-        del data[f'availability{i}_note']
+    coalesce_fields_as_object_list(data, 3, 'availability', ('from', 'availability{}'), ('note', 'availability{}_note'))
 
-    data['buy'] = []
-    for i in range(1, 3):  # Technically overkill, but it'd be easy to add a third buy column if it ever matters
-        if len(data[f'buy{i}_price']) > 0:
-            data['buy'].append({
-                'price': int(data[f'buy{i}_price']),
-                'currency': data[f'buy{i}_currency']
-            })
-        del data[f'buy{i}_price']
-        del data[f'buy{i}_currency']
+    coalesce_fields_as_object_list(data, 2, 'buy', ('price', 'buy{}_price'), ('currency', 'buy{}_currency'))
+    format_coalesced_object_list(data, as_int, 'buy', 'price')
 
     return data
 
@@ -1544,25 +1451,10 @@ def format_other_item(data):
     # Booleans
     format_as_type(data, as_bool, 'is_fence','edible', 'unlocked')
 
-    data['availability'] = []
-    for i in range(1, 4):
-        if len(data[f'availability{i}']) > 0:
-            data['availability'].append({
-                'from': data[f'availability{i}'],
-                'note': data[f'availability{i}_note']
-            })
-        del data[f'availability{i}']
-        del data[f'availability{i}_note']
+    coalesce_fields_as_object_list(data, 3, 'availability', ('from', 'availability{}'), ('note', 'availability{}_note'))
 
-    data['buy'] = []
-    for i in range(1, 2):  # Technically overkill, but it'd be easy to add a third buy column if it ever matters
-        if len(data[f'buy{i}_price']) > 0:
-            data['buy'].append({
-                'price': int(data[f'buy{i}_price']),
-                'currency': data[f'buy{i}_currency']
-            })
-        del data[f'buy{i}_price']
-        del data[f'buy{i}_currency']
+    coalesce_fields_as_object_list(data, 1, 'buy', ('price', 'buy{}_price'), ('currency', 'buy{}_currency'))
+    format_coalesced_object_list(data, as_int, 'buy', 'price')
 
     return data
 
@@ -1619,14 +1511,10 @@ def get_variation_list(limit,tables,fields,orderby):
 
 def format_variation(data):
     if 'color1' in data:
-        colors = set()
-        for i in range(1,3):
-            color = f'color{i}'
-            if len(data[color]) > 0:
-                colors.add(data[color])
-            del data[color]
-        colors.discard('None')
-        data['colors'] = list(colors)
+        coalesce_fields_as_list(data, 2, 'colors', 'color{}')
+        data['colors'] = set(data['colors'])
+        data['colors'].discard('None')
+        data['colors'] = list(data['colors'])
     return data
 
 
