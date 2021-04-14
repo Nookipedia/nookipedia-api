@@ -1478,6 +1478,49 @@ def stitch_variation(item,variations):
     del item['identifier']
     return item
 
+def get_fossil_list(limit, tables, join, fields):
+    where = []
+
+    if len(where) == 0:
+        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'join_on': join, 'fields': fields, 'limit': limit }
+    else:
+        where = ' AND '.join(where)
+        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'join_on': join, 'fields': fields, 'limit': limit, 'where': where }
+
+    cargo_results = call_cargo(params, request.args)
+    results_array = []
+    if request.args.get('excludedetails') == 'true':
+        for item in cargo_results:
+            results_array.append(item['name'])
+    else:
+        for item in cargo_results:
+            results_array.append(format_fossil(item))
+    return jsonify(results_array)
+
+def format_fossil(data):
+    data['sell'] = int(data['sell'])
+    data['hha_base'] = int(data['hha_base'])
+    data['room'] = int(data['room'])
+
+    data['width'] = float(data['width'])
+    data['length'] = float(data['length'])
+
+    if data['interactable'] == '0':
+        data['interactable'] = False
+    elif data['interactable'] == '1':
+        data['interactable'] = True
+    
+    colors = set()
+    for i in range(1,3):
+        color = f'color{i}'
+        if len(data[color]) > 0:
+            colors.add(data[color])
+        del data[color]
+    colors.discard('None')
+    data['colors'] = list(colors)
+
+    return data
+
 #################################
 # STATIC RENDERS
 #################################
@@ -1978,6 +2021,33 @@ def get_nh_item_all():
 
     return get_other_item_list(limit, tables, fields)
 
+@app.route('/nh/fossils/<string:fossil>', methods=['GET'])
+def get_nh_fossil(fossil):
+    authorize(DB_KEYS, request)
+
+    limit = '1'
+    tables = 'nh_fossil,nh_fossil_group'
+    join = 'nh_fossil._pageName=nh_fossil_group._pageName'
+    fields = 'nh_fossil._pageName=url,nh_fossil.name,nh_fossil.image,nh_fossil.fossil_group,nh_fossil.interactable,nh_fossil.sell,nh_fossil.color1,nh_fossil.color2,nh_fossil.hha_base,nh_fossil.width,nh_fossil.length,nh_fossil_group.room,nh_fossil_group.description'
+    where = f'nh_fossil.name="{fossil}"'
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'join_on': join, 'fields': fields, 'limit': limit, 'where': where }
+
+    cargo_results = call_cargo(params, request.args)
+    if len(cargo_results) == 0:
+        abort(404, description=error_response("No data was found for the given query.", f"MediaWiki Cargo request succeeded by nothing was returned for the parameters: {params}"))
+    else:
+        return jsonify(format_fossil(cargo_results[0]))
+
+@app.route('/nh/fossils', methods=['GET'])
+def get_nh_fossil_all():
+    authorize(DB_KEYS, request)
+
+    limit = '100'
+    tables = 'nh_fossil,nh_fossil_group'
+    join = 'nh_fossil._pageName=nh_fossil_group._pageName'
+    fields = 'nh_fossil._pageName=url,nh_fossil.name,nh_fossil.image,nh_fossil.fossil_group,nh_fossil.interactable,nh_fossil.sell,nh_fossil.color1,nh_fossil.color2,nh_fossil.hha_base,nh_fossil.width,nh_fossil.length,nh_fossil_group.room,nh_fossil_group.description'
+
+    return get_fossil_list(limit, tables, join, fields)
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1')
