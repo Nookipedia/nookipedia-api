@@ -375,7 +375,7 @@ def as_float(value):
 def format_as_type(data, formatter, *args):
     for field in args:
         if field in data:
-            data[field] = as_bool(data[field])
+            data[field] = formatter(data[field])
 
 #################################
 # CARGO HANDLING
