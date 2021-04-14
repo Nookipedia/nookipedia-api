@@ -1,3 +1,4 @@
+import re
 import requests
 import sqlite3
 import uuid
@@ -473,12 +474,50 @@ def call_cargo(parameters, request_args):  # Request args are passed in just for
     except:
         abort(500, description=error_response("Error while formatting Cargo response.", "Iterating over cargoquery array in response object failed for the parameters: {}.".format(parameters)))
 
+def minimum_version(version):
+    return between_version(version, None)
+
+def maximum_version(version):
+    return between_version(None, version)
+
+def exact_version(version):
+    return between_version(version, version)
+
+def between_version(minimum, maximum):
+    version = request.headers.get('Accept-Version', 'latest')
+    if version == 'latest':
+        return maximum is None
+    version_match = re.match(r'^(\d+)(?:\.(\d+)(?:\.(\d+))?)?$', version)
+    minimum_match = re.match(r'^(\d+)(?:\.(\d+)(?:\.(\d+))?)?$', minimum or '')
+    maximum_match = re.match(r'^(\d+)(?:\.(\d+)(?:\.(\d+))?)?$', maximum or '')
+    if version_match is None:
+        abort(400, description=error_response('Invalid header arguments','Accept-Version must be `#`, `#.#`, `#.#.#`, or latest. (defaults to latest, if not supplied)'))
+    elif minimum is not None and minimum_match is None:
+        abort(500, description=error_response('Error while checking Accept-Version','Minimum version must be `#`, `#.#`, or `#.#.#`'))
+    elif maximum is not None and maximum_match is None:
+        abort(500, description=error_response('Error while checking Accept-Version','Maximum version must be `#`, `#.#`, or `#.#.#`'))
+    else:
+        version_numbers = version_match.groups()
+        minimum_numbers = minimum_match.groups() if minimum is not None else ('0', '0', '0')
+        maximum_numbers = maximum_match.groups() if maximum is not None else ('999', '999', '999')
+        for version_number, minimum_number, maximum_number in zip(version_numbers, minimum_numbers, maximum_numbers):
+            if maximum_number is None:
+                return True
+            if minimum_number is None:
+                return True
+            if version_number is None:
+                return True
+            if int(version_number) < int(minimum_number):
+                return False
+            if int(version_number) > int(maximum_number):
+                return False
+        return True
 
 def format_villager(data):
     games = ['dnm', 'ac', 'e_plus', 'ww', 'cf', 'nl', 'wa', 'nh', 'film', 'hhd', 'pc']
 
     for obj in data:
-        if request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] in ('1.0', '1.1', '1.2', '1.3'):
+        if maximum_version('1.3'):
             if obj['personality'] == 'Big sister':
                 obj['personality'] = 'Sisterly'
             if obj['species'] == 'Bear cub':
@@ -675,13 +714,13 @@ def months_to_array(data):
         for key in obj:
             if 'n_m' in key:
                 if obj[key] == '1':
-                    if not (request.headers.get('Accept-Version') and (request.headers.get('Accept-Version')[:3] in ('1.0', '1.1'))):
+                    if minimum_version('1.2'):
                         n_months_array.append(int(key.replace('n_m', '')))
                     else:
                         n_months_array.append(key.replace('n_m', ''))
             if 's_m' in key:
                 if obj[key] == '1':
-                    if not (request.headers.get('Accept-Version') and (request.headers.get('Accept-Version')[:3] in ('1.0', '1.1'))):
+                    if minimum_version('1.2'):
                         s_months_array.append(int(key.replace('s_m', '')))
                     else:
                         s_months_array.append(key.replace('s_m', ''))
@@ -689,10 +728,10 @@ def months_to_array(data):
             del obj['n_m' + str(i)]
             del obj['s_m' + str(i)]
 
-        if (request.headers.get('Accept-Version') and (request.headers.get('Accept-Version')[:3] in ('1.0', '1.1'))):
+        if maximum_version('1.1'):
             obj['n_availability_array'] = n_months_array
             obj['s_availability_array'] = s_months_array
-        elif (request.headers.get('Accept-Version') and (request.headers.get('Accept-Version')[:3] in ('1.2'))):
+        elif exact_version('1.2'):
             if 'n_availability' in obj:
                 obj['months_north'] = obj['n_availability']
                 del obj['n_availability']
@@ -719,7 +758,7 @@ def format_critters(data):
     # Create arrays that hold times by month per hemisphere:
     for obj in data:
 
-        if not (request.headers.get('Accept-Version') and (request.headers.get('Accept-Version')[:3] in ('1.0', '1.1'))):
+        if minimum_version('1.2'):
             # Convert tank width/length to floats:
             obj['tank_width'] = float(obj['tank_width'])
             obj['tank_length'] = float(obj['tank_length'])
@@ -743,7 +782,7 @@ def format_critters(data):
         obj['catchphrases'] = catchphrase_array
 
         # Remove individual catchphrase fields:
-        if not (request.headers.get('Accept-Version') and (request.headers.get('Accept-Version')[:3] in ('1.0', '1.1'))):
+        if minimum_version('1.2'):
             del obj['catchphrase']
             if 'catchphrase2' in obj:
                 del obj['catchphrase2']
@@ -751,7 +790,7 @@ def format_critters(data):
                 del obj['catchphrase3']
 
         # Create array of times and corresponding months for those times:
-        if request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] in ('1.0', '1.1', '1.2'):
+        if maximum_version('1.2'):
             availability_array_north = [{'months': obj['time_n_months'], 'time': obj['time']}]
             availability_array_south = [{'months': obj['time_s_months'], 'time': obj['time']}]
             if len(obj['time2']) > 0:
@@ -839,7 +878,7 @@ def format_critters(data):
             del obj['s_m' + str(i) + '_time']
 
         # Remove unneeded time fields:
-        if not (request.headers.get('Accept-Version') and (request.headers.get('Accept-Version')[:3] in ('1.0', '1.1'))):
+        if minimum_version('1.2'):
             del obj['time']
         del obj['time2']
         del obj['time_n_months']
@@ -1776,7 +1815,7 @@ def get_nh_fish(fish):
     if cargo_results == []:
         abort(404, description=error_response("No data was found for the given query.", "MediaWiki Cargo request succeeded by nothing was returned for the parameters: {}".format(params)))
     else:
-        if(request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] == '1.0'):
+        if exact_version('1.0'):
             return jsonify(months_to_array(format_critters(cargo_results)))
         else:
             return jsonify(months_to_array(format_critters(cargo_results))[0])
@@ -1813,7 +1852,7 @@ def get_nh_bug(bug):
     if cargo_results == []:
         abort(404, description=error_response("No data was found for the given query.", "MediaWiki Cargo request succeeded by nothing was returned for the parameters: {}".format(params)))
     else:
-        if(request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] == '1.0'):
+        if exact_version('1.0'):
             return jsonify(months_to_array(format_critters(cargo_results)))
         else:
             return jsonify(months_to_array(format_critters(cargo_results))[0])
@@ -1850,7 +1889,7 @@ def get_nh_sea(sea):
     if cargo_results == []:
         abort(404, description=error_response("No data was found for the given query.", "MediaWiki Cargo request succeeded by nothing was returned for the parameters: {}".format(params)))
     else:
-        if(request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] == '1.0'):
+        if exact_version('1.0'):
             return jsonify(months_to_array(format_critters(cargo_results)))
         else:
             return jsonify(months_to_array(format_critters(cargo_results))[0])
