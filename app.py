@@ -608,7 +608,7 @@ def format_villager(data):
         del obj['prev_phrase2']
 
         # Place NH details in object, if applicable:
-        if request.args.get('nhdetails') and (request.args.get('nhdetails') == 'true'):
+        if request.args.get('nhdetails') == 'true':
             if obj['nh'] == '0':
                 obj['nh_details'] = None
             else:
@@ -745,7 +745,7 @@ def get_villager_list(limit, tables, join, fields):
         params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'join_on': join, 'fields': fields}
 
     print(str(params))
-    if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
+    if request.args.get('excludedetails') == 'true':
         cargo_results = call_cargo(params, request.args)
         results_array = []
         for villager in cargo_results:
@@ -942,7 +942,7 @@ def get_critter_list(limit, tables, fields):
         paramsSouth = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields, 'where': 's_m' + calculated_month + '="1"'}
 
         # If client doesn't want all details:
-        if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
+        if request.args.get('excludedetails') == 'true':
             n_hemi = months_to_array(call_cargo(paramsNorth, request.args))
             s_hemi = months_to_array(call_cargo(paramsSouth, request.args))
 
@@ -974,7 +974,7 @@ def get_critter_list(limit, tables, fields):
     # If client doesn't specify specific month:
     else:
         params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields}
-        if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
+        if request.args.get('excludedetails') == 'true':
             cargo_results = call_cargo(params, request.args)
             results_array = []
             for critter in cargo_results:
@@ -1015,7 +1015,7 @@ def get_art_list(limit, tables, fields):
 
     cargo_results = call_cargo(params, request.args)
     results_array = []
-    if request.args.get('excludedetails') and request.args.get('excludedetails') == 'true':
+    if request.args.get('excludedetails') == 'true':
         for art in cargo_results:
             results_array.append(art['name'])
     else:
@@ -1591,9 +1591,9 @@ def get_villager_all():
     limit = '500'
     tables = 'villager'
     join = ''
-    if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
+    if request.args.get('excludedetails') == 'true':
         fields = 'name'
-    elif request.args.get('nhdetails') and (request.args.get('nhdetails') == 'true'):
+    elif request.args.get('nhdetails') == 'true':
         tables = 'villager,nh_villager,nh_house'
         join = 'villager._pageName=nh_villager._pageName,villager._pageName=nh_house._pageName'
         fields = 'villager.name,villager._pageName=url,villager.name,villager.alt_name,villager.title_color,villager.text_color,villager.id,villager.image_url,villager.species,villager.personality,villager.gender,villager.birthday_month,villager.birthday_day,villager.sign,villager.quote,villager.phrase,villager.prev_phrase,villager.prev_phrase2,villager.clothing,villager.islander,villager.debut,villager.dnm,villager.ac,villager.e_plus,villager.ww,villager.cf,villager.nl,villager.wa,villager.nh,villager.film,villager.hhd,villager.pc,nh_villager.image_url=nh_image_url,nh_villager.photo_url=nh_photo_url,nh_villager.icon_url=nh_icon_url,nh_villager.quote=nh_quote,nh_villager.sub_personality=nh_sub-personality,nh_villager.catchphrase=nh_catchphrase,nh_villager.clothing=nh_clothing,nh_villager.clothing_variation=nh_clothing_variation,nh_villager.fav_style1=nh_fav_style1,nh_villager.fav_style2=nh_fav_style2,nh_villager.fav_color1=nh_fav_color1,nh_villager.fav_color2=nh_fav_color2,nh_villager.hobby=nh_hobby,nh_house.interior_image_url=nh_house_interior_url,nh_house.exterior_image_url=nh_house_exterior_url,nh_house.wallpaper=nh_wallpaper,nh_house.flooring=nh_flooring,nh_house.music=nh_music,nh_house.music_note=nh_music_note'
@@ -1610,7 +1610,7 @@ def get_nh_fish_all():
 
     limit = '100'
     tables = 'nh_fish'
-    if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
+    if request.args.get('excludedetails') == 'true':
         fields = 'name,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12'
     else:
         fields = 'name,_pageName=url,number,image_url,render_url,catchphrase,catchphrase2,catchphrase3,location,shadow_size,rarity,total_catch,sell_nook,sell_cj,tank_width,tank_length,time,time_n_availability=time_n_months,time_s_availability=time_s_months,time2,time2_n_availability=time2_n_months,time2_s_availability=time2_s_months,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,n_m1_time,n_m2_time,n_m3_time,n_m4_time,n_m5_time,n_m6_time,n_m7_time,n_m8_time,n_m9_time,n_m10_time,n_m11_time,n_m12_time,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,s_m1_time,s_m2_time,s_m3_time,s_m4_time,s_m5_time,s_m6_time,s_m7_time,s_m8_time,s_m9_time,s_m10_time,s_m11_time,s_m12_time'
@@ -1646,7 +1646,7 @@ def get_nh_bug_all():
 
     limit = '100'
     tables = 'nh_bug'
-    if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
+    if request.args.get('excludedetails') == 'true':
         fields = 'name,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12'
     else:
         fields = 'name,_pageName=url,number,image_url,render_url,catchphrase,catchphrase2,location,rarity,total_catch,sell_nook,sell_flick,tank_width,tank_length,time,time_n_availability=time_n_months,time_s_availability=time_s_months,time2,time2_n_availability=time2_n_months,time2_s_availability=time2_s_months,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,n_m1_time,n_m2_time,n_m3_time,n_m4_time,n_m5_time,n_m6_time,n_m7_time,n_m8_time,n_m9_time,n_m10_time,n_m11_time,n_m12_time,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,s_m1_time,s_m2_time,s_m3_time,s_m4_time,s_m5_time,s_m6_time,s_m7_time,s_m8_time,s_m9_time,s_m10_time,s_m11_time,s_m12_time'
@@ -1683,7 +1683,7 @@ def get_nh_sea_all():
 
     limit = '100'
     tables = 'nh_sea_creature'
-    if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
+    if request.args.get('excludedetails') == 'true':
         fields = 'name,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12'
     else:
         fields = 'name,_pageName=url,number,image_url,render_url,catchphrase,catchphrase2,shadow_size,shadow_movement,rarity,total_catch,sell_nook,tank_width,tank_length,time,time_n_availability=time_n_months,time_s_availability=time_s_months,time2,time2_n_availability=time2_n_months,time2_s_availability=time2_s_months,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,n_m1_time,n_m2_time,n_m3_time,n_m4_time,n_m5_time,n_m6_time,n_m7_time,n_m8_time,n_m9_time,n_m10_time,n_m11_time,n_m12_time,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,s_m1_time,s_m2_time,s_m3_time,s_m4_time,s_m5_time,s_m6_time,s_m7_time,s_m8_time,s_m9_time,s_m10_time,s_m11_time,s_m12_time'
@@ -1737,7 +1737,7 @@ def get_nh_art_all():
 
     limit = '50'
     tables = 'nh_art'
-    if request.args.get('excludedetails', 'false') == 'true':
+    if request.args.get('excludedetails') == 'true':
         fields = 'name'
     else:
         fields = 'name,_pageName=url,image_url,has_fake,fake_image_url,art_name,author,year,art_style,description,buy_price=buy,sell,availability,authenticity,width,length'
