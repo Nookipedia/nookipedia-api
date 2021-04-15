@@ -7,6 +7,8 @@ import html
 import configparser
 from datetime import datetime
 from dateutil import parser
+from itertools import permutations
+from itertools import combinations
 from flask import Flask
 from flask import abort
 from flask import request
@@ -565,6 +567,137 @@ def between_version(minimum, maximum):
                 return False
         return True
 
+class WhereBuilder(list):
+    def where(self, url_name, column_name, *, formatter = None, validate = None, post_validation_formatter = None,
+                 value = None, format_column = False):
+        arg = request.args.get(url_name)
+        if arg is not None:
+            if formatter:
+                arg = formatter(arg)
+            if validate:
+                validate(arg)
+            if post_validation_formatter:
+                arg = post_validation_formatter(arg)
+            if format_column:
+                column_name.format(arg)
+            if value:
+                arg = value
+            self.append(f'{column_name} = "{arg}"')
+    def where_list(self, url_name, column_name, *, formatter = None, validate = None, post_validation_formatter = None,
+                 value = None, format_column = False, count = None, numbered = False):
+        """Used when you need to match a parameter in the list, will match something like [Tan, Tan] if color=Tan&color=Black is searched"""
+        args = request.args.getlist(url_name)
+        if numbered and not count:
+            abort(500, description=error_response('There was an error building the cargo query', '`WHERE` statement needs a count if you have numbered'))
+        if args:
+            if count and len(args) > count:
+                abort(400, description=error_response('Invalid arguments', f'Cannot have more than {count} of \'{url_name}\''))
+            for arg in args:
+                if formatter:
+                    arg = formatter(arg)
+                if validate:
+                    validate(arg)
+                if post_validation_formatter:
+                    arg = post_validation_formatter(arg)
+                column = column_name
+                if format_column and not numbered:
+                    column = column.format(arg)
+                if value is not None:
+                    arg = value
+                if numbered:
+                    self.append('(' + ' OR '.join([f'{column.format(_)} = "{arg}"' for _ in range(1, count + 1)]) + ')')
+                else:
+                    self.append(f'{column} = "{arg}"')
+    def where_all_list(self, url_name, column_name, *, formatter = None, validate = None, post_validation_formatter = None,
+                    value = None, count = None):
+        """Used when you need to match every parameter in the list, so it will only match if it contains every argument"""
+        args = request.args.getlist(url_name)
+        if not count:
+            abort(500, description=error_response('There was an error building the cargo query', '`WHERE` statement needs a count if you\'re using all_list'))
+        if args:
+            if count and len(args) > count:
+                abort(400, description=error_response('Invalid arguments', f'Cannot have more than {count} of \'{url_name}\''))
+            for i, _ in enumerate(args):
+                if formatter:
+                    args[i] = formatter(args[i])
+                if validate:
+                    validate(args[i])
+                if post_validation_formatter:
+                    args[i] = post_validation_formatter(args[i])
+            ret = []
+            perms = [_ for _ in permutations(args)]
+            params = [column_name.format(i) for i in range(1, count + 1)]
+            combs = [_ for _ in combinations(params, len(args))]
+            for key in combs:
+                for value in perms:
+                    ret.append(' AND '.join([f'{_[0]} = "{_[1]}"' for _ in zip(key,value)]))
+            self.append('(' + ') OR ('.join(ret) + ')')
+
+    def where_raw(self, raw):
+        """Adds `raw` as a condition without any formatting or anything, just as you would build it previously"""
+        self.append(raw)
+    def build(self):
+        return ' AND '.join(self)
+    def build_into_params(self, params):
+        if self:
+            where = self.build()
+            params['where'] = where
+
+def validate_personality(personality):
+    personality_list = ['lazy', 'jock', 'cranky', 'smug', 'normal', 'peppy', 'snooty', 'sisterly', 'big sister']
+    if personality not in personality_list:
+        abort(400, description=error_response("Could not recognize provided personality.", "Ensure personality is either lazy, jock, cranky, smug, normal, peppy, snooty, or sisterly/big sister."))
+
+def validate_species(species):
+    species_list = ['alligator', 'anteater', 'bear', 'bear cub', 'bird', 'bull', 'cat', 'cub', 'chicken', 'cow', 'deer', 'dog', 'duck', 'eagle', 'elephant', 'frog', 'goat', 'gorilla', 'hamster', 'hippo', 'horse', 'koala', 'kangaroo', 'lion', 'monkey', 'mouse', 'octopus', 'ostrich', 'penguin', 'pig', 'rabbit', 'rhino', 'rhinoceros', 'sheep', 'squirrel', 'tiger', 'wolf']
+    if species not in species_list:
+        abort(400, description=error_response("Could not recognize provided species.", "Ensure provided species is valid."))
+
+# Underscore is to avoid hiding the `type` builtin
+def validate_type(_type):
+    if _type not in ['Event', 'Nook Shopping', 'Birthday', 'Recipes']:
+        abort(400, description=error_response("Could not recognize provided type.", "Ensure type is either Event, Nook Shopping, Birthday, or Recipes."))
+
+def validate_furniture_category(category):
+    categories_list = ['housewares', 'miscellaneous', 'wall-mounted']
+    if category not in categories_list:
+        abort(400, description=error_response('Could not recognize provided category.','Ensure category is either housewares, miscellaneous, or wall-mounted.'))
+
+def validate_clothing_category(category):
+    categories_list = ['tops', 'bottoms', 'dress-up', 'headware', 'accessories', 'socks', 'shoes', 'bags', 'umbrellas']
+    if category not in categories_list:
+        abort(400, description=error_response('Could not recognize provided category.','Ensure category is either tops, bottoms, dress-up, headware, accessories, socks, shoes, bags, or umbrellas.'))
+
+def validate_clothing_style(style):
+    styles_list = ['active', 'cool', 'cute', 'elegant', 'gorgeous', 'simple']
+    if style not in styles_list:
+        abort(400, description=error_response('Could not recognize provided style.','Ensure style is either active, cool, cute, elegant, gorgeous, or simple.'))
+
+def validate_clothing_label(label):
+    label_list = ['comfy', 'everyday', 'fairy tale', 'formal', 'goth', 'outdoorsy', 'party', 'sporty', 'theatrical', 'vacation', 'work']
+    if label not in label_list:
+        abort(400, description=error_response('Could not recognize provided Label theme.','Ensure Label theme is either comfy, everyday, fairy tale, formal, goth, outdoorsy, party, sporty, theatrical, vacation, or work.'))
+
+def validate_photo_category(category):
+    categories_list = ['photos', 'posters']
+    if category not in categories_list:
+        abort(400, description=error_response('Could not recognize provided category.','Ensure category is either photos or posters.'))
+
+def validate_color(color):
+    colors_list = ['aqua', 'beige', 'black', 'blue', 'brown', 'colorful', 'gray', 'green', 'orange', 'pink', 'purple', 'red', 'white', 'yellow']
+    if color not in colors_list:
+        abort(400, description=error_response('Could not recognize provided color.','Ensure style is either aqua, beige, black, blue, brown, colorful, gray, green, orange, pink, purple, red, white, or yellow.'))
+
+def post_formatter_species(species):
+    if species == 'cub':
+        return 'bear cub'
+    elif species == 'rhino':
+        return 'rhinoceros'
+    return species
+
+def str_lower_formatter(string):
+    return string.lower()
+
 def format_villager(data):
     games = ['dnm', 'ac', 'e_plus', 'ww', 'cf', 'nl', 'wa', 'nh', 'film', 'hhd', 'pc']
 
@@ -671,78 +804,36 @@ def format_villager(data):
 
 
 def get_villager_list(limit, tables, join, fields):
-    where = None
-
+    builder = WhereBuilder()
     # Filter by name:
-    if request.args.get('name'):
-        villager = request.args.get('name').replace('_', ' ').capitalize()
-        if where:
-            where = where + ' AND villager.name = "' + villager + '"'
-        else:
-            where = 'villager.name = "' + villager + '"'
-
+    builder.where('name', 'villager.name', formatter = lambda villager: villager.replace('_', ' ').capitalize())
     # Filter by birth month:
-    if request.args.get('birthmonth'):
-        month = month_to_string(request.args.get('birthmonth'))
-        if where:
-            where = where + ' AND villager.birthday_month = "' + month + '"'
-        else:
-            where = 'villager.birthday_month = "' + month + '"'
+    builder.where('birthmonth', 'villgager.birth_month', formatter = lambda month: month_to_string(month))
 
     # Filter by birth day:
-    if request.args.get('birthday'):
-        day = request.args.get('birthday')
-        if where:
-            where = where + ' AND villager.birthday_day = "' + day + '"'
-        else:
-            where = 'villager.birthday_day = "' + day + '"'
+    builder.where('birthday', 'villager.birthday_day')
 
     # Filter by personality:
-    if request.args.get('personality'):
-        personality_list = ['lazy', 'jock', 'cranky', 'smug', 'normal', 'peppy', 'snooty', 'sisterly', 'big sister']
-        personality = request.args.get('personality').lower()
-        if personality not in personality_list:
-            abort(400, description=error_response("Could not recognize provided personality.", "Ensure personality is either lazy, jock, cranky, smug, normal, peppy, snooty, or sisterly/big sister."))
-
-        if personality == 'sisterly':
-            personality = 'big sister'
-
-        if where:
-            where = where + ' AND villager.personality = "' + personality + '"'
-        else:
-            where = 'villager.personality = "' + personality + '"'
-
+    builder.where('personality', 'villager.personality',
+        formatter = str_lower_formatter,
+        validate = validate_personality,
+        post_validation_formatter = lambda personality: 'big sister' if personality == 'sisterly' else personality)
+    
     # Filter by species:
-    if request.args.get('species'):
-        species_list = ['alligator', 'anteater', 'bear', 'bear cub', 'bird', 'bull', 'cat', 'cub', 'chicken', 'cow', 'deer', 'dog', 'duck', 'eagle', 'elephant', 'frog', 'goat', 'gorilla', 'hamster', 'hippo', 'horse', 'koala', 'kangaroo', 'lion', 'monkey', 'mouse', 'octopus', 'ostrich', 'penguin', 'pig', 'rabbit', 'rhino', 'rhinoceros', 'sheep', 'squirrel', 'tiger', 'wolf']
-        species = request.args.get('species').lower()
-        if species not in species_list:
-            abort(400, description=error_response("Could not recognize provided species.", "Ensure provided species is valid."))
-
-        if species == 'cub':
-            species = 'bear cub'
-        elif species == 'rhino':
-            species = 'rhinoceros'
-
-        if where:
-            where = where + ' AND villager.species = "' + species + '"'
-        else:
-            where = 'villager.species = "' + species + '"'
+    builder.where('species', 'villager.species',
+        formatter = str_lower_formatter,
+        validate = validate_species,
+        post_validation_formatter = post_formatter_species)
 
     # Filter by game:
-    if request.args.get('game'):
-        games = request.args.getlist("game")
-        for game in games:
-            game = game.replace('_', ' ')
-            if where:
-                where = where + ' AND villager.' + game + ' = "1"'
-            else:
-                where = 'villager.' + game + ' = "1"'
+    builder.where_list('game','villager.{}',
+        formatter = lambda game: game.replace('_', ' '),
+        format_column = True,
+        value = "1")
 
-    if where:
-        params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'join_on': join, 'fields': fields, 'where': where}
-    else:
-        params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'join_on': join, 'fields': fields}
+    
+    params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'join_on': join, 'fields': fields}
+    builder.build_into_params(params)
 
     print(str(params))
     if request.args.get('excludedetails') == 'true':
@@ -999,19 +1090,12 @@ def format_art(data):
 
 
 def get_art_list(limit, tables, fields):
-    where = None
+    builder = WhereBuilder()
 
-    if request.args.get('hasfake'):
-        fake = request.args.get('hasfake').lower()
-        if fake == 'true':
-            where = 'has_fake = true'
-        elif fake == 'false':
-            where = 'has_fake = false'
+    builder.where('hasfake', 'has_fake', formatter = str_lower_formatter)
 
-    if where:
-        params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields, 'where': where}
-    else:
-        params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields}
+    params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields}
+    builder.build_into_params(params)
 
     cargo_results = call_cargo(params, request.args)
     results_array = []
@@ -1046,23 +1130,12 @@ def format_recipe(data):
 
 
 def get_recipe_list(limit, tables, fields):
-    where = None
+    builder = WhereBuilder()
 
-    if 'material' in request.args:
-        materials = request.args.getlist('material')
-        if len(materials) > 6:
-            abort(400, description=error_response('Invalid arguments', 'Cannot have more than six materials'))
-        for m in materials:
-            m.replace('_', ' ')
-            if where is None:
-                where = '(material1 = "{0}" or material2 = "{0}" or material3 = "{0}" or material4 = "{0}" or material5 = "{0}" or material6 = "{0}")'.format(m)
-            else:
-                where += ' AND (material1 = "{0}" or material2 = "{0}" or material3 = "{0}" or material4 = "{0}" or material5 = "{0}" or material6 = "{0}")'.format(m)
+    builder.where_list('material', 'material{}', formatter=lambda material: material.replace('_', ' '), count = 6, numbered = True)
 
-    if where is not None:
-        params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields, 'where': where}
-    else:
-        params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields}
+    params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields}
+    builder.build_into_params(params)
 
     cargo_results = call_cargo(params, request.args)
     results_array = []
@@ -1076,10 +1149,11 @@ def get_recipe_list(limit, tables, fields):
 
 
 def get_event_list(limit, tables, fields, orderby):
-    where = None
+    builder = WhereBuilder()
 
     # Filter by date:
     if request.args.get('date'):
+        where = None
         date = request.args.get('date')
         today = datetime.today()
         if date == 'today':
@@ -1093,53 +1167,26 @@ def get_event_list(limit, tables, fields, orderby):
                 abort(404, description=error_response("No data was found for the given query.", "You must request events from either the current or next year."))
             else:
                 where = 'YEAR(date) = ' + parsed_date.strftime('%Y') + ' AND MONTH(date) = ' + parsed_date.strftime('%m') + ' AND DAYOFMONTH(date) = ' + parsed_date.strftime('%d')
+         # There's no real way to add this to the WhereBuilder without adding an entire date subsection, so we just add it raw
+        builder.where_raw(where)
 
     # Filter by year:
-    if request.args.get('year'):
-        year = request.args.get('year')
-        if where:
-            where = where + ' AND YEAR(date) = "' + year + '"'
-        else:
-            where = 'YEAR(date) = "' + year + '"'
+    builder.where('year', 'YEAR(date)')
 
     # Filter by month:
-    if request.args.get('month'):
-        month = month_to_int(request.args.get('month'))
-        if where:
-            where = where + ' AND MONTH(date) = "' + month + '"'
-        else:
-            where = 'MONTH(date) = "' + month + '"'
+    builder.where('month', 'MONTH(date)')
 
     # Filter by day:
-    if request.args.get('day'):
-        day = request.args.get('day')
-        if where:
-            where = where + ' AND DAYOFMONTH(date) = "' + day + '"'
-        else:
-            where = 'DAYOFMONTH(date) = "' + day + '"'
+    builder.where('day', 'DAYOFMONTH(date)')
 
     # Filter by event:
-    if request.args.get('event'):
-        event = request.args.get('event')
-        if where:
-            where = where + ' AND event = "' + event + '"'
-        else:
-            where = 'event = "' + event + '"'
+    buider.where('event', 'event')
 
     # Filter by type:
-    if request.args.get('type'):
-        type = request.args.get('type')
-        if type not in ['Event', 'Nook Shopping', 'Birthday', 'Recipes']:
-            abort(400, description=error_response("Could not recognize provided type.", "Ensure type is either Event, Nook Shopping, Birthday, or Recipes."))
-        if where:
-            where = where + ' AND type = "' + type + '"'
-        else:
-            where = 'type = "' + type + '"'
+    builder.where('type', 'type', validate=validate_type)
 
-    if where:
-        params = {'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'order_by': orderby, 'limit': limit, 'where': where}
-    else:
-        params = {'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'order_by': orderby, 'limit': limit}
+    params = {'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'order_by': orderby, 'limit': limit}
+    builder.build_into_params(params)
 
     cargo_results = call_cargo(params, request.args)
 
@@ -1198,20 +1245,12 @@ def format_furniture(data):
 
 
 def get_furniture_list(limit,tables,fields):
-    where = []
+    builder = WhereBuilder()
 
-    if 'category' in request.args:
-        categories_list = ['housewares', 'miscellaneous', 'wall-mounted']
-        category = request.args.get('category').lower()
-        if category not in categories_list:
-            abort(400, description=error_response('Could not recognize provided category.','Ensure category is either housewares, miscellaneous, or wall-mounted.'))
-        where.append('category = "{0}"'.format(category))
+    builder.where('category', 'category', formatter=str_lower_formatter, validate=validate_furniture_category)
 
-    if len(where) == 0:
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
-    else:
-        where = ' AND '.join(where)
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit, 'where': where }
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
+    builder.build_into_params(params)
 
     cargo_results = call_cargo(params, request.args)
     ret = [format_furniture(_) for _ in cargo_results]
@@ -1219,34 +1258,16 @@ def get_furniture_list(limit,tables,fields):
 
 
 def get_furniture_variation_list(limit,tables,fields,orderby):
-    where = []
+    builder = WhereBuilder()
 
-    if 'color' in request.args:
-        colors_list = ['aqua', 'beige', 'black', 'blue', 'brown', 'colorful', 'gray', 'green', 'orange', 'pink', 'purple', 'red', 'white', 'yellow']
-        colors = [color.lower() for color in request.args.getlist('color')]
-        for color in colors:
-            if color not in colors_list:
-                abort(400, description=error_response('Could not recognize provided color.','Ensure style is either aqua, beige, black, blue, brown, colorful, gray, green, orange, pink, purple, red, white, or yellow.'))
-        if len(colors) == 1: # If they only filtered one color
-            where.append('(color1 = "{0}" OR color2 = "{0}")'.format(colors[0]))
-        elif len(colors) == 2: # If they filtered both colors
-            where.append('((color1 = "{0}" AND color2 = "{1}") OR (color1 = "{1}" AND color2 = "{0}"))'.format(colors[0],colors[1]))
-        else:
-            abort(400, description=error_response('Invalid arguments','Cannot have more than two colors'))
+    builder.where_all_list('color', 'color{}', formatter=str_lower_formatter, validate=validate_color, count=2)
 
-    if 'pattern' in request.args:
-        pattern = request.args['pattern']
-        where.append(f'pattern = "{pattern}"')
+    builder.where('pattern', 'pattern')
 
-    if 'variation' in request.args:
-        variation = request.args['variation']
-        where.append(f'variation = "{variation}"')
+    builder.where('variation', 'variation')
 
-    if len(where) == 0:
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'order_by': orderby, 'limit': limit }
-    else:
-        where = ' AND '.join(where)
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'order_by': orderby, 'limit': limit, 'where': where }
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'order_by': orderby, 'limit': limit }
+    builder.build_into_params(params)
 
     cargo_results = call_cargo(params, request.args)
     return cargo_results
@@ -1273,40 +1294,16 @@ def format_clothing(data):
 
 
 def get_clothing_list(limit,tables,fields):
-    where = []
+    builder = WhereBuilder()
 
-    if 'category' in request.args:
-        categories_list = ['tops', 'bottoms', 'dress-up', 'headware', 'accessories', 'socks', 'shoes', 'bags', 'umbrellas']
-        category = request.args.get('category').lower()
-        if category not in categories_list:
-            abort(400, description=error_response('Could not recognize provided category.','Ensure category is either tops, bottoms, dress-up, headware, accessories, socks, shoes, bags, or umbrellas.'))
-        where.append('category = "{0}"'.format(category))
+    builder.where('category', 'category', formatter=str_lower_formatter, validate=validate_clothing_category)
 
-    if 'style' in request.args:
-        styles_list = ['active', 'cool', 'cute', 'elegant', 'gorgeous', 'simple']
-        styles = [style.lower() for style in request.args.getlist('style')]
-        for style in styles:
-            if style not in styles_list:
-                abort(400, description=error_response('Could not recognize provided style.','Ensure style is either active, cool, cute, elegant, gorgeous, or simple.'))
-        if len(styles) == 1: # If they only filtered one style
-            where.append('(style1 = "{0}" OR style2 = "{0}")'.format(styles[0]))
-        elif len(styles) == 2: # If they filtered both styles
-            where.append('((style1 = "{0}" AND style2 = "{1}") OR (style1 = "{1}" AND style2 = "{0}"))'.format(styles[0],styles[1]))
-        else:
-            abort(400, description=error_response('Invalid arguments','Cannot have more than two styles'))
+    builder.where_all_list('style','style{}', formatter=str_lower_formatter, validate=validate_clothing_style, count=2)
 
-    if 'label' in request.args:
-        label_list = ['comfy', 'everyday', 'fairy tale', 'formal', 'goth', 'outdoorsy', 'party', 'sporty', 'theatrical', 'vacation', 'work']
-        label = request.args.get('label').lower()
-        if label not in label_list:
-            abort(400, description=error_response('Could not recognize provided Label theme.','Ensure Label theme is either comfy, everyday, fairy tale, formal, goth, outdoorsy, party, sporty, theatrical, vacation, or work.'))
-        where.append('(label1 = "{0}" OR label2 = "{0}" OR label3 = "{0}" OR label4 = "{0}" OR label5 = "{0}")'.format(label))
+    builder.where_list('label', 'label{}', formatter=str_lower_formatter, validate=validate_clothing_label, numbered=True, count=5)
 
-    if len(where) == 0:
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
-    else:
-        where = ' AND '.join(where)
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit, 'where': where }
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
+    builder.build_into_params(params)
 
     cargo_results = call_cargo(params, request.args)
     ret = [format_clothing(_) for _ in cargo_results]
@@ -1334,20 +1331,12 @@ def format_photo(data):
 
 
 def get_photo_list(limit,tables,fields):
-    where = []
+    builder = WhereBuilder()
 
-    if 'category' in request.args:
-        categories_list = ['photos', 'posters']
-        category = request.args.get('category').lower()
-        if category not in categories_list:
-            abort(400, description=error_response('Could not recognize provided category.','Ensure category is either photos or posters.'))
-        where.append('category = "{0}"'.format(category))
+    builder.where('category', 'category', formatter=str_lower_formatter, validate=validate_photo_category)
 
-    if len(where) == 0:
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
-    else:
-        where = ' AND '.join(where)
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit, 'where': where }
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
+    builder.build_into_params(params)
 
     cargo_results = call_cargo(params, request.args)
     ret = [format_photo(_) for _ in cargo_results]
@@ -1383,26 +1372,12 @@ def format_interior(data):
 
 
 def get_interior_list(limit,tables,fields):
-    where = []
+    builder = WhereBuilder()
 
-    if 'color' in request.args:
-        colors_list = ['aqua', 'beige', 'black', 'blue', 'brown', 'colorful', 'gray', 'green', 'orange', 'pink', 'purple', 'red', 'white', 'yellow']
-        colors = [color.lower() for color in request.args.getlist('color')]
-        for color in colors:
-            if color not in colors_list:
-                abort(400, description=error_response('Could not recognize provided color.','Ensure style is either aqua, beige, black, blue, brown, colorful, gray, green, orange, pink, purple, red, white, or yellow.'))
-        if len(colors) == 1: # If they only filtered one color
-            where.append('(color1 = "{0}" OR color2 = "{0}")'.format(colors[0]))
-        elif len(colors) == 2: # If they filtered both colors
-            where.append('((color1 = "{0}" AND color2 = "{1}") OR (color1 = "{1}" AND color2 = "{0}"))'.format(colors[0],colors[1]))
-        else:
-            abort(400, description=error_response('Invalid arguments','Cannot have more than two colors'))
+    builder.where_all_list('color', 'color{}', formatter=str_lower_formatter, validate=validate_color, count=2)
 
-    if len(where) == 0:
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
-    else:
-        where = ' AND '.join(where)
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit, 'where': where }
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
+    builder.build_into_params(params)
 
     cargo_results = call_cargo(params, request.args)
     results_array = []
@@ -1431,13 +1406,10 @@ def format_tool(data):
 
 
 def get_tool_list(limit,tables,fields):
-    where = []
+    builder = WhereBuilder()
 
-    if len(where) == 0:
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
-    else:
-        where = ' AND '.join(where)
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit, 'where': where }
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
+    builder.build_into_params(params)
 
     cargo_results = call_cargo(params, request.args)
     ret = [format_tool(_) for _ in cargo_results]
@@ -1460,13 +1432,10 @@ def format_other_item(data):
 
 
 def get_other_item_list(limit,tables,fields):
-    where = []
+    builder = WhereBuilder()
 
-    if len(where) == 0:
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
-    else:
-        where = ' AND '.join(where)
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit, 'where': where }
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
+    builder.build_into_params(params)
 
     cargo_results = call_cargo(params, request.args)
     results_array = []
@@ -1480,30 +1449,14 @@ def get_other_item_list(limit,tables,fields):
 
 
 def get_variation_list(limit,tables,fields,orderby):
-    where = []
+    builder = WhereBuilder()
 
-    if 'color' in request.args:
-        colors_list = ['aqua', 'beige', 'black', 'blue', 'brown', 'colorful', 'gray', 'green', 'orange', 'pink', 'purple', 'red', 'white', 'yellow']
-        colors = [color.lower() for color in request.args.getlist('color')]
-        for color in colors:
-            if color not in colors_list:
-                abort(400, description=error_response('Could not recognize provided color.','Ensure style is either aqua, beige, black, blue, brown, colorful, gray, green, orange, pink, purple, red, white, or yellow.'))
-        if len(colors) == 1: # If they only filtered one color
-            where.append('(color1 = "{0}" OR color2 = "{0}")'.format(colors[0]))
-        elif len(colors) == 2: # If they filtered both colors
-            where.append('((color1 = "{0}" AND color2 = "{1}") OR (color1 = "{1}" AND color2 = "{0}"))'.format(colors[0],colors[1]))
-        else:
-            abort(400, description=error_response('Invalid arguments','Cannot have more than two colors'))
+    builder.where_all_list('color', 'color{}', formatter=str_lower_formatter, validate=validate_color, count=2)
 
-    if 'variation' in request.args:
-        variation = request.args['variation']
-        where.append(f'variation = "{variation}"')
+    builder.where('variation', 'variation')
 
-    if len(where) == 0:
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'order_by': orderby, 'limit': limit }
-    else:
-        where = ' AND '.join(where)
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'order_by': orderby, 'limit': limit, 'where': where }
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
+    builder.build_into_params(params)
 
     cargo_results = call_cargo(params, request.args)
     return cargo_results
