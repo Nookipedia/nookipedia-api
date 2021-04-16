@@ -2260,13 +2260,13 @@ components:
             - variation: White
               image_url: https://dodo.ac/np/images/1/15/3D_Glasses_%28White%29_NH_Icon.png
               colors:
-              - White
-              - Colorful
+                - White
+                - Colorful
             - variation: Black
               image_url: https://dodo.ac/np/images/2/28/3D_Glasses_%28Black%29_NH_Icon.png
               colors:
-              - Colorful
-              - Black
+                - Colorful
+                - Black
     NHRecipe:
       type: object
       properties:
