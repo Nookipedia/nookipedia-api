@@ -2040,6 +2040,7 @@ components:
               colors:
               - Aqua
               - Black
+          description: (WIP) # TODO
         notes:
           type: string
           example: ""
@@ -2131,6 +2132,7 @@ components:
           example:
             - variation: ""
               image_url: https://dodo.ac/np/images/f/fa/Axe_NH_Icon.png
+          description: (WIP) # TODO
     NHPHoto:
       type: object
       properties:
@@ -2265,6 +2267,7 @@ components:
               colors:
                 - Blue
                 - Green
+          description: (WIP) # TODO
     NHClothing:
       type: object
       properties:
@@ -2401,6 +2404,7 @@ components:
               colors:
                 - Colorful
                 - Black
+          description: (WIP) # TODO
     NHRecipe:
       type: object
       properties:
