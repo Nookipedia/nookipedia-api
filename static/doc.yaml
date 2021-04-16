@@ -2062,7 +2062,7 @@ components:
         hha_base:
           type: integer
           example: 0
-          description: (WIP) # TODO
+          description: The base value that the item provides to a player's Happy Home Academy score when placed in their home.
         sell:
           type: integer
           example: 625
@@ -2070,15 +2070,15 @@ components:
         customizable:
           type: boolean
           example: false
-          description: (WIP) # TODO
+          description: Whether or not the item is customizable via a crafting table.
         custom_kits:
           type: integer
           example: 0
-          description: (WIP) # TODO
+          description: The number of `custom_kit_type`s (e.g. Customization Kits) that are needed to customize this item. Value is 0 if the item is not customizable.
         custom_body_part:
           type: string
           example: ""
-          description: (WIP) # TODO
+          description: If the item has variations, this is the name of the furniture part that changes. For example, for many bamboo items, the custom body part is "Bamboo" as the bamboo color is able to be customized.
         version_added:
           type: string
           example: "1.0.0"
