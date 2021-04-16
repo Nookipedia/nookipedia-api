@@ -2044,6 +2044,93 @@ components:
           type: string
           example: ""
           description: Any additional miscellaneous information about the item, such as a name change from a past update.
+    NHTool:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Axe
+          description: The name of the tool.
+        url:
+          type: string
+          example: https://nookipedia.com/wiki/Item:Axe_(New_Horizons)
+          description: Link the the respective Nookipedia article.
+        uses:
+          type: integer
+          example: 100
+          description: How many times the tool can be used before breaking.
+        hha_base:
+          type: integer
+          example: 0
+          description: (WIP) # TODO
+        sell:
+          type: integer
+          example: 625
+          description: The number of bells the tool can be sold to the store for.
+        customizable:
+          type: boolean
+          example: false
+          description: (WIP) # TODO
+        custom_kits:
+          type: integer
+          example: 0
+          description: (WIP) # TODO
+        custom_body_part:
+          type: string
+          example: ""
+          description: (WIP) # TODO
+        version_added:
+          type: string
+          example: "1.0.0"
+          description: The version of *New Horizons* that the item was added. Items that were included at the game's launch have version "1.0.0".
+        unlocked:
+          type: boolean
+          example: true
+          description: Whether the item is available through legitimate gameplay. Some items are added to the game files in an update, but aren't actually made available until a subsequent update unlocks them.
+        notes:
+          type: string
+          example: ""
+          description: Any additional miscellaneous information about the item, such as a name change from a past update.
+        availability:
+          type: array
+          items:
+            type: object
+            properties:
+              from:
+                type: string
+              note:
+                type: string
+          example:
+            - from: Nook's Cranny
+              note: ""
+            - from: Crafting
+              note: ""
+          description: Where the tool may be obtained from (could be multiple sources). `from` is a brief description of the source; `note`, when provided, provides additional details.
+        buy:
+          type: array
+          items:
+            type: object
+            properties:
+              price:
+                type: integer
+              currency:
+                type: string
+          example:
+            - price: 2550
+            - currency: Bells
+          description: 'An array of prices, for when the recipe may be purchased with Bells, Nook Miles, etc..'
+        variations:
+          type: array
+          items:
+            type: object
+            properties:
+              variation:
+                type: string
+              image_url:
+                type: string
+          example:
+            - variation: ""
+              image_url: https://dodo.ac/np/images/f/fa/Axe_NH_Icon.png
     NHClothing:
       type: object
       properties:
@@ -2087,8 +2174,8 @@ components:
           description: The time of the year that the clothing is available.
         version_added:
           type: string
-          example: 1.0.0
-          description: The game version the clothing was introduced.
+          example: "1.0.0"
+          description: The version of *New Horizons* that the item was added. Items that were included at the game's launch have version "1.0.0".
         unlocked:
           type: boolean
           example: true
