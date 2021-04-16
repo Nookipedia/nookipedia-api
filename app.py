@@ -1975,7 +1975,7 @@ def get_nh_furniture_all():
     stitched = stitch_variation_list(furniture_list, variation_list)
 
     if request.args.get('excludedetails') == 'true':
-        return jsonify([_['en_name'] for _ in stitched])
+        return jsonify([_['name'] for _ in stitched])
     else:
         return jsonify(stitched)
 
@@ -2026,7 +2026,7 @@ def get_nh_clothing_all():
     stitched = stitch_variation_list(clothing_list, variation_list)
 
     if request.args.get('excludedetails') == 'true':
-        return jsonify([_['en_name'] for _ in stitched])
+        return jsonify([_['name'] for _ in stitched])
     else:
         return jsonify(stitched)
 
@@ -2077,7 +2077,7 @@ def get_nh_photo_all():
     stitched = stitch_variation_list(photo_list, variation_list)
 
     if request.args.get('excludedetails') == 'true':
-        return jsonify([_['en_name'] for _ in stitched])
+        return jsonify([_['name'] for _ in stitched])
     else:
         return jsonify(stitched)
 
@@ -2128,7 +2128,7 @@ def get_nh_tool_all():
     stitched = stitch_variation_list(tool_list, variation_list)
 
     if request.args.get('excludedetails') == 'true':
-        return jsonify([_['en_name'] for _ in stitched])
+        return jsonify([_['name'] for _ in stitched])
     else:
         return jsonify(stitched)
 
