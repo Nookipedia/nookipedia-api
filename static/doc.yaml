@@ -2131,6 +2131,140 @@ components:
           example:
             - variation: ""
               image_url: https://dodo.ac/np/images/f/fa/Axe_NH_Icon.png
+    NHPHoto:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Admiral's Photo
+          description: The name of the photo.
+        url:
+          type: string
+          example: https://nookipedia.com/wiki/Item:Admiral's_Photo_(New_Horizons)
+          description: Link to the respective Nookipedia article.
+        category:
+          type: string
+          example: Accessories
+          description: The category of item as shown in the player's inventory.
+          enum:
+            - Photos
+            - Posters
+        sell:
+          type: integer
+          example: 10
+          description: The number of Bells the photo can be sold to the store for.
+        customizable:
+          type: boolean
+          example: false
+          description: Whether or not the item is customizable via a crafting table.
+        custom_kits:
+          type: integer
+          example: 1
+          description: The number of `custom_kit_type`s (e.g. Customization Kits) that are needed to customize this item. Value is 0 if the item is not customizable.
+        custom_body_part:
+          type: string
+          example: "Frame"
+          description: If the item has variations, this is the name of the furniture part that changes. For example, for many bamboo items, the custom body part is "Bamboo" as the bamboo color is able to be customized.
+        interactable:
+          type: boolean
+          example: true
+          description: (WIP) # TODO
+        version_added:
+          type: string
+          example: "1.0.0"
+          description: The version of *New Horizons* that the item was added. Items that were included at the game's launch have version "1.0.0".
+        unlocked:
+          type: boolean
+          example: true
+          description: Whether the item is available through legitimate gameplay. Some items are added to the game files in an update, but aren't actually made available until a subsequent update unlocks them.
+        grid_width:
+          type: number
+          format: float
+          example: 2.0
+          description: The number of widthwise grid spaces this item takes up.
+        grid_length:
+          type: number
+          format: float
+          example: 1.0
+          description: The number of lengthwise grid spaces this item takes up.
+        availability:
+          type: array
+          items:
+            type: object
+            properties:
+              from:
+                type: string
+              note:
+                type: string
+          example:
+            - from: Friendship
+              note: ""
+          description: Where the photo may be obtained from (could be multiple sources). `from` is a brief description of the source; `note`, when provided, provides additional details.
+        buy:
+          type: array
+          items:
+            type: object
+            properties:
+              price:
+                type: integer
+              currency:
+                type: string
+          example: []
+          description: 'An array of prices, for when the recipe may be purchased with Bells, Nook Miles, etc..'
+        variations:
+          type: array
+          items:
+            type: object
+            properties:
+              variation:
+                type: string
+              image_url:
+                type: string
+              colors:
+                type: array
+                items:
+                  type: string
+          example:
+            - variation: Natural Wood
+              image_url: https://dodo.ac/np/images/7/72/Admiral%27s_Photo_%28Natural_Wood%29_NH_Icon.png
+              colors:
+                - Blue
+                - Green
+            - variation: Dark Wood
+              image_url: https://dodo.ac/np/images/e/e5/Admiral%27s_Photo_%28Dark_Wood%29_NH_Icon.png
+              colors:
+                - Blue
+                - Green
+            - variation: Pastel
+              image_url: https://dodo.ac/np/images/9/9a/Admiral%27s_Photo_%28Pastel%29_NH_Icon.png
+              colors:
+                - Blue
+                - Green
+            - variation: White
+              image_url: https://dodo.ac/np/images/1/16/Admiral%27s_Photo_%28White%29_NH_Icon.png
+              colors:
+                - Blue
+                - Green
+            - variation: Pop
+              image_url: https://dodo.ac/np/images/b/be/Admiral%27s_Photo_%28Pop%29_NH_Icon.png
+              colors:
+                - Blue
+                - Green
+            - variation: Colorful
+              image_url: https://dodo.ac/np/images/5/51/Admiral%27s_Photo_%28Colorful%29_NH_Icon.png
+              colors:
+                - Blue
+                - Green
+            - variation: Silver
+              image_url: https://dodo.ac/np/images/e/ed/Admiral%27s_Photo_%28Silver%29_NH_Icon.png
+              colors:
+                - Blue
+                - Green
+            - variation: Gold
+              image_url: https://dodo.ac/np/images/c/cf/Admiral%27s_Photo_%28Gold%29_NH_Icon.png
+              colors:
+                - Blue
+                - Green
     NHClothing:
       type: object
       properties:
