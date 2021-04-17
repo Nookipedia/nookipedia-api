@@ -388,7 +388,7 @@ def format_coalesced_list(data, formatter, name):
 
 def coalesce_fields_as_object_list(data, elements, output_name, *fields):
     names = [_[0] for _ in fields]
-    keys = [tuple([_[1].format(i) for _ in fields]) for i in range(1, elements + 1)]
+    keys = [tuple(_[1].format(i) for _ in fields) for i in range(1, elements + 1)]
     data[output_name] = []
     # Go through and create a JSON object list
     for key_group in keys:
@@ -565,6 +565,13 @@ def between_version(minimum, maximum):
                 return False
         return True
 
+def params_where(params, where):
+    """Puts a where condition into the parameters;\n
+    `params` is a dict\n
+    `where` is a list of condition strings"""
+    if where:
+        params['where'] = ' AND '.join(where)
+
 def format_villager(data):
     games = ['dnm', 'ac', 'e_plus', 'ww', 'cf', 'nl', 'wa', 'nh', 'film', 'hhd', 'pc']
 
@@ -671,31 +678,22 @@ def format_villager(data):
 
 
 def get_villager_list(limit, tables, join, fields):
-    where = None
+    where = []
 
     # Filter by name:
     if request.args.get('name'):
         villager = request.args.get('name').replace('_', ' ').capitalize()
-        if where:
-            where = where + ' AND villager.name = "' + villager + '"'
-        else:
-            where = 'villager.name = "' + villager + '"'
+        where.append('villager.name = "' + villager + '"')
 
     # Filter by birth month:
     if request.args.get('birthmonth'):
         month = month_to_string(request.args.get('birthmonth'))
-        if where:
-            where = where + ' AND villager.birthday_month = "' + month + '"'
-        else:
-            where = 'villager.birthday_month = "' + month + '"'
+        where.append('villager.birthday_month = "' + month + '"')
 
     # Filter by birth day:
     if request.args.get('birthday'):
         day = request.args.get('birthday')
-        if where:
-            where = where + ' AND villager.birthday_day = "' + day + '"'
-        else:
-            where = 'villager.birthday_day = "' + day + '"'
+        where.append('villager.birthday_day = "' + day + '"')
 
     # Filter by personality:
     if request.args.get('personality'):
@@ -706,11 +704,8 @@ def get_villager_list(limit, tables, join, fields):
 
         if personality == 'sisterly':
             personality = 'big sister'
-
-        if where:
-            where = where + ' AND villager.personality = "' + personality + '"'
-        else:
-            where = 'villager.personality = "' + personality + '"'
+        
+        where.append('villager.personality = "' + personality + '"')
 
     # Filter by species:
     if request.args.get('species'):
@@ -724,25 +719,17 @@ def get_villager_list(limit, tables, join, fields):
         elif species == 'rhino':
             species = 'rhinoceros'
 
-        if where:
-            where = where + ' AND villager.species = "' + species + '"'
-        else:
-            where = 'villager.species = "' + species + '"'
+        where.append('villager.species = "' + species + '"')
 
     # Filter by game:
     if request.args.get('game'):
         games = request.args.getlist("game")
         for game in games:
             game = game.replace('_', ' ')
-            if where:
-                where = where + ' AND villager.' + game + ' = "1"'
-            else:
-                where = 'villager.' + game + ' = "1"'
+            where.append('villager.' + game + ' = "1"')
 
-    if where:
-        params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'join_on': join, 'fields': fields, 'where': where}
-    else:
-        params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'join_on': join, 'fields': fields}
+    params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'join_on': join, 'fields': fields}
+    params_where(params, where)
 
     print(str(params))
     if request.args.get('excludedetails') == 'true':
@@ -999,19 +986,17 @@ def format_art(data):
 
 
 def get_art_list(limit, tables, fields):
-    where = None
+    where = []
 
     if request.args.get('hasfake'):
         fake = request.args.get('hasfake').lower()
         if fake == 'true':
-            where = 'has_fake = true'
+            where.append('has_fake = true')
         elif fake == 'false':
-            where = 'has_fake = false'
+            where.append('has_fake = false')
 
-    if where:
-        params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields, 'where': where}
-    else:
-        params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields}
+    params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields}
+    params_where(params, where)
 
     cargo_results = call_cargo(params, request.args)
     results_array = []
@@ -1046,7 +1031,7 @@ def format_recipe(data):
 
 
 def get_recipe_list(limit, tables, fields):
-    where = None
+    where = []
 
     if 'material' in request.args:
         materials = request.args.getlist('material')
@@ -1054,15 +1039,10 @@ def get_recipe_list(limit, tables, fields):
             abort(400, description=error_response('Invalid arguments', 'Cannot have more than six materials'))
         for m in materials:
             m.replace('_', ' ')
-            if where is None:
-                where = '(material1 = "{0}" or material2 = "{0}" or material3 = "{0}" or material4 = "{0}" or material5 = "{0}" or material6 = "{0}")'.format(m)
-            else:
-                where += ' AND (material1 = "{0}" or material2 = "{0}" or material3 = "{0}" or material4 = "{0}" or material5 = "{0}" or material6 = "{0}")'.format(m)
+            where.append('(material1 = "{0}" or material2 = "{0}" or material3 = "{0}" or material4 = "{0}" or material5 = "{0}" or material6 = "{0}")'.format(m))
 
-    if where is not None:
-        params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields, 'where': where}
-    else:
-        params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields}
+    params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields}
+    params_where(params, where)
 
     cargo_results = call_cargo(params, request.args)
     results_array = []
@@ -1076,14 +1056,14 @@ def get_recipe_list(limit, tables, fields):
 
 
 def get_event_list(limit, tables, fields, orderby):
-    where = None
+    where = []
 
     # Filter by date:
     if request.args.get('date'):
         date = request.args.get('date')
         today = datetime.today()
         if date == 'today':
-            where = 'YEAR(date) = ' + today.strftime('%Y') + ' AND MONTH(date) = ' + today.strftime('%m') + ' AND DAYOFMONTH(date) = ' + today.strftime('%d')
+            where.append('YEAR(date) = ' + today.strftime('%Y') + ' AND MONTH(date) = ' + today.strftime('%m') + ' AND DAYOFMONTH(date) = ' + today.strftime('%d'))
         else:
             try:
                 parsed_date = parser.parse(date)
@@ -1092,54 +1072,37 @@ def get_event_list(limit, tables, fields, orderby):
             if parsed_date.strftime('%Y') not in [str(today.year), str(today.year + 1)]:
                 abort(404, description=error_response("No data was found for the given query.", "You must request events from either the current or next year."))
             else:
-                where = 'YEAR(date) = ' + parsed_date.strftime('%Y') + ' AND MONTH(date) = ' + parsed_date.strftime('%m') + ' AND DAYOFMONTH(date) = ' + parsed_date.strftime('%d')
+                where.append('YEAR(date) = ' + parsed_date.strftime('%Y') + ' AND MONTH(date) = ' + parsed_date.strftime('%m') + ' AND DAYOFMONTH(date) = ' + parsed_date.strftime('%d'))
 
     # Filter by year:
     if request.args.get('year'):
         year = request.args.get('year')
-        if where:
-            where = where + ' AND YEAR(date) = "' + year + '"'
-        else:
-            where = 'YEAR(date) = "' + year + '"'
+        where.append('YEAR(date) = "' + year + '"')
 
     # Filter by month:
     if request.args.get('month'):
         month = month_to_int(request.args.get('month'))
-        if where:
-            where = where + ' AND MONTH(date) = "' + month + '"'
-        else:
-            where = 'MONTH(date) = "' + month + '"'
+        where.append('MONTH(date) = "' + month + '"')
 
     # Filter by day:
     if request.args.get('day'):
         day = request.args.get('day')
-        if where:
-            where = where + ' AND DAYOFMONTH(date) = "' + day + '"'
-        else:
-            where = 'DAYOFMONTH(date) = "' + day + '"'
+        where.append('DAYOFMONTH(date) = "' + day + '"')
 
     # Filter by event:
     if request.args.get('event'):
         event = request.args.get('event')
-        if where:
-            where = where + ' AND event = "' + event + '"'
-        else:
-            where = 'event = "' + event + '"'
+        where.append('event = "' + event + '"')
 
     # Filter by type:
     if request.args.get('type'):
         type = request.args.get('type')
         if type not in ['Event', 'Nook Shopping', 'Birthday', 'Recipes']:
             abort(400, description=error_response("Could not recognize provided type.", "Ensure type is either Event, Nook Shopping, Birthday, or Recipes."))
-        if where:
-            where = where + ' AND type = "' + type + '"'
-        else:
-            where = 'type = "' + type + '"'
+        where.append('type = "' + type + '"')
 
-    if where:
-        params = {'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'order_by': orderby, 'limit': limit, 'where': where}
-    else:
-        params = {'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'order_by': orderby, 'limit': limit}
+    params = {'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'order_by': orderby, 'limit': limit}
+    params_where(params, where)
 
     cargo_results = call_cargo(params, request.args)
 
@@ -1207,11 +1170,8 @@ def get_furniture_list(limit,tables,fields):
             abort(400, description=error_response('Could not recognize provided category.','Ensure category is either housewares, miscellaneous, or wall-mounted.'))
         where.append('category = "{0}"'.format(category))
 
-    if len(where) == 0:
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
-    else:
-        where = ' AND '.join(where)
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit, 'where': where }
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
+    params_where(params, where)
 
     cargo_results = call_cargo(params, request.args)
     ret = [format_furniture(_) for _ in cargo_results]
@@ -1242,12 +1202,9 @@ def get_furniture_variation_list(limit,tables,fields,orderby):
         variation = request.args['variation']
         where.append(f'variation = "{variation}"')
 
-    if len(where) == 0:
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'order_by': orderby, 'limit': limit }
-    else:
-        where = ' AND '.join(where)
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'order_by': orderby, 'limit': limit, 'where': where }
-
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'order_by': orderby, 'limit': limit }
+    params_where(params, where)
+    
     cargo_results = call_cargo(params, request.args)
     return cargo_results
 
@@ -1302,11 +1259,8 @@ def get_clothing_list(limit,tables,fields):
             abort(400, description=error_response('Could not recognize provided Label theme.','Ensure Label theme is either comfy, everyday, fairy tale, formal, goth, outdoorsy, party, sporty, theatrical, vacation, or work.'))
         where.append('(label1 = "{0}" OR label2 = "{0}" OR label3 = "{0}" OR label4 = "{0}" OR label5 = "{0}")'.format(label))
 
-    if len(where) == 0:
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
-    else:
-        where = ' AND '.join(where)
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit, 'where': where }
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
+    params_where(params, where)
 
     cargo_results = call_cargo(params, request.args)
     ret = [format_clothing(_) for _ in cargo_results]
@@ -1343,11 +1297,8 @@ def get_photo_list(limit,tables,fields):
             abort(400, description=error_response('Could not recognize provided category.','Ensure category is either photos or posters.'))
         where.append('category = "{0}"'.format(category))
 
-    if len(where) == 0:
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
-    else:
-        where = ' AND '.join(where)
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit, 'where': where }
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
+    params_where(params, where)
 
     cargo_results = call_cargo(params, request.args)
     ret = [format_photo(_) for _ in cargo_results]
@@ -1398,11 +1349,8 @@ def get_interior_list(limit,tables,fields):
         else:
             abort(400, description=error_response('Invalid arguments','Cannot have more than two colors'))
 
-    if len(where) == 0:
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
-    else:
-        where = ' AND '.join(where)
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit, 'where': where }
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
+    params_where(params, where)
 
     cargo_results = call_cargo(params, request.args)
     results_array = []
@@ -1433,11 +1381,8 @@ def format_tool(data):
 def get_tool_list(limit,tables,fields):
     where = []
 
-    if len(where) == 0:
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
-    else:
-        where = ' AND '.join(where)
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit, 'where': where }
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
+    params_where(params, where)
 
     cargo_results = call_cargo(params, request.args)
     ret = [format_tool(_) for _ in cargo_results]
@@ -1462,11 +1407,8 @@ def format_other_item(data):
 def get_other_item_list(limit,tables,fields):
     where = []
 
-    if len(where) == 0:
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
-    else:
-        where = ' AND '.join(where)
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit, 'where': where }
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
+    params_where(params, where)
 
     cargo_results = call_cargo(params, request.args)
     results_array = []
@@ -1499,12 +1441,9 @@ def get_variation_list(limit,tables,fields,orderby):
         variation = request.args['variation']
         where.append(f'variation = "{variation}"')
 
-    if len(where) == 0:
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'order_by': orderby, 'limit': limit }
-    else:
-        where = ' AND '.join(where)
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'order_by': orderby, 'limit': limit, 'where': where }
-
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'order_by': orderby, 'limit': limit }
+    params_where(params, where)
+    
     cargo_results = call_cargo(params, request.args)
     return cargo_results
 
