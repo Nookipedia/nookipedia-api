@@ -1866,7 +1866,7 @@ components:
         item_set:
           type: string
           example: ""
-          description: The [furniture set](https://nookipedia.com/wiki/Set) the item is a part of, if ay. A set is a smaller collection of related furniture items. If the item is not part of a set, this will be an empty string.
+          description: The [furniture set](https://nookipedia.com/wiki/Set) the item is a part of, if any. A set is a smaller collection of related furniture items. If the item is not part of a set, this will be an empty string.
         hha_category:
           type: string
           example: Dresser
@@ -2450,6 +2450,134 @@ components:
                 - Colorful
                 - Black
           description: (WIP) # TODO
+    NHInterior:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Abstract Wall
+          description: The name of the interior.
+        url:
+          type: string
+          example: 'https://nookipedia.com/wiki/Item:Abstract_Wall_(New_Horizons)'
+          description: Link to the respective Nookipedia article.
+        image_url:
+          type: string
+          example: 'https://dodo.ac/np/images/2/2d/Abstract_Wall_NH_Icon.png'
+          description: Image of the interior. dodo.ac is Nookipedia's CDN server.
+        category:
+          type: string
+          example: Wallpaper
+          description: The category of item as shown in the player's inventory.
+          enum:
+            - Floors
+            - Wallpaper
+            - Rugs
+        item_series:
+          type: string
+          example: ""
+          description: The [furniture series](https://nookipedia.com/wiki/Series_(furniture)) the item is a part of, if any. A series is a collection of furniture and interior items, all with the same theme. If the item is not part of a series, this will be an empty string.
+        item_set:
+          type: string
+          example: ""
+          description: The [furniture set](https://nookipedia.com/wiki/Set) the item is a part of, if any. A set is a smaller collection of related furniture items. If the item is not part of a set, this will be an empty string.
+        hha_category:
+          type: string
+          example: Dresser
+          description: The HHA category the item is a part of, if any. If the item does not have an HHA category, this will be an empty string.
+        hha_base:
+          type: integer
+          example: 0
+          description: The base value that the item provides to a player's Happy Home Academy score when placed in their home.
+        tag:
+          type: string
+          example: Dresser
+          description: The tag of an item, if any, which denotes a specific use or relation to an event. Tags are determined by Nintendo. Examples include "Chair", "Musical Instrument", and "Mario". If the item does not have a tag, this will be an empty string.
+        sell:
+          type: integer
+          example: 200
+          description: The number of Bells the interior can be sold to Nook's store for.
+        vfx:
+          type: boolean
+          example: false
+          description: (WIP) # TODO
+        version_added:
+          type: string
+          example: "1.0.0"
+          description: The version of *New Horizons* that the item was added. Items that were included at the game's launch have version "1.0.0".
+        unlocked:
+          type: boolean
+          example: true
+          description: Whether the item is available through legitimate gameplay. Some items are added to the game files in an update, but aren't actually made available until a subsequent update unlocks them.
+        notes:
+          type: string
+          example: ""
+          description: Any additional miscellaneous information about the item, such as a name change from a past update.
+        grid_width:
+          type: number
+          format: float
+          example: 2.0
+          description: The number of widthwise grid spaces this item takes up.
+        grid_length:
+          type: number
+          format: float
+          example: 1.0
+          description: The number of lengthwise grid spaces this item takes up.
+        themes:
+          type: array
+          items:
+            type: string
+          example:
+            - Shop
+            - Facility
+          description: A list of [themes](https://nookipedia.com/wiki/Theme_(furniture)) (if any) that the item belongs to.
+        colors:
+          type: string
+          example:
+            - White
+            - Colorful
+          description: (WIP) # TODO
+          enum:
+            - Aqua
+            - Beige
+            - Black
+            - Blue
+            - Brown
+            - Colorful
+            - Gray
+            - Green
+            - Orange
+            - Pink
+            - Purple
+            - Red
+            - White
+            - Yellow
+        availability:
+            type: array
+            items:
+              type: object
+              properties:
+                from:
+                  type: string
+                note:
+                  type: string
+            example:
+              - from: Nook's
+                note: ""
+            description: Where the clothing may be obtained from (could be multiple sources). `from` is a brief description of the source; `note`, when provided, provides additional details.
+        buy:
+          type: array
+          items:
+            type: object
+            properties:
+              price:
+                type: integer
+              currency:
+                type: string
+          example:
+            - price: 1560
+              currency: Bells
+          description: 'An array of prices, for when the recipe may be purchased with Bells, Nook Miles, etc..'
     NHRecipe:
       type: object
       properties:
