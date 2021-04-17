@@ -2021,6 +2021,21 @@ components:
                 type: array
                 items:
                   type: string
+                  enum:
+                    - Aqua
+                    - Beige
+                    - Black
+                    - Blue
+                    - Brown
+                    - Colorful
+                    - Gray
+                    - Green
+                    - Orange
+                    - Pink
+                    - Purple
+                    - Red
+                    - White
+                    - Yellow
           example:
             - variation: Brown
               pattern: ""
@@ -2226,6 +2241,21 @@ components:
                 type: array
                 items:
                   type: string
+                  enum:
+                    - Aqua
+                    - Beige
+                    - Black
+                    - Blue
+                    - Brown
+                    - Colorful
+                    - Gray
+                    - Green
+                    - Orange
+                    - Pink
+                    - Purple
+                    - Red
+                    - White
+                    - Yellow
           example:
             - variation: Natural Wood
               image_url: https://dodo.ac/np/images/7/72/Admiral%27s_Photo_%28Natural_Wood%29_NH_Icon.png
@@ -2393,6 +2423,21 @@ components:
                 type: array
                 items:
                   type: string
+                  enum:
+                    - Aqua
+                    - Beige
+                    - Black
+                    - Blue
+                    - Brown
+                    - Colorful
+                    - Gray
+                    - Green
+                    - Orange
+                    - Pink
+                    - Purple
+                    - Red
+                    - White
+                    - Yellow
           example:
             - variation: White
               image_url: https://dodo.ac/np/images/1/15/3D_Glasses_%28White%29_NH_Icon.png
