@@ -2577,7 +2577,130 @@ components:
           example:
             - price: 1560
               currency: Bells
-          description: 'An array of prices, for when the recipe may be purchased with Bells, Nook Miles, etc..'
+          description: 'An array of prices, for when the interior may be purchased with Bells, Nook Miles, etc..'
+    NHItem:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Acorn
+          description: The name of the item.
+        url:
+          type: string
+          example: 'https://nookipedia.com/wiki/Item:Acorn_(New_Horizons)'
+          description: Link to the respective Nookipedia article.
+        image_url:
+          type: string
+          example: 'https://dodo.ac/np/images/9/9f/Acorn_NH_Icon.png'
+          description: Image of the interior. dodo.ac is Nookipedia's CDN server.
+        stack:
+          type: integer
+          example: 30
+          description: How much the item can stack up to in a single inventory slot.
+        hha_base:
+          type: integer
+          example: 0
+          description: The base value that the item provides to a player's Happy Home Academy score when placed in their home.
+        sell:
+          type: integer
+          example: 200
+          description: The number of bells the item can be sold to Nook's store for.
+        is_fence:
+          type: boolean
+          example: false
+          description: Whether or not the item is a fence or not.
+        material_type:
+          type: string
+          example: Tree
+          description: (WIP) # TODO
+          enum:
+            - ""
+            - Bamboo
+            - Mushroom
+            - Trash
+            - Wood
+            - Ore
+            - Snowflake
+            - Tree
+            - Ornament
+            - Fruit
+            - Underwater
+            - Other
+            - Leaf
+            - Shell
+            - Flower
+            - Star Fragment
+            - Feather
+            - Egg
+            - Plant
+        material_seasonality:
+          type: string
+          example: Autumn
+          description: (WIP) # TODO
+        material_sort:
+          type: integer
+          example: 3
+          description: (WIP) # TODO
+        material_name_sort:
+          type: integer
+          example: 0
+          description: (WIP) # TODO
+        material_seasonality_sort:
+          type: integer
+          example: 3
+          description: (WIP) # TODO
+        edible:
+          type: boolean
+          example: false
+          description: Whether the item is edible or not.
+        plant_type:
+          type: string
+          example: ""
+          description: (WIP) # TODO
+          enum:
+            - ""
+            - Pumpkin
+            - Flower
+            - Bush
+            - Tree
+        version_added:
+          type: string
+          example: "1.0.0"
+          description: The version of *New Horizons* that the item was added. Items that were included at the game's launch have version "1.0.0".
+        unlocked:
+          type: boolean
+          example: true
+          description: Whether the item is available through legitimate gameplay. Some items are added to the game files in an update, but aren't actually made available until a subsequent update unlocks them.
+        notes:
+          type: string
+          example: ""
+          description: Any additional miscellaneous information about the item, such as a name change from a past update.
+        availability:
+          type: array
+          items:
+            type: object
+            properties:
+              from:
+                type: string
+              note:
+                type: string
+          example:
+            - from: Nook's
+              note: ""
+          description: Where the clothing may be obtained from (could be multiple sources). `from` is a brief description of the source; `note`, when provided, provides additional details.
+        buy:
+          type: array
+          items:
+            type: object
+            properties:
+              price:
+                type: integer
+              currency:
+                type: string
+          example:
+            - price: 280
+              currency: Bells
+          description: An array of prices, for when the interior may be purchased with Bells, Nook Miles, etc..
     NHRecipe:
       type: object
       properties:
