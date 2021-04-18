@@ -7,7 +7,7 @@ from nookipedia import api, db, errors
 from nookipedia.cache import cache
 
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="../static")
 CORS(app)
 app.config['JSON_SORT_KEYS'] = False  # Prevent from automatically sorting JSON alphabetically
 app.config['SECRET_KEY'] = config.get('APP', 'SECRET_KEY')
