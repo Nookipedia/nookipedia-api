@@ -13,7 +13,7 @@ def deep_unescape(data):
     elif isinstance(data, (tuple, list)):
         return [deep_unescape(e) for e in data]
     elif isinstance(data, dict):
-        return {k:deep_unescape(v) for k,v in data.items()}
+        return {k: deep_unescape(v) for k, v in data.items()}
     else:
         return data
 
@@ -24,27 +24,27 @@ def month_to_int(month):
     month = month.lower()
     try:
         if month.isdigit():
-            month = month.lstrip('0')
-            if month in ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']:
+            month = month.lstrip("0")
+            if month in ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]:
                 return str(month)
             else:
                 return None
-        elif month == 'current':
-            return datetime.now().strftime("%m").lstrip('0')
+        elif month == "current":
+            return datetime.now().strftime("%m").lstrip("0")
         else:
             switcher = {
-                'jan': '1',
-                'feb': '2',
-                'mar': '3',
-                'apr': '4',
-                'may': '5',
-                'jun': '6',
-                'jul': '7',
-                'aug': '8',
-                'sep': '9',
-                'oct': '10',
-                'nov': '11',
-                'dec': '12'
+                "jan": "1",
+                "feb": "2",
+                "mar": "3",
+                "apr": "4",
+                "may": "5",
+                "jun": "6",
+                "jul": "7",
+                "aug": "8",
+                "sep": "9",
+                "oct": "10",
+                "nov": "11",
+                "dec": "12",
             }
 
             return switcher.get(month.lower()[0:3], None)
@@ -58,21 +58,21 @@ def month_to_string(month):
     month = month.lower()
     try:
         if month.isdigit():
-            month = month.lstrip('0')
-            if month in ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']:
+            month = month.lstrip("0")
+            if month in ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]:
                 switcher = {
-                    '1': 'January',
-                    '2': 'February',
-                    '3': 'March',
-                    '4': 'April',
-                    '5': 'May',
-                    '6': 'June',
-                    '7': 'July',
-                    '8': 'August',
-                    '9': 'September',
-                    '10': 'October',
-                    '11': 'November',
-                    '12': 'December'
+                    "1": "January",
+                    "2": "February",
+                    "3": "March",
+                    "4": "April",
+                    "5": "May",
+                    "6": "June",
+                    "7": "July",
+                    "8": "August",
+                    "9": "September",
+                    "10": "October",
+                    "11": "November",
+                    "12": "December",
                 }
 
                 return switcher.get(month.lower()[0:3], None)
@@ -80,18 +80,18 @@ def month_to_string(month):
                 return None
         else:
             switcher = {
-                'jan': 'January',
-                'feb': 'February',
-                'mar': 'March',
-                'apr': 'April',
-                'may': 'May',
-                'jun': 'June',
-                'jul': 'July',
-                'aug': 'August',
-                'sep': 'September',
-                'oct': 'October',
-                'nov': 'November',
-                'dec': 'December'
+                "jan": "January",
+                "feb": "February",
+                "mar": "March",
+                "apr": "April",
+                "may": "May",
+                "jun": "June",
+                "jul": "July",
+                "aug": "August",
+                "sep": "September",
+                "oct": "October",
+                "nov": "November",
+                "dec": "December",
             }
 
             return switcher.get(month.lower()[0:3], None)
@@ -100,20 +100,20 @@ def month_to_string(month):
 
 
 def as_bool(value):
-    if value == '0':
+    if value == "0":
         return False
-    elif value == '1':
+    elif value == "1":
         return True
     else:
         return value
 
 
 def as_int(value):
-    return int('0' + value)
+    return int("0" + value)
 
 
 def as_float(value):
-    return float('0' + value)
+    return float("0" + value)
 
 
 def format_as_type(data, formatter, *args):
@@ -173,23 +173,43 @@ def exact_version(version):
 
 
 def between_version(minimum, maximum):
-    version = request.headers.get('Accept-Version', 'latest')
-    if version == 'latest':
+    version = request.headers.get("Accept-Version", "latest")
+    if version == "latest":
         return maximum is None
-    version_match = re.match(r'^(\d+)(?:\.(\d+)(?:\.(\d+))?)?$', version)
-    minimum_match = re.match(r'^(\d+)(?:\.(\d+)(?:\.(\d+))?)?$', minimum or '')
-    maximum_match = re.match(r'^(\d+)(?:\.(\d+)(?:\.(\d+))?)?$', maximum or '')
+    version_match = re.match(r"^(\d+)(?:\.(\d+)(?:\.(\d+))?)?$", version)
+    minimum_match = re.match(r"^(\d+)(?:\.(\d+)(?:\.(\d+))?)?$", minimum or "")
+    maximum_match = re.match(r"^(\d+)(?:\.(\d+)(?:\.(\d+))?)?$", maximum or "")
     if version_match is None:
-        abort(400, description=error_response('Invalid header arguments','Accept-Version must be `#`, `#.#`, `#.#.#`, or latest. (defaults to latest, if not supplied)'))
+        abort(
+            400,
+            description=error_response(
+                "Invalid header arguments",
+                "Accept-Version must be `#`, `#.#`, `#.#.#`, or latest. (defaults to latest, if not supplied)",
+            ),
+        )
     elif minimum is not None and minimum_match is None:
-        abort(500, description=error_response('Error while checking Accept-Version','Minimum version must be `#`, `#.#`, or `#.#.#`'))
+        abort(
+            500,
+            description=error_response(
+                "Error while checking Accept-Version",
+                "Minimum version must be `#`, `#.#`, or `#.#.#`",
+            ),
+        )
     elif maximum is not None and maximum_match is None:
-        abort(500, description=error_response('Error while checking Accept-Version','Maximum version must be `#`, `#.#`, or `#.#.#`'))
+        abort(
+            500,
+            description=error_response(
+                "Error while checking Accept-Version",
+                "Maximum version must be `#`, `#.#`, or `#.#.#`",
+            ),
+        )
     else:
         version_numbers = version_match.groups()
-        minimum_numbers = minimum_match.groups() if minimum is not None else ('0', '0', '0')
-        maximum_numbers = maximum_match.groups() if maximum is not None else ('999', '999', '999')
-        for version_number, minimum_number, maximum_number in zip(version_numbers, minimum_numbers, maximum_numbers):
+        minimum_numbers = minimum_match.groups() if minimum is not None else ("0", "0", "0")
+        maximum_numbers = maximum_match.groups() if maximum is not None else ("999", "999", "999")
+        for version_number, minimum_number, maximum_number in zip(
+            version_numbers, minimum_numbers, maximum_numbers
+        ):
             if maximum_number is None:
                 return True
             if minimum_number is None:
@@ -208,4 +228,4 @@ def params_where(params, where):
     `params` is a dict\n
     `where` is a list of condition strings"""
     if where:
-        params['where'] = ' AND '.join(where)
+        params["where"] = " AND ".join(where)

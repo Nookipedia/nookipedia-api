@@ -9,8 +9,8 @@ from nookipedia.cache import cache
 
 app = Flask(__name__, static_folder="../static")
 CORS(app)
-app.config['JSON_SORT_KEYS'] = False  # Prevent from automatically sorting JSON alphabetically
-app.config['SECRET_KEY'] = config.get('APP', 'SECRET_KEY')
+app.config["JSON_SORT_KEYS"] = False  # Prevent from automatically sorting JSON alphabetically
+app.config["SECRET_KEY"] = config.get("APP", "SECRET_KEY")
 
 
 @app.teardown_appcontext
@@ -20,7 +20,7 @@ def teardown(exception):
 
 cache.init_app(app)
 
-cache.set('session', None)
+cache.set("session", None)
 
 configure_dashboard(app)
 

@@ -4,11 +4,11 @@ from flask import current_app, Blueprint
 router = Blueprint("home", __name__)
 
 
-@router.route('/')
+@router.route("/")
 def static_index():
-    return current_app.send_static_file('index.html')
+    return current_app.send_static_file("index.html")
 
 
-@router.route('/doc')
+@router.route("/doc")
 def static_doc():
-    return current_app.send_static_file('doc.html')
+    return current_app.send_static_file("doc.html")

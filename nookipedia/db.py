@@ -5,7 +5,7 @@ from nookipedia.config import DATABASE
 
 # Connect to the database:
 def get_db():
-    db = getattr(g, '_database', None)
+    db = getattr(g, "_database", None)
     if db is None:
         db = g._database = sqlite3.connect(DATABASE)
     return db
@@ -13,7 +13,7 @@ def get_db():
 
 # Close database connection at end of request:
 def close_connection(exception):
-    db = getattr(g, '_database', None)
+    db = getattr(g, "_database", None)
     if db is not None:
         db.close()
 
