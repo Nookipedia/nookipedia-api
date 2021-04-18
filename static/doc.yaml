@@ -1866,7 +1866,7 @@ components:
         item_set:
           type: string
           example: ""
-          description: The [furniture set](https://nookipedia.com/wiki/Set) the item is a part of, if ay. A set is a smaller collection of related furniture items. If the item is not part of a set, this will be an empty string.
+          description: The [furniture set](https://nookipedia.com/wiki/Set) the item is a part of, if any. A set is a smaller collection of related furniture items. If the item is not part of a set, this will be an empty string.
         hha_category:
           type: string
           example: Dresser
@@ -2021,6 +2021,21 @@ components:
                 type: array
                 items:
                   type: string
+                  enum:
+                    - Aqua
+                    - Beige
+                    - Black
+                    - Blue
+                    - Brown
+                    - Colorful
+                    - Gray
+                    - Green
+                    - Orange
+                    - Pink
+                    - Purple
+                    - Red
+                    - White
+                    - Yellow
           example:
             - variation: Brown
               pattern: ""
@@ -2040,10 +2055,652 @@ components:
               colors:
               - Aqua
               - Black
+          description: (WIP) # TODO
         notes:
           type: string
           example: ""
           description: Any additional miscellaneous information about the item, such as a name change from a past update.
+    NHTool:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Axe
+          description: The name of the tool.
+        url:
+          type: string
+          example: https://nookipedia.com/wiki/Item:Axe_(New_Horizons)
+          description: Link the the respective Nookipedia article.
+        uses:
+          type: integer
+          example: 100
+          description: How many times the tool can be used before breaking.
+        hha_base:
+          type: integer
+          example: 0
+          description: The base value that the item provides to a player's Happy Home Academy score when placed in their home.
+        sell:
+          type: integer
+          example: 625
+          description: The number of bells the tool can be sold to the store for.
+        customizable:
+          type: boolean
+          example: false
+          description: Whether or not the item is customizable via a crafting table.
+        custom_kits:
+          type: integer
+          example: 0
+          description: The number of `custom_kit_type`s (e.g. Customization Kits) that are needed to customize this item. Value is 0 if the item is not customizable.
+        custom_body_part:
+          type: string
+          example: ""
+          description: If the item has variations, this is the name of the furniture part that changes. For example, for many bamboo items, the custom body part is "Bamboo" as the bamboo color is able to be customized.
+        version_added:
+          type: string
+          example: "1.0.0"
+          description: The version of *New Horizons* that the item was added. Items that were included at the game's launch have version "1.0.0".
+        unlocked:
+          type: boolean
+          example: true
+          description: Whether the item is available through legitimate gameplay. Some items are added to the game files in an update, but aren't actually made available until a subsequent update unlocks them.
+        notes:
+          type: string
+          example: ""
+          description: Any additional miscellaneous information about the item, such as a name change from a past update.
+        availability:
+          type: array
+          items:
+            type: object
+            properties:
+              from:
+                type: string
+              note:
+                type: string
+          example:
+            - from: Nook's Cranny
+              note: ""
+            - from: Crafting
+              note: ""
+          description: Where the tool may be obtained from (could be multiple sources). `from` is a brief description of the source; `note`, when provided, provides additional details.
+        buy:
+          type: array
+          items:
+            type: object
+            properties:
+              price:
+                type: integer
+              currency:
+                type: string
+          example:
+            - price: 2550
+            - currency: Bells
+          description: 'An array of prices, for when the recipe may be purchased with Bells, Nook Miles, etc..'
+        variations:
+          type: array
+          items:
+            type: object
+            properties:
+              variation:
+                type: string
+              image_url:
+                type: string
+          example:
+            - variation: ""
+              image_url: https://dodo.ac/np/images/f/fa/Axe_NH_Icon.png
+          description: (WIP) # TODO
+    NHPHoto:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Admiral's Photo
+          description: The name of the photo.
+        url:
+          type: string
+          example: https://nookipedia.com/wiki/Item:Admiral's_Photo_(New_Horizons)
+          description: Link to the respective Nookipedia article.
+        category:
+          type: string
+          example: Accessories
+          description: The category of item as shown in the player's inventory.
+          enum:
+            - Photos
+            - Posters
+        sell:
+          type: integer
+          example: 10
+          description: The number of Bells the photo can be sold to the store for.
+        customizable:
+          type: boolean
+          example: false
+          description: Whether or not the item is customizable via a crafting table.
+        custom_kits:
+          type: integer
+          example: 1
+          description: The number of `custom_kit_type`s (e.g. Customization Kits) that are needed to customize this item. Value is 0 if the item is not customizable.
+        custom_body_part:
+          type: string
+          example: "Frame"
+          description: If the item has variations, this is the name of the furniture part that changes. For example, for many bamboo items, the custom body part is "Bamboo" as the bamboo color is able to be customized.
+        interactable:
+          type: boolean
+          example: true
+          description: (WIP) # TODO
+        version_added:
+          type: string
+          example: "1.0.0"
+          description: The version of *New Horizons* that the item was added. Items that were included at the game's launch have version "1.0.0".
+        unlocked:
+          type: boolean
+          example: true
+          description: Whether the item is available through legitimate gameplay. Some items are added to the game files in an update, but aren't actually made available until a subsequent update unlocks them.
+        grid_width:
+          type: number
+          format: float
+          example: 2.0
+          description: The number of widthwise grid spaces this item takes up.
+        grid_length:
+          type: number
+          format: float
+          example: 1.0
+          description: The number of lengthwise grid spaces this item takes up.
+        availability:
+          type: array
+          items:
+            type: object
+            properties:
+              from:
+                type: string
+              note:
+                type: string
+          example:
+            - from: Friendship
+              note: ""
+          description: Where the photo may be obtained from (could be multiple sources). `from` is a brief description of the source; `note`, when provided, provides additional details.
+        buy:
+          type: array
+          items:
+            type: object
+            properties:
+              price:
+                type: integer
+              currency:
+                type: string
+          example: []
+          description: 'An array of prices, for when the recipe may be purchased with Bells, Nook Miles, etc..'
+        variations:
+          type: array
+          items:
+            type: object
+            properties:
+              variation:
+                type: string
+              image_url:
+                type: string
+              colors:
+                type: array
+                items:
+                  type: string
+                  enum:
+                    - Aqua
+                    - Beige
+                    - Black
+                    - Blue
+                    - Brown
+                    - Colorful
+                    - Gray
+                    - Green
+                    - Orange
+                    - Pink
+                    - Purple
+                    - Red
+                    - White
+                    - Yellow
+          example:
+            - variation: Natural Wood
+              image_url: https://dodo.ac/np/images/7/72/Admiral%27s_Photo_%28Natural_Wood%29_NH_Icon.png
+              colors:
+                - Blue
+                - Green
+            - variation: Dark Wood
+              image_url: https://dodo.ac/np/images/e/e5/Admiral%27s_Photo_%28Dark_Wood%29_NH_Icon.png
+              colors:
+                - Blue
+                - Green
+            - variation: Pastel
+              image_url: https://dodo.ac/np/images/9/9a/Admiral%27s_Photo_%28Pastel%29_NH_Icon.png
+              colors:
+                - Blue
+                - Green
+            - variation: White
+              image_url: https://dodo.ac/np/images/1/16/Admiral%27s_Photo_%28White%29_NH_Icon.png
+              colors:
+                - Blue
+                - Green
+            - variation: Pop
+              image_url: https://dodo.ac/np/images/b/be/Admiral%27s_Photo_%28Pop%29_NH_Icon.png
+              colors:
+                - Blue
+                - Green
+            - variation: Colorful
+              image_url: https://dodo.ac/np/images/5/51/Admiral%27s_Photo_%28Colorful%29_NH_Icon.png
+              colors:
+                - Blue
+                - Green
+            - variation: Silver
+              image_url: https://dodo.ac/np/images/e/ed/Admiral%27s_Photo_%28Silver%29_NH_Icon.png
+              colors:
+                - Blue
+                - Green
+            - variation: Gold
+              image_url: https://dodo.ac/np/images/c/cf/Admiral%27s_Photo_%28Gold%29_NH_Icon.png
+              colors:
+                - Blue
+                - Green
+          description: (WIP) # TODO
+    NHClothing:
+      type: object
+      properties:
+        name:
+          type: string
+          example: 3D Glasses
+          description: The name of the clothing.
+        url:
+          type: string
+          example: https://nookipedia.com/wiki/Item:3D_Glasses_(New_Horizons)
+          description: Link to the respective Nookipedia article.
+        category:
+          type: string
+          example: Accessories
+          description: The category of item as shown in the player's inventory.
+          enum:
+            - Tops
+            - Bottoms
+            - Dress-up
+            - Headware
+            - Accessories
+            - Socks
+            - Shoes
+            - Bags
+            - Umbrellas
+        sell:
+          type: integer
+          example: 122
+          description: The number of Bells the clothing can be sold to the store for.
+        variation_total:
+          type: integer
+          example: 2
+          description: The total number of variations the clothing has.
+        vill_equip:
+          type: boolean
+          example: true
+          description: (WIP) # TODO
+        seasonality:
+          type: string
+          example: All year
+          description: The time of the year that the clothing is available.
+        version_added:
+          type: string
+          example: "1.0.0"
+          description: The version of *New Horizons* that the item was added. Items that were included at the game's launch have version "1.0.0".
+        unlocked:
+          type: boolean
+          example: true
+          description: Whether the item is available through legitimate gameplay. Some items are added to the game files in an update, but aren't actually made available until a subsequent update unlocks them.
+        notes:
+          type: string
+          example: ""
+          description: Any additional miscellaneous information about the item, such as a name change from a past update.
+        label:
+          type: array
+          items:
+            type: string
+            enum:
+              - Comfy
+              - Everyday
+              - Fairy tale
+              - Formal
+              - Goth
+              - Outdoorsy
+              - Party
+              - Sporty
+              - Theatrical
+              - Vacation
+              - Work
+          example:
+            - Party
+          description: (WIP) # TODO
+        styles:
+          type: array
+          items:
+            type: string
+            enum:
+              - Active
+              - Cool
+              - Cute
+              - Elegant
+              - Gorgeous
+              - Simple
+          example:
+            - Active
+          description: (WIP) # TODO
+        availability:
+            type: array
+            items:
+              type: object
+              properties:
+                from:
+                  type: string
+                note:
+                  type: string
+            example:
+              - from: Able Sisters
+                note: ""
+            description: Where the clothing may be obtained from (could be multiple sources). `from` is a brief description of the source; `note`, when provided, provides additional details.
+        buy:
+          type: array
+          items:
+            type: object
+            properties:
+              price:
+                type: integer
+              currency:
+                type: string
+          example:
+            - price: 490
+              currency: Bells
+          description: 'An array of prices, for when the recipe may be purchased with Bells, Nook Miles, etc..'
+        variations:
+          type: array
+          items:
+            type: object
+            properties:
+              variation:
+                type: string
+              image_url:
+                type: string
+              colors:
+                type: array
+                items:
+                  type: string
+                  enum:
+                    - Aqua
+                    - Beige
+                    - Black
+                    - Blue
+                    - Brown
+                    - Colorful
+                    - Gray
+                    - Green
+                    - Orange
+                    - Pink
+                    - Purple
+                    - Red
+                    - White
+                    - Yellow
+          example:
+            - variation: White
+              image_url: https://dodo.ac/np/images/1/15/3D_Glasses_%28White%29_NH_Icon.png
+              colors:
+                - White
+                - Colorful
+            - variation: Black
+              image_url: https://dodo.ac/np/images/2/28/3D_Glasses_%28Black%29_NH_Icon.png
+              colors:
+                - Colorful
+                - Black
+          description: (WIP) # TODO
+    NHInterior:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Abstract Wall
+          description: The name of the interior.
+        url:
+          type: string
+          example: 'https://nookipedia.com/wiki/Item:Abstract_Wall_(New_Horizons)'
+          description: Link to the respective Nookipedia article.
+        image_url:
+          type: string
+          example: 'https://dodo.ac/np/images/2/2d/Abstract_Wall_NH_Icon.png'
+          description: Image of the interior. dodo.ac is Nookipedia's CDN server.
+        category:
+          type: string
+          example: Wallpaper
+          description: The category of item as shown in the player's inventory.
+          enum:
+            - Floors
+            - Wallpaper
+            - Rugs
+        item_series:
+          type: string
+          example: ""
+          description: The [furniture series](https://nookipedia.com/wiki/Series_(furniture)) the item is a part of, if any. A series is a collection of furniture and interior items, all with the same theme. If the item is not part of a series, this will be an empty string.
+        item_set:
+          type: string
+          example: ""
+          description: The [furniture set](https://nookipedia.com/wiki/Set) the item is a part of, if any. A set is a smaller collection of related furniture items. If the item is not part of a set, this will be an empty string.
+        hha_category:
+          type: string
+          example: Dresser
+          description: The HHA category the item is a part of, if any. If the item does not have an HHA category, this will be an empty string.
+        hha_base:
+          type: integer
+          example: 0
+          description: The base value that the item provides to a player's Happy Home Academy score when placed in their home.
+        tag:
+          type: string
+          example: Dresser
+          description: The tag of an item, if any, which denotes a specific use or relation to an event. Tags are determined by Nintendo. Examples include "Chair", "Musical Instrument", and "Mario". If the item does not have a tag, this will be an empty string.
+        sell:
+          type: integer
+          example: 200
+          description: The number of Bells the interior can be sold to Nook's store for.
+        vfx:
+          type: boolean
+          example: false
+          description: (WIP) # TODO
+        version_added:
+          type: string
+          example: "1.0.0"
+          description: The version of *New Horizons* that the item was added. Items that were included at the game's launch have version "1.0.0".
+        unlocked:
+          type: boolean
+          example: true
+          description: Whether the item is available through legitimate gameplay. Some items are added to the game files in an update, but aren't actually made available until a subsequent update unlocks them.
+        notes:
+          type: string
+          example: ""
+          description: Any additional miscellaneous information about the item, such as a name change from a past update.
+        grid_width:
+          type: number
+          format: float
+          example: 2.0
+          description: The number of widthwise grid spaces this item takes up.
+        grid_length:
+          type: number
+          format: float
+          example: 1.0
+          description: The number of lengthwise grid spaces this item takes up.
+        themes:
+          type: array
+          items:
+            type: string
+          example:
+            - Shop
+            - Facility
+          description: A list of [themes](https://nookipedia.com/wiki/Theme_(furniture)) (if any) that the item belongs to.
+        colors:
+          type: string
+          example:
+            - White
+            - Colorful
+          description: (WIP) # TODO
+          enum:
+            - Aqua
+            - Beige
+            - Black
+            - Blue
+            - Brown
+            - Colorful
+            - Gray
+            - Green
+            - Orange
+            - Pink
+            - Purple
+            - Red
+            - White
+            - Yellow
+        availability:
+            type: array
+            items:
+              type: object
+              properties:
+                from:
+                  type: string
+                note:
+                  type: string
+            example:
+              - from: Nook's
+                note: ""
+            description: Where the clothing may be obtained from (could be multiple sources). `from` is a brief description of the source; `note`, when provided, provides additional details.
+        buy:
+          type: array
+          items:
+            type: object
+            properties:
+              price:
+                type: integer
+              currency:
+                type: string
+          example:
+            - price: 1560
+              currency: Bells
+          description: 'An array of prices, for when the interior may be purchased with Bells, Nook Miles, etc..'
+    NHItem:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Acorn
+          description: The name of the item.
+        url:
+          type: string
+          example: 'https://nookipedia.com/wiki/Item:Acorn_(New_Horizons)'
+          description: Link to the respective Nookipedia article.
+        image_url:
+          type: string
+          example: 'https://dodo.ac/np/images/9/9f/Acorn_NH_Icon.png'
+          description: Image of the interior. dodo.ac is Nookipedia's CDN server.
+        stack:
+          type: integer
+          example: 30
+          description: How much the item can stack up to in a single inventory slot.
+        hha_base:
+          type: integer
+          example: 0
+          description: The base value that the item provides to a player's Happy Home Academy score when placed in their home.
+        sell:
+          type: integer
+          example: 200
+          description: The number of bells the item can be sold to Nook's store for.
+        is_fence:
+          type: boolean
+          example: false
+          description: Whether or not the item is a fence or not.
+        material_type:
+          type: string
+          example: Tree
+          description: (WIP) # TODO
+          enum:
+            - ""
+            - Bamboo
+            - Mushroom
+            - Trash
+            - Wood
+            - Ore
+            - Snowflake
+            - Tree
+            - Ornament
+            - Fruit
+            - Underwater
+            - Other
+            - Leaf
+            - Shell
+            - Flower
+            - Star Fragment
+            - Feather
+            - Egg
+            - Plant
+        material_seasonality:
+          type: string
+          example: Autumn
+          description: (WIP) # TODO
+        material_sort:
+          type: integer
+          example: 3
+          description: (WIP) # TODO
+        material_name_sort:
+          type: integer
+          example: 0
+          description: (WIP) # TODO
+        material_seasonality_sort:
+          type: integer
+          example: 3
+          description: (WIP) # TODO
+        edible:
+          type: boolean
+          example: false
+          description: Whether the item is edible or not.
+        plant_type:
+          type: string
+          example: ""
+          description: (WIP) # TODO
+          enum:
+            - ""
+            - Pumpkin
+            - Flower
+            - Bush
+            - Tree
+        version_added:
+          type: string
+          example: "1.0.0"
+          description: The version of *New Horizons* that the item was added. Items that were included at the game's launch have version "1.0.0".
+        unlocked:
+          type: boolean
+          example: true
+          description: Whether the item is available through legitimate gameplay. Some items are added to the game files in an update, but aren't actually made available until a subsequent update unlocks them.
+        notes:
+          type: string
+          example: ""
+          description: Any additional miscellaneous information about the item, such as a name change from a past update.
+        availability:
+          type: array
+          items:
+            type: object
+            properties:
+              from:
+                type: string
+              note:
+                type: string
+          example:
+            - from: Nook's
+              note: ""
+          description: Where the clothing may be obtained from (could be multiple sources). `from` is a brief description of the source; `note`, when provided, provides additional details.
+        buy:
+          type: array
+          items:
+            type: object
+            properties:
+              price:
+                type: integer
+              currency:
+                type: string
+          example:
+            - price: 280
+              currency: Bells
+          description: An array of prices, for when the interior may be purchased with Bells, Nook Miles, etc..
     NHRecipe:
       type: object
       properties:
