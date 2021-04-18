@@ -1302,7 +1302,7 @@ def format_interior(data):
     format_as_type(data, as_int, 'hha_base', 'sell')
 
     # Booleans
-    format_as_type(data, as_bool, 'vfx', 'unlocked')
+    format_as_type(data, as_bool, 'unlocked')
 
     if data['grid_size']:
         grid_width, grid_length = data['grid_size'].split("\u00d7") # \u00d7 is the multiplication sign, so 1.0x1.0 => [1.0,1.0]
@@ -1928,7 +1928,7 @@ def get_nh_interior(interior):
     interior = interior.replace('_', ' ')
     limit = '1'
     tables = 'nh_interior'
-    fields = '_pageName=url,en_name=name,image_url,category,item_series,item_set,theme1,theme2,hha_category,tag,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,grid_size,vfx,color1,color2,version_added,unlocked,notes'
+    fields = '_pageName=url,en_name=name,image_url,category,item_series,item_set,theme1,theme2,hha_category,tag,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,grid_size,color1,color2,version_added,unlocked,notes'
     where = f'en_name="{interior}"'
     params = {'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'where': where, 'limit': limit}
 
@@ -1945,7 +1945,7 @@ def get_nh_interior_all():
 
     limit = '650'
     tables = 'nh_interior'
-    fields = '_pageName=url,en_name=name,image_url,category,item_series,item_set,theme1,theme2,hha_category,tag,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,grid_size,vfx,color1,color2,version_added,unlocked,notes'
+    fields = '_pageName=url,en_name=name,image_url,category,item_series,item_set,theme1,theme2,hha_category,tag,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,grid_size,color1,color2,version_added,unlocked,notes'
 
     return get_interior_list(limit, tables, fields)
 
