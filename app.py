@@ -1481,11 +1481,8 @@ def stitch_variation(item,variations):
 def get_fossil_list(limit, tables, join, fields):
     where = []
 
-    if len(where) == 0:
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'join_on': join, 'fields': fields, 'limit': limit }
-    else:
-        where = ' AND '.join(where)
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'join_on': join, 'fields': fields, 'limit': limit, 'where': where }
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'join_on': join, 'fields': fields, 'limit': limit }
+    params_where(params, where)
 
     cargo_results = call_cargo(params, request.args)
     results_array = []
@@ -1498,26 +1495,14 @@ def get_fossil_list(limit, tables, join, fields):
     return jsonify(results_array)
 
 def format_fossil(data):
-    data['sell'] = int(data['sell'])
-    data['hha_base'] = int(data['hha_base'])
-    data['room'] = int(data['room'])
-
-    data['width'] = float(data['width'])
-    data['length'] = float(data['length'])
-
-    if data['interactable'] == '0':
-        data['interactable'] = False
-    elif data['interactable'] == '1':
-        data['interactable'] = True
+    format_as_type(data, as_int, 'sell', 'hha_base', 'room')
+    format_as_type(data, as_float, 'width', 'length')
+    format_as_type(data, as_int, 'interactable')
     
-    colors = set()
-    for i in range(1,3):
-        color = f'color{i}'
-        if len(data[color]) > 0:
-            colors.add(data[color])
-        del data[color]
-    colors.discard('None')
-    data['colors'] = list(colors)
+    coalesce_fields_as_list(data, 2, 'colors', 'color{}')
+    data['colors'] = set(data['colors'])
+    data['colors'].discard('None')
+    data['colors'] = list(data['colors'])
 
     return data
 
