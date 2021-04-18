@@ -606,6 +606,287 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error500'
+  /nh/furniture:
+    get:
+      summary: All New Horizons furniture
+      description: 'Get a list of all furniture and their details in *Animal Crossing: New Horizons*.'
+      parameters:
+        - in: header
+          name: X-API-KEY
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: 'Your UUID secret key, granted to you by the Nookipedia team. Required for accessing the API.'
+        - in: header
+          name: Accept-Version
+          required: true
+          schema:
+            type: string
+          description: 'The version of the API you are calling, written as `1.0.0`. This is specified as required as good practice, but it is not actually enforced by the API. If you do not specify a version, you will be served the latest version, which may eventually result in breaking changes.'
+        - in: query
+          name: category
+          required: false
+          schema:
+            type: string
+            enum:
+              - Housewares
+              - Miscellaneous
+              - Wall-mounted
+          description: Specify the category of furniture to return (houswares, miscellaneous, or wall-mounted).
+        - in: query
+          name: color
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - Aqua
+                - Beige
+                - Black
+                - Blue
+                - Brown
+                - Colorful
+                - Gray
+                - Green
+                - Orange
+                - Pink
+                - Purple
+                - Red
+                - White
+                - Yellow
+          description: Return furniture that matches the provided colors (may specify one or two colors).
+      responses:
+        '200':
+          description: A JSON array of furniture.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NHFurniture'
+        '401':
+          description: Failed to authenticate user from `X-API-KEY`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '500':
+          description: There was an error fetching the requested data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error500'
+  /nh/furniture/{furniture}:
+    get:
+      summary: Single New Horizons furniture
+      description: 'Retrieve information about a specific furniture in *Animal Crossing: New Horizons*.'
+      parameters:
+        - in: path
+          name: furniture
+          required: true
+          schema:
+            type: string
+          description: The name of the furniture you wish to retrieve information about.
+        - in: header
+          name: X-API-KEY
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: 'Your UUID secret key, granted to you by the Nookipedia team. Required for accessing the API.'
+        - in: header
+          name: Accept-Version
+          required: true
+          schema:
+            type: string
+          description: 'The version of the API you are calling, written as `1.0.0`. This is specified as required as good practice, but it is not actually enforced by the API. If you do not specify a version, you will be served the latest version, which may eventually result in breaking changes.'
+        - in: query
+          name: thumbsize
+          required: false
+          schema:
+            type: integer
+          description: 'Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL.'
+      responses:
+        '200':
+          description: A JSON array of furniture.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NHFurniture'
+        '401':
+          description: Failed to authenticate user from `X-API-KEY`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '500':
+          description: There was an error fetching the requested data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error500'
+  /nh/clothing:
+    get:
+      summary: All New Horizons clothing
+      description: 'Get a list of all clothing items and their details in *Animal Crossing: New Horizons*.'
+      parameters:
+        - in: header
+          name: X-API-KEY
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: 'Your UUID secret key, granted to you by the Nookipedia team. Required for accessing the API.'
+        - in: header
+          name: Accept-Version
+          required: true
+          schema:
+            type: string
+          description: 'The version of the API you are calling, written as `1.0.0`. This is specified as required as good practice, but it is not actually enforced by the API. If you do not specify a version, you will be served the latest version, which may eventually result in breaking changes.'
+        - in: query
+          name: category
+          required: false
+          schema:
+            type: string
+            enum:
+              - Tops
+              - Bottoms
+              - Dress-up
+              - Headware
+              - Accessories
+              - Socks
+              - Shoes
+              - Bags
+              - Umbrellas
+          description: Specify the category of clothing to return.
+        - in: query
+          name: color
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - Aqua
+                - Beige
+                - Black
+                - Blue
+                - Brown
+                - Colorful
+                - Gray
+                - Green
+                - Orange
+                - Pink
+                - Purple
+                - Red
+                - White
+                - Yellow
+          description: Return clothing that matches the provided colors (may specify one or two colors). Colors are used for gifting villagers.
+        - in: query
+          name: style
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - Active
+                - Cool
+                - Cute
+                - Elegant
+                - Gorgeous
+                - Simple
+          description: Return clothing that matches the provided styles (may specify one or two styles). Styles are used for gifting villagers.
+        - in: query
+          name: label
+          required: false
+          schema:
+            type: string
+            enum:
+              - Comfy
+              - Everyday
+              - Fairy tale
+              - Formal
+              - Goth
+              - Outdoorsy
+              - Party
+              - Sporty
+              - Theatrical
+              - Vacation
+              - Work
+          description: Return clothing that have the specified Label theme. This is used for completing the requested outfit theme for [Label](https://nookipedia.com/wiki/Label) when she visits the player's island.
+      responses:
+        '200':
+          description: A JSON array of clothing.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NHClothing'
+        '401':
+          description: Failed to authenticate user from `X-API-KEY`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '500':
+          description: There was an error fetching the requested data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error500'
+  /nh/clothing/{clothing}:
+    get:
+      summary: Single New Horizons clothing
+      description: 'Retrieve information about a specific clothing item in *Animal Crossing: New Horizons*.'
+      parameters:
+        - in: path
+          name: clothing
+          required: true
+          schema:
+            type: string
+          description: The name of the clothing you wish to retrieve information about.
+        - in: header
+          name: X-API-KEY
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: 'Your UUID secret key, granted to you by the Nookipedia team. Required for accessing the API.'
+        - in: header
+          name: Accept-Version
+          required: true
+          schema:
+            type: string
+          description: 'The version of the API you are calling, written as `1.0.0`. This is specified as required as good practice, but it is not actually enforced by the API. If you do not specify a version, you will be served the latest version, which may eventually result in breaking changes.'
+        - in: query
+          name: thumbsize
+          required: false
+          schema:
+            type: integer
+          description: 'Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL.'
+      responses:
+        '200':
+          description: A JSON array of clothing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NHClothing'
+        '401':
+          description: Failed to authenticate user from `X-API-KEY`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '500':
+          description: There was an error fetching the requested data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error500'
   /nh/recipes:
     get:
       summary: All New Horizons recipes
@@ -1862,7 +2143,7 @@ components:
           enum:
             - Housewares
             - Miscellaneous
-            - Wall-Mounted
+            - Wall-mounted
         item_series:
           type: string
           example: Antique
@@ -2059,7 +2340,7 @@ components:
               colors:
               - Aqua
               - Black
-          description: (WIP) # TODO
+          description: An array of objects, each object representing a variation of the furniture. Furniture that only comes in one variety will have a single variation object with the image URL and colors, but the `variation` or `pattern` fields will be empty strings. Furniture with multiple variations will have the `variation` and/or `pattern` fields defined depending on whether the furniture varies by body variety, pattern, or both.
         notes:
           type: string
           example: ""
@@ -2151,8 +2432,8 @@ components:
           example:
             - variation: ""
               image_url: https://dodo.ac/np/images/f/fa/Axe_NH_Icon.png
-          description: (WIP) # TODO
-    NHPHoto:
+          description: An array of objects, each object representing a variation of the tool. Tools that only comes in one variety will have a single variation object with the image URL and colors, but the `variation` field will be empty. Tools with multiple variations will have the `variation` fields defined with the name of each variation.
+    NHPhoto:
       type: object
       properties:
         name:
@@ -2189,7 +2470,7 @@ components:
         interactable:
           type: boolean
           example: true
-          description: (WIP) # TODO
+          description: Whether or not the item can be interacted with. This field is true for all photos and false for all posters.
         version_added:
           type: string
           example: "1.0.0"
@@ -2301,7 +2582,7 @@ components:
               colors:
                 - Blue
                 - Green
-          description: (WIP) # TODO
+          description: An array of objects, each object representing a variation of the photo or poster. Items that only comes in one variety will have a single variation object with the image URL and colors, but the `variation` field will be empty. Items with multiple variations will have the `variation` fields defined with the name of each variation.
     NHClothing:
       type: object
       properties:
@@ -2338,7 +2619,7 @@ components:
         vill_equip:
           type: boolean
           example: true
-          description: (WIP) # TODO
+          description: Whether villagers may equip this item.
         seasonality:
           type: string
           example: All year
@@ -2354,7 +2635,7 @@ components:
         notes:
           type: string
           example: ""
-          description: Any additional miscellaneous information about the item, such as a name change from a past update.
+          description: Any additional miscellaneous information about the clothing, such as a name change from a past update.
         label:
           type: array
           items:
@@ -2373,7 +2654,7 @@ components:
               - Work
           example:
             - Party
-          description: (WIP) # TODO
+          description: The clothing's Label theme(s). This is used for completing the requested outfit theme for [Label](https://nookipedia.com/wiki/Label) when she visits the player's island.
         styles:
           type: array
           items:
@@ -2387,7 +2668,7 @@ components:
               - Simple
           example:
             - Active
-          description: (WIP) # TODO
+          description: The clothing's style(s). Styles are used for gifting villagers.
         availability:
             type: array
             items:
@@ -2453,7 +2734,7 @@ components:
               colors:
                 - Colorful
                 - Black
-          description: (WIP) # TODO
+          description: An array of objects, each object representing a variation of the clothing. Clothing that only comes in one variety will have a single variation object with the image URL and colors, but the `variation` field will be empty. Clothing with multiple variations will have the `variation` fields defined with the name of each variation.
     NHInterior:
       type: object
       properties:
@@ -2501,10 +2782,6 @@ components:
           type: integer
           example: 200
           description: The number of Bells the interior can be sold to Nook's store for.
-        vfx:
-          type: boolean
-          example: false
-          description: (WIP) # TODO
         version_added:
           type: string
           example: "1.0.0"
