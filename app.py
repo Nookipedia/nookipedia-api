@@ -1,3 +1,4 @@
+import re
 import requests
 import sqlite3
 import uuid
@@ -357,6 +358,58 @@ def month_to_string(month):
     except:
         return None
 
+def as_bool(value):
+    if value == '0':
+        return False
+    elif value == '1':
+        return True
+    else:
+        return value
+
+def as_int(value):
+    return int('0' + value)
+
+def as_float(value):
+    return float('0' + value)
+
+def format_as_type(data, formatter, *args):
+    for field in args:
+        if field in data:
+            data[field] = formatter(data[field])
+
+def format_coalesced_object_list(data, formatter, name, *fields):
+    for obj in data[name]:
+        for field in fields:
+            if field in obj:
+                obj[field] = formatter(obj[field])
+
+def format_coalesced_list(data, formatter, name):
+    data[name] = [formatter(_) for _ in data[name]]
+
+def coalesce_fields_as_object_list(data, elements, output_name, *fields):
+    names = [_[0] for _ in fields]
+    keys = [tuple(_[1].format(i) for _ in fields) for i in range(1, elements + 1)]
+    data[output_name] = []
+    # Go through and create a JSON object list
+    for key_group in keys:
+        if len(data[key_group[0]]) == 0:
+            break
+        obj = {names[i]: data[key] for i, key in enumerate(key_group)}
+        data[output_name].append(obj)
+    # Delete the elements afterwards
+    for key_group in keys:
+        for key in key_group:
+            del data[key]
+
+def coalesce_fields_as_list(data, elements, name, field_format):
+    data[name] = []
+    keys = [field_format.format(_) for _ in range(1, elements + 1)]
+    for key in keys:
+        if (len(data[key])) == 0:
+            break
+        data[name].append(data[key])
+    for key in keys:
+        del data[key]
 
 #################################
 # CARGO HANDLING
@@ -390,7 +443,7 @@ def call_cargo(parameters, request_args):  # Request args are passed in just for
             if BOT_USERNAME and int(parameters.get('limit', '50')) > 500:
                 nestedparameters['assert'] = 'bot'
                 session = cache.get('session') # Get session from memcache
-                
+
                 # Session may be null from startup or cache explusion:
                 if not session:
                     mw_login()
@@ -403,7 +456,7 @@ def call_cargo(parameters, request_args):  # Request args are passed in just for
                     if mw_login():
                         session = cache.get('session')
                         r = requests.get(url=BASE_URL_API, params=nestedparameters, headers={'Authorization': 'Bearer ' + session['token']}, cookies=session['cookie'])
-                        
+
                         # If it errors again, make request without auth:
                         if 'error' in r.json():
                             del nestedparameters['assert']
@@ -473,12 +526,57 @@ def call_cargo(parameters, request_args):  # Request args are passed in just for
     except:
         abort(500, description=error_response("Error while formatting Cargo response.", "Iterating over cargoquery array in response object failed for the parameters: {}.".format(parameters)))
 
+def minimum_version(version):
+    return between_version(version, None)
+
+def maximum_version(version):
+    return between_version(None, version)
+
+def exact_version(version):
+    return between_version(version, version)
+
+def between_version(minimum, maximum):
+    version = request.headers.get('Accept-Version', 'latest')
+    if version == 'latest':
+        return maximum is None
+    version_match = re.match(r'^(\d+)(?:\.(\d+)(?:\.(\d+))?)?$', version)
+    minimum_match = re.match(r'^(\d+)(?:\.(\d+)(?:\.(\d+))?)?$', minimum or '')
+    maximum_match = re.match(r'^(\d+)(?:\.(\d+)(?:\.(\d+))?)?$', maximum or '')
+    if version_match is None:
+        abort(400, description=error_response('Invalid header arguments','Accept-Version must be `#`, `#.#`, `#.#.#`, or latest. (defaults to latest, if not supplied)'))
+    elif minimum is not None and minimum_match is None:
+        abort(500, description=error_response('Error while checking Accept-Version','Minimum version must be `#`, `#.#`, or `#.#.#`'))
+    elif maximum is not None and maximum_match is None:
+        abort(500, description=error_response('Error while checking Accept-Version','Maximum version must be `#`, `#.#`, or `#.#.#`'))
+    else:
+        version_numbers = version_match.groups()
+        minimum_numbers = minimum_match.groups() if minimum is not None else ('0', '0', '0')
+        maximum_numbers = maximum_match.groups() if maximum is not None else ('999', '999', '999')
+        for version_number, minimum_number, maximum_number in zip(version_numbers, minimum_numbers, maximum_numbers):
+            if maximum_number is None:
+                return True
+            if minimum_number is None:
+                return True
+            if version_number is None:
+                return True
+            if int(version_number) < int(minimum_number):
+                return False
+            if int(version_number) > int(maximum_number):
+                return False
+        return True
+
+def params_where(params, where):
+    """Puts a where condition into the parameters;\n
+    `params` is a dict\n
+    `where` is a list of condition strings"""
+    if where:
+        params['where'] = ' AND '.join(where)
 
 def format_villager(data):
     games = ['dnm', 'ac', 'e_plus', 'ww', 'cf', 'nl', 'wa', 'nh', 'film', 'hhd', 'pc']
 
     for obj in data:
-        if request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] in ('1.0', '1.1', '1.2', '1.3'):
+        if maximum_version('1.3'):
             if obj['personality'] == 'Big sister':
                 obj['personality'] = 'Sisterly'
             if obj['species'] == 'Bear cub':
@@ -487,10 +585,7 @@ def format_villager(data):
                 obj['species'] = 'Rhino'
 
         # Set islander to Boolean:
-        if obj['islander'] == '0':
-            obj['islander'] = False
-        elif obj['islander'] == '1':
-            obj['islander'] = True
+        format_as_type(obj, as_bool, 'islander')
 
         # Capitalize and standardize debut:
         game_switcher = {
@@ -520,7 +615,7 @@ def format_villager(data):
         del obj['prev_phrase2']
 
         # Place NH details in object, if applicable:
-        if request.args.get('nhdetails') and (request.args.get('nhdetails') == 'true'):
+        if request.args.get('nhdetails') == 'true':
             if obj['nh'] == '0':
                 obj['nh_details'] = None
             else:
@@ -583,31 +678,22 @@ def format_villager(data):
 
 
 def get_villager_list(limit, tables, join, fields):
-    where = None
+    where = []
 
     # Filter by name:
     if request.args.get('name'):
         villager = request.args.get('name').replace('_', ' ').capitalize()
-        if where:
-            where = where + ' AND villager.name = "' + villager + '"'
-        else:
-            where = 'villager.name = "' + villager + '"'
+        where.append('villager.name = "' + villager + '"')
 
     # Filter by birth month:
     if request.args.get('birthmonth'):
         month = month_to_string(request.args.get('birthmonth'))
-        if where:
-            where = where + ' AND villager.birthday_month = "' + month + '"'
-        else:
-            where = 'villager.birthday_month = "' + month + '"'
+        where.append('villager.birthday_month = "' + month + '"')
 
     # Filter by birth day:
     if request.args.get('birthday'):
         day = request.args.get('birthday')
-        if where:
-            where = where + ' AND villager.birthday_day = "' + day + '"'
-        else:
-            where = 'villager.birthday_day = "' + day + '"'
+        where.append('villager.birthday_day = "' + day + '"')
 
     # Filter by personality:
     if request.args.get('personality'):
@@ -618,11 +704,8 @@ def get_villager_list(limit, tables, join, fields):
 
         if personality == 'sisterly':
             personality = 'big sister'
-
-        if where:
-            where = where + ' AND villager.personality = "' + personality + '"'
-        else:
-            where = 'villager.personality = "' + personality + '"'
+        
+        where.append('villager.personality = "' + personality + '"')
 
     # Filter by species:
     if request.args.get('species'):
@@ -636,28 +719,20 @@ def get_villager_list(limit, tables, join, fields):
         elif species == 'rhino':
             species = 'rhinoceros'
 
-        if where:
-            where = where + ' AND villager.species = "' + species + '"'
-        else:
-            where = 'villager.species = "' + species + '"'
+        where.append('villager.species = "' + species + '"')
 
     # Filter by game:
     if request.args.get('game'):
         games = request.args.getlist("game")
         for game in games:
             game = game.replace('_', ' ')
-            if where:
-                where = where + ' AND villager.' + game + ' = "1"'
-            else:
-                where = 'villager.' + game + ' = "1"'
+            where.append('villager.' + game + ' = "1"')
 
-    if where:
-        params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'join_on': join, 'fields': fields, 'where': where}
-    else:
-        params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'join_on': join, 'fields': fields}
+    params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'join_on': join, 'fields': fields}
+    params_where(params, where)
 
     print(str(params))
-    if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
+    if request.args.get('excludedetails') == 'true':
         cargo_results = call_cargo(params, request.args)
         results_array = []
         for villager in cargo_results:
@@ -675,13 +750,13 @@ def months_to_array(data):
         for key in obj:
             if 'n_m' in key:
                 if obj[key] == '1':
-                    if not (request.headers.get('Accept-Version') and (request.headers.get('Accept-Version')[:3] in ('1.0', '1.1'))):
+                    if minimum_version('1.2'):
                         n_months_array.append(int(key.replace('n_m', '')))
                     else:
                         n_months_array.append(key.replace('n_m', ''))
             if 's_m' in key:
                 if obj[key] == '1':
-                    if not (request.headers.get('Accept-Version') and (request.headers.get('Accept-Version')[:3] in ('1.0', '1.1'))):
+                    if minimum_version('1.2'):
                         s_months_array.append(int(key.replace('s_m', '')))
                     else:
                         s_months_array.append(key.replace('s_m', ''))
@@ -689,10 +764,10 @@ def months_to_array(data):
             del obj['n_m' + str(i)]
             del obj['s_m' + str(i)]
 
-        if (request.headers.get('Accept-Version') and (request.headers.get('Accept-Version')[:3] in ('1.0', '1.1'))):
+        if maximum_version('1.1'):
             obj['n_availability_array'] = n_months_array
             obj['s_availability_array'] = s_months_array
-        elif (request.headers.get('Accept-Version') and (request.headers.get('Accept-Version')[:3] in ('1.2'))):
+        elif exact_version('1.2'):
             if 'n_availability' in obj:
                 obj['months_north'] = obj['n_availability']
                 del obj['n_availability']
@@ -719,19 +794,12 @@ def format_critters(data):
     # Create arrays that hold times by month per hemisphere:
     for obj in data:
 
-        if not (request.headers.get('Accept-Version') and (request.headers.get('Accept-Version')[:3] in ('1.0', '1.1'))):
+        if minimum_version('1.2'):
             # Convert tank width/length to floats:
-            obj['tank_width'] = float(obj['tank_width'])
-            obj['tank_length'] = float(obj['tank_length'])
+            format_as_type(obj, as_float, 'tank_width', 'tank_length')
 
             # Convert some fields to int:
-            obj['number'] = int(obj['number'])
-            obj['sell_nook'] = int(obj['sell_nook'])
-            if 'sell_cj' in obj:
-                obj['sell_cj'] = int(obj['sell_cj'])
-            if 'sell_flick' in obj:
-                obj['sell_flick'] = int(obj['sell_flick'])
-            obj['total_catch'] = int(obj['total_catch'])
+            format_as_type(obj, as_int, 'number', 'sell_nook', 'sell_cj', 'sell_flick', 'total_catch')
 
         # Merge catchphrases into an array:
         catchphrase_array = [obj['catchphrase']]
@@ -743,7 +811,7 @@ def format_critters(data):
         obj['catchphrases'] = catchphrase_array
 
         # Remove individual catchphrase fields:
-        if not (request.headers.get('Accept-Version') and (request.headers.get('Accept-Version')[:3] in ('1.0', '1.1'))):
+        if minimum_version('1.2'):
             del obj['catchphrase']
             if 'catchphrase2' in obj:
                 del obj['catchphrase2']
@@ -751,7 +819,7 @@ def format_critters(data):
                 del obj['catchphrase3']
 
         # Create array of times and corresponding months for those times:
-        if request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] in ('1.0', '1.1', '1.2'):
+        if maximum_version('1.2'):
             availability_array_north = [{'months': obj['time_n_months'], 'time': obj['time']}]
             availability_array_south = [{'months': obj['time_s_months'], 'time': obj['time']}]
             if len(obj['time2']) > 0:
@@ -839,7 +907,7 @@ def format_critters(data):
             del obj['s_m' + str(i) + '_time']
 
         # Remove unneeded time fields:
-        if not (request.headers.get('Accept-Version') and (request.headers.get('Accept-Version')[:3] in ('1.0', '1.1'))):
+        if minimum_version('1.2'):
             del obj['time']
         del obj['time2']
         del obj['time_n_months']
@@ -861,7 +929,7 @@ def get_critter_list(limit, tables, fields):
         paramsSouth = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields, 'where': 's_m' + calculated_month + '="1"'}
 
         # If client doesn't want all details:
-        if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
+        if request.args.get('excludedetails') == 'true':
             n_hemi = months_to_array(call_cargo(paramsNorth, request.args))
             s_hemi = months_to_array(call_cargo(paramsSouth, request.args))
 
@@ -893,7 +961,7 @@ def get_critter_list(limit, tables, fields):
     # If client doesn't specify specific month:
     else:
         params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields}
-        if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
+        if request.args.get('excludedetails') == 'true':
             cargo_results = call_cargo(params, request.args)
             results_array = []
             for critter in cargo_results:
@@ -907,39 +975,32 @@ def format_art(data):
     # Correct some datatypes
 
     # Booleans
-    if data['has_fake'] == '1':
-        data['has_fake'] = True
-    elif data['has_fake'] == '0':
-        data['has_fake'] = False
+    format_as_type(data, as_bool, 'has_fake')
 
     # Integers
-    data['buy'] = int(data['buy'])
-    data['sell'] = int(data['sell'])
+    format_as_type(data, as_int, 'buy', 'sell')
 
     # Floats
-    data['width'] = float(data['width'])
-    data['length'] = float(data['length'])
+    format_as_type(data, as_float, 'width', 'length')
     return data
 
 
 def get_art_list(limit, tables, fields):
-    where = None
+    where = []
 
     if request.args.get('hasfake'):
         fake = request.args.get('hasfake').lower()
         if fake == 'true':
-            where = 'has_fake = true'
+            where.append('has_fake = true')
         elif fake == 'false':
-            where = 'has_fake = false'
+            where.append('has_fake = false')
 
-    if where:
-        params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields, 'where': where}
-    else:
-        params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields}
+    params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields}
+    params_where(params, where)
 
     cargo_results = call_cargo(params, request.args)
     results_array = []
-    if request.args.get('excludedetails') and request.args.get('excludedetails') == 'true':
+    if request.args.get('excludedetails') == 'true':
         for art in cargo_results:
             results_array.append(art['name'])
     else:
@@ -952,46 +1013,25 @@ def format_recipe(data):
     # Correct some datatypes
 
     # Integers
-    data['serial_id'] = int('0' + data['serial_id'])
+    format_as_type(data, as_int, 'serial_id', 'recipes_to_unlock')
+    # This can't be included in the format_as_type because of  \/ that condition
     data['sell'] = int('0' + data['sell']) if data['sell'] != 'NA' else 0
-    data['recipes_to_unlock'] = int('0' + data['recipes_to_unlock'])
 
     # Change the material# and material#_num columns to be one materials column
-    data['materials'] = []
-    for i in range(1, 7):  # material1 to material6
-        if len(data[f'material{i}']) > 0:
-            data['materials'].append({
-                'name': data[f'material{i}'],
-                'count': int(data[f'material{i}_num'])
-            })
-        del data[f'material{i}']
-        del data[f'material{i}_num']
+    coalesce_fields_as_object_list(data, 6, 'materials', ('name','material{}'), ('count','material{}_num'))
+    format_coalesced_object_list(data, as_int, 'materials', 'count')
 
-    data['availability'] = []
-    for i in range(1, 3):
-        if len(data[f'diy_availability{i}']) > 0:
-            data['availability'].append({
-                'from': data[f'diy_availability{i}'],
-                'note': data[f'diy_availability{i}_note']
-            })
-        del data[f'diy_availability{i}']
-        del data[f'diy_availability{i}_note']
+    coalesce_fields_as_object_list(data, 2, 'availability', ('from', 'diy_availability{}'), ('note', 'diy_availability{}_note'))
 
     # Do the same for buy#_price and buy#_currency columns
-    data['buy'] = []
-    for i in range(1, 3):  # Technically overkill, but it'd be easy to add a third buy column if it ever matters
-        if len(data[f'buy{i}_price']) > 0:
-            data['buy'].append({
-                'price': int(data[f'buy{i}_price']),
-                'currency': data[f'buy{i}_currency']
-            })
-        del data[f'buy{i}_price']
-        del data[f'buy{i}_currency']
+    coalesce_fields_as_object_list(data, 2, 'buy', ('price', 'buy{}_price'), ('currency', 'buy{}_currency'))
+    format_coalesced_object_list(data, as_int, 'buy', 'price')
+    
     return data
 
 
 def get_recipe_list(limit, tables, fields):
-    where = None
+    where = []
 
     if 'material' in request.args:
         materials = request.args.getlist('material')
@@ -999,15 +1039,10 @@ def get_recipe_list(limit, tables, fields):
             abort(400, description=error_response('Invalid arguments', 'Cannot have more than six materials'))
         for m in materials:
             m.replace('_', ' ')
-            if where is None:
-                where = '(material1 = "{0}" or material2 = "{0}" or material3 = "{0}" or material4 = "{0}" or material5 = "{0}" or material6 = "{0}")'.format(m)
-            else:
-                where += ' AND (material1 = "{0}" or material2 = "{0}" or material3 = "{0}" or material4 = "{0}" or material5 = "{0}" or material6 = "{0}")'.format(m)
+            where.append('(material1 = "{0}" or material2 = "{0}" or material3 = "{0}" or material4 = "{0}" or material5 = "{0}" or material6 = "{0}")'.format(m))
 
-    if where is not None:
-        params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields, 'where': where}
-    else:
-        params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields}
+    params = {'action': 'cargoquery', 'format': 'json', 'limit': limit, 'tables': tables, 'fields': fields}
+    params_where(params, where)
 
     cargo_results = call_cargo(params, request.args)
     results_array = []
@@ -1021,14 +1056,14 @@ def get_recipe_list(limit, tables, fields):
 
 
 def get_event_list(limit, tables, fields, orderby):
-    where = None
+    where = []
 
     # Filter by date:
     if request.args.get('date'):
         date = request.args.get('date')
         today = datetime.today()
         if date == 'today':
-            where = 'YEAR(date) = ' + today.strftime('%Y') + ' AND MONTH(date) = ' + today.strftime('%m') + ' AND DAYOFMONTH(date) = ' + today.strftime('%d')
+            where.append('YEAR(date) = ' + today.strftime('%Y') + ' AND MONTH(date) = ' + today.strftime('%m') + ' AND DAYOFMONTH(date) = ' + today.strftime('%d'))
         else:
             try:
                 parsed_date = parser.parse(date)
@@ -1037,54 +1072,37 @@ def get_event_list(limit, tables, fields, orderby):
             if parsed_date.strftime('%Y') not in [str(today.year), str(today.year + 1)]:
                 abort(404, description=error_response("No data was found for the given query.", "You must request events from either the current or next year."))
             else:
-                where = 'YEAR(date) = ' + parsed_date.strftime('%Y') + ' AND MONTH(date) = ' + parsed_date.strftime('%m') + ' AND DAYOFMONTH(date) = ' + parsed_date.strftime('%d')
+                where.append('YEAR(date) = ' + parsed_date.strftime('%Y') + ' AND MONTH(date) = ' + parsed_date.strftime('%m') + ' AND DAYOFMONTH(date) = ' + parsed_date.strftime('%d'))
 
     # Filter by year:
     if request.args.get('year'):
         year = request.args.get('year')
-        if where:
-            where = where + ' AND YEAR(date) = "' + year + '"'
-        else:
-            where = 'YEAR(date) = "' + year + '"'
+        where.append('YEAR(date) = "' + year + '"')
 
     # Filter by month:
     if request.args.get('month'):
         month = month_to_int(request.args.get('month'))
-        if where:
-            where = where + ' AND MONTH(date) = "' + month + '"'
-        else:
-            where = 'MONTH(date) = "' + month + '"'
+        where.append('MONTH(date) = "' + month + '"')
 
     # Filter by day:
     if request.args.get('day'):
         day = request.args.get('day')
-        if where:
-            where = where + ' AND DAYOFMONTH(date) = "' + day + '"'
-        else:
-            where = 'DAYOFMONTH(date) = "' + day + '"'
+        where.append('DAYOFMONTH(date) = "' + day + '"')
 
     # Filter by event:
     if request.args.get('event'):
         event = request.args.get('event')
-        if where:
-            where = where + ' AND event = "' + event + '"'
-        else:
-            where = 'event = "' + event + '"'
+        where.append('event = "' + event + '"')
 
     # Filter by type:
     if request.args.get('type'):
         type = request.args.get('type')
         if type not in ['Event', 'Nook Shopping', 'Birthday', 'Recipes']:
             abort(400, description=error_response("Could not recognize provided type.", "Ensure type is either Event, Nook Shopping, Birthday, or Recipes."))
-        if where:
-            where = where + ' AND type = "' + type + '"'
-        else:
-            where = 'type = "' + type + '"'
+        where.append('type = "' + type + '"')
 
-    if where:
-        params = {'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'order_by': orderby, 'limit': limit, 'where': where}
-    else:
-        params = {'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'order_by': orderby, 'limit': limit}
+    params = {'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'order_by': orderby, 'limit': limit}
+    params_where(params, where)
 
     cargo_results = call_cargo(params, request.args)
 
@@ -1096,21 +1114,10 @@ def get_event_list(limit, tables, fields, orderby):
 
 def format_furniture(data):
     #Integers
-    data['hha_base'] = int('0' + data['hha_base'])
-    data['sell'] = int('0' + data['sell'])
-    data['variation_total'] = int('0' + data['variation_total'])
-    data['pattern_total'] = int('0' + data['pattern_total'])
-    data['custom_kits'] = int('0' + data['custom_kits'])
+    format_as_type(data, as_int, 'hha_base', 'sell', 'variation_total', 'pattern_total', 'custom_kits')
 
     #Booleans
-    if data['customizable'] == '0':
-        data['customizable'] = False
-    elif data['customizable'] == '1':
-        data['customizable'] = True
-    if data['lucky'] == '0':
-        data['lucky'] = False
-    elif data['lucky'] == '1':
-        data['lucky'] = True
+    format_as_type(data, as_bool, 'customizable', 'lucky', 'door_decor', 'unlocked')
     # if data['outdoor'] == '0':
     #     data['outdoor'] = False
     # elif data['outdoor'] == '1':
@@ -1135,53 +1142,20 @@ def format_furniture(data):
     #     data['lighting'] = False
     # elif data['lighting'] == '1':
     #     data['lighting'] = True
-    if data['door_decor'] == '0':
-        data['door_decor'] = False
-    elif data['door_decor'] == '1':
-        data['door_decor'] = True
-    if data['unlocked'] == '0':
-        data['unlocked'] = False
-    elif data['unlocked'] == '1':
-        data['unlocked'] = True
 
     grid_width, grid_length = data['grid_size'].split("\u00d7") # \u00d7 is the multiplication sign, so 1.0x1.0 => [1.0,1.0]
     data['grid_width'] = float(grid_width)
     data['grid_length'] = float(grid_length)
     del data['grid_size']
 
-    data['themes'] = []
-    for i in range(1, 3):
-        theme = f'theme{i}'
-        if len(data[theme]) > 0:
-            data['themes'].append(data[theme])
-        del data[theme]
+    coalesce_fields_as_list(data, 2, 'themes', 'theme{}')
 
-    data['functions'] = []
-    for i in range(1, 3):
-        function = f'function{i}'
-        if len(data[function]) > 0:
-            data['functions'].append(data[function])
-        del data[function]
+    coalesce_fields_as_list(data, 2, 'functions', 'function{}')
 
-    data['availability'] = []
-    for i in range(1, 4):
-        if len(data[f'availability{i}']) > 0:
-            data['availability'].append({
-                'from': data[f'availability{i}'],
-                'note': data[f'availability{i}_note']
-            })
-        del data[f'availability{i}']
-        del data[f'availability{i}_note']
+    coalesce_fields_as_object_list(data, 3, 'availability', ('from', 'availability{}'), ('note', 'availability{}_note'))
 
-    data['buy'] = []
-    for i in range(1, 3):  # Technically overkill, but it'd be easy to add a third buy column if it ever matters
-        if len(data[f'buy{i}_price']) > 0:
-            data['buy'].append({
-                'price': int(data[f'buy{i}_price']),
-                'currency': data[f'buy{i}_currency']
-            })
-        del data[f'buy{i}_price']
-        del data[f'buy{i}_currency']
+    coalesce_fields_as_object_list(data, 2, 'buy', ('price', 'buy{}_price'), ('currency', 'buy{}_currency'))
+    format_coalesced_object_list(data, as_int, 'buy', 'price')
 
     return data
 
@@ -1196,11 +1170,8 @@ def get_furniture_list(limit,tables,fields):
             abort(400, description=error_response('Could not recognize provided category.','Ensure category is either housewares, miscellaneous, or wall-mounted.'))
         where.append('category = "{0}"'.format(category))
 
-    if len(where) == 0:
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
-    else:
-        where = ' AND '.join(where)
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit, 'where': where }
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
+    params_where(params, where)
 
     cargo_results = call_cargo(params, request.args)
     ret = [format_furniture(_) for _ in cargo_results]
@@ -1231,65 +1202,29 @@ def get_furniture_variation_list(limit,tables,fields,orderby):
         variation = request.args['variation']
         where.append(f'variation = "{variation}"')
 
-    if len(where) == 0:
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'order_by': orderby, 'limit': limit }
-    else:
-        where = ' AND '.join(where)
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'order_by': orderby, 'limit': limit, 'where': where }
-
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'order_by': orderby, 'limit': limit }
+    params_where(params, where)
+    
     cargo_results = call_cargo(params, request.args)
     return cargo_results
 
 
 def format_clothing(data):
     # Integers
-    data['sell'] = int('0' + data['sell'])
-    data['variation_total'] = int('0' + data['variation_total'])
+    format_as_type(data, as_int, 'sell', 'variation_total')
 
     # Booleans
-    if data['vill_equip'] == '0':
-        data['vill_equip'] = False
-    elif data['vill_equip'] == '1':
-        data['vill_equip'] = True
-    if data['unlocked'] == '0':
-        data['unlocked'] = False
-    elif data['unlocked'] == '1':
-        data['unlocked'] = True
+    format_as_type(data, as_bool, 'vill_equip', 'unlocked')
 
     # Turn label[1-5] into a list called label
-    data['label'] = []
-    for i in range(1,6):
-        label = f'label{i}'
-        if len(data[label]) > 0:
-            data['label'].append(data[label])
-        del data[label]
+    coalesce_fields_as_list(data, 5, 'label', 'label{}')
 
-    data['styles'] = []
-    for i in range(1,3):
-        style = f'style{i}'
-        if len(data[style]) > 0:
-            data['styles'].append(data[style])
-        del data[style]
+    coalesce_fields_as_list(data, 2, 'styles', 'style{}')
 
-    data['availability'] = []
-    for i in range(1, 3):
-        if len(data[f'availability{i}']) > 0:
-            data['availability'].append({
-                'from': data[f'availability{i}'],
-                'note': data[f'availability{i}_note']
-            })
-        del data[f'availability{i}']
-        del data[f'availability{i}_note']
+    coalesce_fields_as_object_list(data, 2, 'availability', ('from', 'availability{}'), ('note', 'availability{}_note'))
 
-    data['buy'] = []
-    for i in range(1, 3):  # Technically overkill, but it'd be easy to add a third buy column if it ever matters
-        if len(data[f'buy{i}_price']) > 0:
-            data['buy'].append({
-                'price': int(data[f'buy{i}_price']),
-                'currency': data[f'buy{i}_currency']
-            })
-        del data[f'buy{i}_price']
-        del data[f'buy{i}_currency']
+    coalesce_fields_as_object_list(data, 2, 'buy', ('price', 'buy{}_price'), ('currency', 'buy{}_currency'))
+    format_coalesced_object_list(data, as_int, 'buy', 'price')
 
     return data
 
@@ -1324,11 +1259,8 @@ def get_clothing_list(limit,tables,fields):
             abort(400, description=error_response('Could not recognize provided Label theme.','Ensure Label theme is either comfy, everyday, fairy tale, formal, goth, outdoorsy, party, sporty, theatrical, vacation, or work.'))
         where.append('(label1 = "{0}" OR label2 = "{0}" OR label3 = "{0}" OR label4 = "{0}" OR label5 = "{0}")'.format(label))
 
-    if len(where) == 0:
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
-    else:
-        where = ' AND '.join(where)
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit, 'where': where }
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
+    params_where(params, where)
 
     cargo_results = call_cargo(params, request.args)
     ret = [format_clothing(_) for _ in cargo_results]
@@ -1337,48 +1269,20 @@ def get_clothing_list(limit,tables,fields):
 
 def format_photo(data):
     # Integers
-    data['hha_base'] = int('0' + data['hha_base'])
-    data['sell'] = int('0' + data['sell'])
-    data['custom_kits'] = int('0' + data['custom_kits'])
+    format_as_type(data, int, 'hha_base', 'sell', 'custom_kits')
 
     # Booleans
-    if data['customizable'] == '0':
-        data['customizable'] = False
-    elif data['customizable'] == '1':
-        data['customizable'] = True
-    if data['interactable'] == '0':
-        data['interactable'] = False
-    elif data['interactable'] == '1':
-        data['interactable'] = True
-    if data['unlocked'] == '0':
-        data['unlocked'] = False
-    elif data['unlocked'] == '1':
-        data['unlocked'] = True
+    format_as_type(data, as_bool, 'customizable', 'interactable', 'unlocked')
 
     grid_width, grid_length = data['grid_size'].split("\u00d7") # \u00d7 is the multiplication sign, so 1.0x1.0 => [1.0,1.0]
     data['grid_width'] = float(grid_width)
     data['grid_length'] = float(grid_length)
     del data['grid_size']
 
-    data['availability'] = []
-    for i in range(1, 3):
-        if len(data[f'availability{i}']) > 0:
-            data['availability'].append({
-                'from': data[f'availability{i}'],
-                'note': data[f'availability{i}_note']
-            })
-        del data[f'availability{i}']
-        del data[f'availability{i}_note']
+    coalesce_fields_as_object_list(data, 2, 'availability', ('from', 'availability{}'), ('note', 'availability{}_note'))
 
-    data['buy'] = []
-    for i in range(1, 3):  # Technically overkill, but it'd be easy to add a third buy column if it ever matters
-        if len(data[f'buy{i}_price']) > 0:
-            data['buy'].append({
-                'price': int(data[f'buy{i}_price']),
-                'currency': data[f'buy{i}_currency']
-            })
-        del data[f'buy{i}_price']
-        del data[f'buy{i}_currency']
+    coalesce_fields_as_object_list(data, 2, 'buy', ('price', 'buy{}_price'), ('currency', 'buy{}_currency'))
+    format_coalesced_object_list(data, as_int, 'buy', 'price')
 
     return data
 
@@ -1393,11 +1297,8 @@ def get_photo_list(limit,tables,fields):
             abort(400, description=error_response('Could not recognize provided category.','Ensure category is either photos or posters.'))
         where.append('category = "{0}"'.format(category))
 
-    if len(where) == 0:
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
-    else:
-        where = ' AND '.join(where)
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit, 'where': where }
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
+    params_where(params, where)
 
     cargo_results = call_cargo(params, request.args)
     ret = [format_photo(_) for _ in cargo_results]
@@ -1406,18 +1307,10 @@ def get_photo_list(limit,tables,fields):
 
 def format_interior(data):
     # Integers
-    data['hha_base'] = int('0' + data['hha_base'])
-    data['sell'] = int('0' + data['sell'])
+    format_as_type(data, as_int, 'hha_base', 'sell')
 
     # Booleans
-    if data['vfx'] == '0':
-        data['vfx'] = False
-    elif data['vfx'] == '1':
-        data['vfx'] = True
-    if data['unlocked'] == '0':
-        data['unlocked'] = False
-    elif data['unlocked'] == '1':
-        data['unlocked'] = True
+    format_as_type(data, as_bool, 'vfx', 'unlocked')
 
     if data['grid_size']:
         grid_width, grid_length = data['grid_size'].split("\u00d7") # \u00d7 is the multiplication sign, so 1.0x1.0 => [1.0,1.0]
@@ -1428,40 +1321,14 @@ def format_interior(data):
         data['grid_length'] = ""
     del data['grid_size']
 
-    data['themes'] = []
-    for i in range(1,3):
-        theme = f'theme{i}'
-        if len(data[theme]) > 0:
-            data['themes'].append(data[theme])
-        del data[theme]
+    coalesce_fields_as_list(data, 2, 'themes', 'theme{}')
 
-    data['colors'] = []
-    for i in range(1,3):
-        color = f'color{i}'
-        if len(data[color]) > 0:
-            data['colors'].append(data[color])
-        del data[color]
+    coalesce_fields_as_list(data, 2, 'colors', 'color{}')
 
+    coalesce_fields_as_object_list(data, 2, 'availability', ('from', 'availability{}'), ('note', 'availability{}_note'))
 
-    data['availability'] = []
-    for i in range(1, 3):
-        if len(data[f'availability{i}']) > 0:
-            data['availability'].append({
-                'from': data[f'availability{i}'],
-                'note': data[f'availability{i}_note']
-            })
-        del data[f'availability{i}']
-        del data[f'availability{i}_note']
-
-    data['buy'] = []
-    for i in range(1, 3):  # Technically overkill, but it'd be easy to add a third buy column if it ever matters
-        if len(data[f'buy{i}_price']) > 0:
-            data['buy'].append({
-                'price': int(data[f'buy{i}_price']),
-                'currency': data[f'buy{i}_currency']
-            })
-        del data[f'buy{i}_price']
-        del data[f'buy{i}_currency']
+    coalesce_fields_as_object_list(data, 2, 'buy', ('price', 'buy{}_price'), ('currency', 'buy{}_currency'))
+    format_coalesced_object_list(data, as_int, 'buy', 'price')
 
     return data
 
@@ -1482,11 +1349,8 @@ def get_interior_list(limit,tables,fields):
         else:
             abort(400, description=error_response('Invalid arguments','Cannot have more than two colors'))
 
-    if len(where) == 0:
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
-    else:
-        where = ' AND '.join(where)
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit, 'where': where }
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
+    params_where(params, where)
 
     cargo_results = call_cargo(params, request.args)
     results_array = []
@@ -1501,39 +1365,15 @@ def get_interior_list(limit,tables,fields):
 
 def format_tool(data):
     # Integers
-    data['sell'] = int('0' + data['sell'])
-    data['custom_kits'] = int('0' + data['custom_kits'])
-    data['hha_base'] = int('0' + data['hha_base'])
+    format_as_type(data, as_int, 'sell', 'custom_kits', 'hha_base')
 
     # Booleans
-    if data['customizable'] == '0':
-        data['customizable'] = False
-    elif data['customizable'] == '1':
-        data['customizable'] = True
-    if data['unlocked'] == '0':
-        data['unlocked'] = False
-    elif data['unlocked'] == '1':
-        data['unlocked'] = True
+    format_as_type(data, as_bool, 'customizable', 'unlocked')
 
-    data['availability'] = []
-    for i in range(1, 4):
-        if len(data[f'availability{i}']) > 0:
-            data['availability'].append({
-                'from': data[f'availability{i}'],
-                'note': data[f'availability{i}_note']
-            })
-        del data[f'availability{i}']
-        del data[f'availability{i}_note']
+    coalesce_fields_as_object_list(data, 3, 'availability', ('from', 'availability{}'), ('note', 'availability{}_note'))
 
-    data['buy'] = []
-    for i in range(1, 3):  # Technically overkill, but it'd be easy to add a third buy column if it ever matters
-        if len(data[f'buy{i}_price']) > 0:
-            data['buy'].append({
-                'price': int(data[f'buy{i}_price']),
-                'currency': data[f'buy{i}_currency']
-            })
-        del data[f'buy{i}_price']
-        del data[f'buy{i}_currency']
+    coalesce_fields_as_object_list(data, 2, 'buy', ('price', 'buy{}_price'), ('currency', 'buy{}_currency'))
+    format_coalesced_object_list(data, as_int, 'buy', 'price')
 
     return data
 
@@ -1541,11 +1381,8 @@ def format_tool(data):
 def get_tool_list(limit,tables,fields):
     where = []
 
-    if len(where) == 0:
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
-    else:
-        where = ' AND '.join(where)
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit, 'where': where }
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
+    params_where(params, where)
 
     cargo_results = call_cargo(params, request.args)
     ret = [format_tool(_) for _ in cargo_results]
@@ -1554,46 +1391,15 @@ def get_tool_list(limit,tables,fields):
 
 def format_other_item(data):
     # Integers
-    data['stack'] = int('0' + data['stack'])
-    data['hha_base'] = int('0' + data['hha_base'])
-    data['sell'] = int('0' + data['sell'])
-    data['material_sort'] = int('0' + data['material_sort'])
-    data['material_name_sort'] = int('0' + data['material_name_sort'])
-    data['material_seasonality_sort'] = int('0' + data['material_seasonality_sort'])
+    format_as_type(data, as_int, 'stack', 'hha_base', 'sell', 'material_sort', 'material_name_sort', 'material_seasonality_sort')
 
     # Booleans
-    if data['is_fence'] == '0':
-        data['is_fence'] = False
-    elif data['is_fence'] == '1':
-        data['is_fence'] = True
-    if data['edible'] == '0':
-        data['edible'] = False
-    elif data['edible'] == '1':
-        data['edible'] = True
-    if data['unlocked'] == '0':
-        data['unlocked'] = False
-    elif data['unlocked'] == '1':
-        data['unlocked'] = True
+    format_as_type(data, as_bool, 'is_fence','edible', 'unlocked')
 
-    data['availability'] = []
-    for i in range(1, 4):
-        if len(data[f'availability{i}']) > 0:
-            data['availability'].append({
-                'from': data[f'availability{i}'],
-                'note': data[f'availability{i}_note']
-            })
-        del data[f'availability{i}']
-        del data[f'availability{i}_note']
+    coalesce_fields_as_object_list(data, 3, 'availability', ('from', 'availability{}'), ('note', 'availability{}_note'))
 
-    data['buy'] = []
-    for i in range(1, 2):  # Technically overkill, but it'd be easy to add a third buy column if it ever matters
-        if len(data[f'buy{i}_price']) > 0:
-            data['buy'].append({
-                'price': int(data[f'buy{i}_price']),
-                'currency': data[f'buy{i}_currency']
-            })
-        del data[f'buy{i}_price']
-        del data[f'buy{i}_currency']
+    coalesce_fields_as_object_list(data, 1, 'buy', ('price', 'buy{}_price'), ('currency', 'buy{}_currency'))
+    format_coalesced_object_list(data, as_int, 'buy', 'price')
 
     return data
 
@@ -1601,11 +1407,8 @@ def format_other_item(data):
 def get_other_item_list(limit,tables,fields):
     where = []
 
-    if len(where) == 0:
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
-    else:
-        where = ' AND '.join(where)
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit, 'where': where }
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'limit': limit }
+    params_where(params, where)
 
     cargo_results = call_cargo(params, request.args)
     results_array = []
@@ -1638,26 +1441,19 @@ def get_variation_list(limit,tables,fields,orderby):
         variation = request.args['variation']
         where.append(f'variation = "{variation}"')
 
-    if len(where) == 0:
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'order_by': orderby, 'limit': limit }
-    else:
-        where = ' AND '.join(where)
-        params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'order_by': orderby, 'limit': limit, 'where': where }
-
+    params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'order_by': orderby, 'limit': limit }
+    params_where(params, where)
+    
     cargo_results = call_cargo(params, request.args)
     return cargo_results
 
 
 def format_variation(data):
     if 'color1' in data:
-        colors = set()
-        for i in range(1,3):
-            color = f'color{i}'
-            if len(data[color]) > 0:
-                colors.add(data[color])
-            del data[color]
-        colors.discard('None')
-        data['colors'] = list(colors)
+        coalesce_fields_as_list(data, 2, 'colors', 'color{}')
+        data['colors'] = set(data['colors'])
+        data['colors'].discard('None')
+        data['colors'] = list(data['colors'])
     return data
 
 
@@ -1734,9 +1530,9 @@ def get_villager_all():
     limit = '500'
     tables = 'villager'
     join = ''
-    if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
+    if request.args.get('excludedetails') == 'true':
         fields = 'name'
-    elif request.args.get('nhdetails') and (request.args.get('nhdetails') == 'true'):
+    elif request.args.get('nhdetails') == 'true':
         tables = 'villager,nh_villager,nh_house'
         join = 'villager._pageName=nh_villager._pageName,villager._pageName=nh_house._pageName'
         fields = 'villager.name,villager._pageName=url,villager.name,villager.alt_name,villager.title_color,villager.text_color,villager.id,villager.image_url,villager.species,villager.personality,villager.gender,villager.birthday_month,villager.birthday_day,villager.sign,villager.quote,villager.phrase,villager.prev_phrase,villager.prev_phrase2,villager.clothing,villager.islander,villager.debut,villager.dnm,villager.ac,villager.e_plus,villager.ww,villager.cf,villager.nl,villager.wa,villager.nh,villager.film,villager.hhd,villager.pc,nh_villager.image_url=nh_image_url,nh_villager.photo_url=nh_photo_url,nh_villager.icon_url=nh_icon_url,nh_villager.quote=nh_quote,nh_villager.sub_personality=nh_sub-personality,nh_villager.catchphrase=nh_catchphrase,nh_villager.clothing=nh_clothing,nh_villager.clothing_variation=nh_clothing_variation,nh_villager.fav_style1=nh_fav_style1,nh_villager.fav_style2=nh_fav_style2,nh_villager.fav_color1=nh_fav_color1,nh_villager.fav_color2=nh_fav_color2,nh_villager.hobby=nh_hobby,nh_house.interior_image_url=nh_house_interior_url,nh_house.exterior_image_url=nh_house_exterior_url,nh_house.wallpaper=nh_wallpaper,nh_house.flooring=nh_flooring,nh_house.music=nh_music,nh_house.music_note=nh_music_note'
@@ -1753,7 +1549,7 @@ def get_nh_fish_all():
 
     limit = '100'
     tables = 'nh_fish'
-    if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
+    if request.args.get('excludedetails') == 'true':
         fields = 'name,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12'
     else:
         fields = 'name,_pageName=url,number,image_url,render_url,catchphrase,catchphrase2,catchphrase3,location,shadow_size,rarity,total_catch,sell_nook,sell_cj,tank_width,tank_length,time,time_n_availability=time_n_months,time_s_availability=time_s_months,time2,time2_n_availability=time2_n_months,time2_s_availability=time2_s_months,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,n_m1_time,n_m2_time,n_m3_time,n_m4_time,n_m5_time,n_m6_time,n_m7_time,n_m8_time,n_m9_time,n_m10_time,n_m11_time,n_m12_time,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,s_m1_time,s_m2_time,s_m3_time,s_m4_time,s_m5_time,s_m6_time,s_m7_time,s_m8_time,s_m9_time,s_m10_time,s_m11_time,s_m12_time'
@@ -1776,7 +1572,7 @@ def get_nh_fish(fish):
     if cargo_results == []:
         abort(404, description=error_response("No data was found for the given query.", "MediaWiki Cargo request succeeded by nothing was returned for the parameters: {}".format(params)))
     else:
-        if(request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] == '1.0'):
+        if exact_version('1.0'):
             return jsonify(months_to_array(format_critters(cargo_results)))
         else:
             return jsonify(months_to_array(format_critters(cargo_results))[0])
@@ -1789,7 +1585,7 @@ def get_nh_bug_all():
 
     limit = '100'
     tables = 'nh_bug'
-    if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
+    if request.args.get('excludedetails') == 'true':
         fields = 'name,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12'
     else:
         fields = 'name,_pageName=url,number,image_url,render_url,catchphrase,catchphrase2,location,rarity,total_catch,sell_nook,sell_flick,tank_width,tank_length,time,time_n_availability=time_n_months,time_s_availability=time_s_months,time2,time2_n_availability=time2_n_months,time2_s_availability=time2_s_months,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,n_m1_time,n_m2_time,n_m3_time,n_m4_time,n_m5_time,n_m6_time,n_m7_time,n_m8_time,n_m9_time,n_m10_time,n_m11_time,n_m12_time,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,s_m1_time,s_m2_time,s_m3_time,s_m4_time,s_m5_time,s_m6_time,s_m7_time,s_m8_time,s_m9_time,s_m10_time,s_m11_time,s_m12_time'
@@ -1813,7 +1609,7 @@ def get_nh_bug(bug):
     if cargo_results == []:
         abort(404, description=error_response("No data was found for the given query.", "MediaWiki Cargo request succeeded by nothing was returned for the parameters: {}".format(params)))
     else:
-        if(request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] == '1.0'):
+        if exact_version('1.0'):
             return jsonify(months_to_array(format_critters(cargo_results)))
         else:
             return jsonify(months_to_array(format_critters(cargo_results))[0])
@@ -1826,7 +1622,7 @@ def get_nh_sea_all():
 
     limit = '100'
     tables = 'nh_sea_creature'
-    if request.args.get('excludedetails') and (request.args.get('excludedetails') == 'true'):
+    if request.args.get('excludedetails') == 'true':
         fields = 'name,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12'
     else:
         fields = 'name,_pageName=url,number,image_url,render_url,catchphrase,catchphrase2,shadow_size,shadow_movement,rarity,total_catch,sell_nook,tank_width,tank_length,time,time_n_availability=time_n_months,time_s_availability=time_s_months,time2,time2_n_availability=time2_n_months,time2_s_availability=time2_s_months,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,n_m1_time,n_m2_time,n_m3_time,n_m4_time,n_m5_time,n_m6_time,n_m7_time,n_m8_time,n_m9_time,n_m10_time,n_m11_time,n_m12_time,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,s_m1_time,s_m2_time,s_m3_time,s_m4_time,s_m5_time,s_m6_time,s_m7_time,s_m8_time,s_m9_time,s_m10_time,s_m11_time,s_m12_time'
@@ -1850,7 +1646,7 @@ def get_nh_sea(sea):
     if cargo_results == []:
         abort(404, description=error_response("No data was found for the given query.", "MediaWiki Cargo request succeeded by nothing was returned for the parameters: {}".format(params)))
     else:
-        if(request.headers.get('Accept-Version') and request.headers.get('Accept-Version')[:3] == '1.0'):
+        if exact_version('1.0'):
             return jsonify(months_to_array(format_critters(cargo_results)))
         else:
             return jsonify(months_to_array(format_critters(cargo_results))[0])
@@ -1880,7 +1676,7 @@ def get_nh_art_all():
 
     limit = '50'
     tables = 'nh_art'
-    if request.args.get('excludedetails', 'false') == 'true':
+    if request.args.get('excludedetails') == 'true':
         fields = 'name'
     else:
         fields = 'name,_pageName=url,image_url,has_fake,fake_image_url,art_name,author,year,art_style,description,buy_price=buy,sell,availability,authenticity,width,length'
