@@ -1194,14 +1194,6 @@ def get_furniture_variation_list(limit,tables,fields,orderby):
         else:
             abort(400, description=error_response('Invalid arguments','Cannot have more than two colors'))
 
-    if 'pattern' in request.args:
-        pattern = request.args['pattern']
-        where.append(f'pattern = "{pattern}"')
-
-    if 'variation' in request.args:
-        variation = request.args['variation']
-        where.append(f'variation = "{variation}"')
-
     params = { 'action': 'cargoquery', 'format': 'json', 'tables': tables, 'fields': fields, 'order_by': orderby, 'limit': limit }
     params_where(params, where)
     
