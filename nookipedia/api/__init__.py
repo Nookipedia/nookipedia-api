@@ -1,5 +1,10 @@
 from nookipedia.api import (
     admin,
+    static,
+    villagers
+)
+
+from nookipedia.api.acnh import (
     art,
     bugs,
     clothing,
@@ -11,7 +16,5 @@ from nookipedia.api import (
     photos,
     recipes,
     sea,
-    static,
     tools,
-    villagers
 )
