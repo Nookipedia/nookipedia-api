@@ -916,10 +916,14 @@ components:
           enum:
             - Male
             - Female
-        birthday:
+        birthday_month:
           type: string
-          example: February 13
-          description: 'Birthday of the villager in ''Month Day'' form. Note that villager birthdays were not introduced until *Wild World*. For villagers who didn''t appear in *Wild World* or any later games, this field will be an empty string.'
+          example: February
+          description: 'Birthday month of the villager. Note that villager birthdays were not introduced until *Wild World*. For villagers who didn''t appear in *Wild World* or any later games, this field will be an empty string.'
+        birthday_day:
+          type: string
+          example: 13
+          description: 'Birthday day of the villager. Note that villager birthdays were not introduced until *Wild World*. For villagers who didn''t appear in *Wild World* or any later games, this field will be an empty string.'
         sign:
           type: string
           example: Aquarius
