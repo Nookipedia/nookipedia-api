@@ -523,7 +523,7 @@ paths:
           required: false
           schema:
             type: string
-          description: Specify a specific date to retrieve events for. May be any day in the current or next year. Accepts many date formats, such as `YYYY-MM-DD` or `Month Day, Year`.
+          description: "Specify a specific date (in the current or next year) to retrieve events for. Accepts many date formats, such as `YYYY-MM-DD` or `Month Day, Year`, as well as `today` to retrieve the current day's events (UTC time)."
         - in: query
           name: year
           required: false
