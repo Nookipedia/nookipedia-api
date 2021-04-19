@@ -1062,7 +1062,7 @@ paths:
                 $ref: '#/components/schemas/Error500'
   /nh/tools/{tool}:
     get:
-      summary: Single New Horizons tools
+      summary: Single New Horizons tool
       description: 'Retrieve information about a specific tool in *Animal Crossing: New Horizons*.'
       parameters:
         - in: path
