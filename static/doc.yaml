@@ -1513,7 +1513,7 @@ components:
           description: 'Birthday month of the villager. Note that villager birthdays were not introduced until *Wild World*. For villagers who didn''t appear in *Wild World* or any later games, this field will be an empty string.'
         birthday_day:
           type: string
-          example: 13
+          example: '13'
           description: 'Birthday day of the villager. Note that villager birthdays were not introduced until *Wild World*. For villagers who didn''t appear in *Wild World* or any later games, this field will be an empty string.'
         sign:
           type: string
