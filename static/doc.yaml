@@ -800,7 +800,7 @@ paths:
                 - Simple
           description: Return clothing that matches the provided styles (may specify one or two styles). Styles are used for gifting villagers.
         - in: query
-          name: label
+          name: labeltheme
           required: false
           schema:
             type: string
@@ -2976,7 +2976,7 @@ components:
           type: string
           example: ""
           description: Any additional miscellaneous information about the clothing, such as a name change from a past update.
-        label:
+        label_themes:
           type: array
           items:
             type: string
