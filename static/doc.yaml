@@ -2462,6 +2462,14 @@ components:
           type: string
           example: ""
           description: The [furniture set](https://nookipedia.com/wiki/Set) the item is a part of, if any. A set is a smaller collection of related furniture items. If the item is not part of a set, this will be an empty string.
+        themes:
+          type: array
+          items:
+            type: string
+          example:
+            - "Living Room"
+            - "Expensive"
+          description: A list of [themes](https://nookipedia.com/wiki/Theme_(furniture)) (if any) that the item belongs to.
         hha_category:
           type: string
           example: Dresser
@@ -2581,14 +2589,6 @@ components:
           type: boolean
           example: true
           description: Whether the item is available through legitimate gameplay. Some items are added to the game files in an update, but aren't actually made available until a subsequent update unlocks them.
-        themes:
-          type: array
-          items:
-            type: string
-          example:
-            - "Living Room"
-            - "Expensive"
-          description: A list of [themes](https://nookipedia.com/wiki/Theme_(furniture)) (if any) that the item belongs to.
         functions:
           type: array
           items:
@@ -3106,6 +3106,14 @@ components:
           type: string
           example: ""
           description: The [furniture set](https://nookipedia.com/wiki/Set) the item is a part of, if any. A set is a smaller collection of related furniture items. If the item is not part of a set, this will be an empty string.
+        themes:
+          type: array
+          items:
+            type: string
+          example:
+            - Shop
+            - Facility
+          description: A list of [themes](https://nookipedia.com/wiki/Theme_(furniture)) (if any) that the item belongs to.
         hha_category:
           type: string
           example: Dresser
@@ -3144,14 +3152,6 @@ components:
           format: float
           example: 1.0
           description: The number of lengthwise grid spaces this item takes up.
-        themes:
-          type: array
-          items:
-            type: string
-          example:
-            - Shop
-            - Facility
-          description: A list of [themes](https://nookipedia.com/wiki/Theme_(furniture)) (if any) that the item belongs to.
         colors:
           type: string
           example:
