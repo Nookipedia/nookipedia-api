@@ -500,6 +500,69 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error500'
+  /nh/events:
+    get:
+      summary: All New Horizons events
+      description: 'Get a list of events and dates in *Animal Crossing: New Horizons*, filterable to specific years, months, or days. Data is available for the current and next year.'
+      parameters:
+        - in: header
+          name: X-API-KEY
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: 'Your UUID secret key, granted to you by the Nookipedia team. Required for accessing the API.'
+        - in: header
+          name: Accept-Version
+          required: true
+          schema:
+            type: string
+          description: 'The version of the API you are calling, written as `1.0.0`. This is specified as required as good practice, but it is not actually enforced by the API. If you do not specify a version, you will be served the latest version, which may eventually result in breaking changes.'
+        - in: query
+          name: date
+          required: false
+          schema:
+            type: string
+          description: Specify a specific date to retrieve events for. May be any day in the current or next year. Accepts many date formats, such as `YYYY-MM-DD` or `Month Day, Year`.
+        - in: query
+          name: year
+          required: false
+          schema:
+            type: string
+          description: Specify the year to retrieve events for. Must be the current or next year.
+        - in: query
+          name: month
+          required: false
+          schema:
+            type: string
+          description: Specify the month to retrieve events for (accepts multiple formats, such as `Oct`, `October`, or `10`). Most likely want to use alongside `year`, otherwise events in both the current and next year are returned.
+        - in: query
+          name: day
+          required: false
+          schema:
+            type: integer
+          description: Specify the day of the month to retrieve events for.
+      responses:
+        '200':
+          description: A JSON array of events.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NHEvent'
+        '401':
+          description: Failed to authenticate user from `X-API-KEY`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '500':
+          description: There was an error fetching the requested data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error500'
   /nh/art:
     get:
       summary: All New Horizons artwork
@@ -1291,69 +1354,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NHRecipe'
-        '401':
-          description: Failed to authenticate user from `X-API-KEY`.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error401'
-        '500':
-          description: There was an error fetching the requested data.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error500'
-  /nh/events:
-    get:
-      summary: All New Horizons events
-      description: 'Get a list of all ongoing or upcoming events in *Animal Crossing: New Horizons*.'
-      parameters:
-        - in: header
-          name: X-API-KEY
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: 'Your UUID secret key, granted to you by the Nookipedia team. Required for accessing the API.'
-        - in: header
-          name: Accept-Version
-          required: true
-          schema:
-            type: string
-          description: 'The version of the API you are calling, written as `1.0.0`. This is specified as required as good practice, but it is not actually enforced by the API. If you do not specify a version, you will be served the latest version, which may eventually result in breaking changes.'
-        - in: query
-          name: year
-          required: false
-          schema:
-            type: string
-          description: Specify a year of the event.
-        - in: query
-          name: month
-          required: false
-          schema:
-            type: string
-          description: Specify a month of the event.
-        - in: query
-          name: day
-          required: false
-          schema:
-            type: string
-          description: Specify a day of the event.
-        - in: query
-          name: excludedetails
-          required: false
-          schema:
-            type: string
-          description: 'When set to `true`, only recipe names are returned. Instead of an array of objects with all details, the return will be an array of strings.'
-      responses:
-        '200':
-          description: A JSON array of events.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/NHEvent'
         '401':
           description: Failed to authenticate user from `X-API-KEY`.
           content:
@@ -2366,6 +2366,30 @@ components:
                 - 12
               description: An array of integers representing the months the sea creature is available in the Southern hemisphere.
           description: When you can catch the sea creature in the Southern hemisphere.
+    NHEvent:
+      type: object
+      properties:
+        event:
+          type: string
+          example: May Day event begins
+          description: The description of the event.
+        date:
+          type: string
+          example: '2021-05-01'
+          description: The date of the event in YYYY-MM-DD format.
+        type:
+          type: string
+          example: Event
+          description: The type of event. "Event" is a festivity the player can take part in. "Nook Shopping" refers to the [seasonal events](https://nookipedia.com/wiki/Nook_Shopping_seasonal_event) in which exclusive item(s) are available via []Nook Shopping](https://nookipedia.com/wiki/Nook_Shopping). "Recipes" refers to the start or end of certain recipes being available. "Birthday" refers to the birthday of a villager or special character.
+          enum:
+            - Event
+            - Nook Shopping
+            - Recipes
+            - Birthday
+        url:
+          type: string
+          example: https://nookipedia.com/wiki/May_Day
+          description: Link to the respective Nookipedia article for the event.
     NHArtwork:
       type: object
       properties:
@@ -3392,18 +3416,3 @@ components:
             - name: Stone
               count: 1
           description: The list of materials required to craft the item.
-    NHEvent:
-      type: object
-      properties:
-        date:
-          type: string
-          example: '2021-05-01'
-          description: The date of the event in YYYY-MM-DD format.
-        event:
-          type: string
-          example: May Day event begins
-          description: The description of the event.
-        url:
-          type: string
-          example: https://nookipedia.com/wiki/May_Day
-          description: The article name of the event.
