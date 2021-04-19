@@ -1261,7 +1261,7 @@ def get_clothing_list(limit,tables,fields):
 
 def format_photo(data):
     # Integers
-    format_as_type(data, int, 'hha_base', 'sell', 'custom_kits')
+    format_as_type(data, as_int, 'hha_base', 'sell', 'custom_kits')
 
     # Booleans
     format_as_type(data, as_bool, 'customizable', 'interactable', 'unlocked')
