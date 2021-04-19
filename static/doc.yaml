@@ -773,7 +773,7 @@ paths:
           description: 'Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL.'
       responses:
         '200':
-          description: A JSON array of furniture.
+          description: A JSON object describing the furniture.
           content:
             application/json:
               schema:
@@ -933,7 +933,7 @@ paths:
           description: 'Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL.'
       responses:
         '200':
-          description: A JSON array of clothing.
+          description: A JSON object describing the clothing.
           content:
             application/json:
               schema:
@@ -1067,7 +1067,7 @@ paths:
           description: 'Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL.'
       responses:
         '200':
-          description: A JSON array of interior items.
+          description: A JSON object describing the interior item.
           content:
             application/json:
               schema:
@@ -1155,11 +1155,99 @@ paths:
           description: 'Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL.'
       responses:
         '200':
-          description: A JSON array of interior items.
+          description: A JSON object describing the tool.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/NHTool'
+        '401':
+          description: Failed to authenticate user from `X-API-KEY`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '500':
+          description: There was an error fetching the requested data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error500'
+  /nh/photos:
+    get:
+      summary: All New Horizons photos and posters
+      description: 'Get a list of all character photos+posters and their details in *Animal Crossing: New Horizons*.'
+      parameters:
+        - in: header
+          name: X-API-KEY
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: 'Your UUID secret key, granted to you by the Nookipedia team. Required for accessing the API.'
+        - in: header
+          name: Accept-Version
+          required: true
+          schema:
+            type: string
+          description: 'The version of the API you are calling, written as `1.0.0`. This is specified as required as good practice, but it is not actually enforced by the API. If you do not specify a version, you will be served the latest version, which may eventually result in breaking changes.'
+      responses:
+        '200':
+          description: A JSON array of photos and posters.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NHPhoto'
+        '401':
+          description: Failed to authenticate user from `X-API-KEY`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '500':
+          description: There was an error fetching the requested data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error500'
+  /nh/photos/{item}:
+    get:
+      summary: Single New Horizons photo or poster
+      description: 'Retrieve information about a character photo or poster in *Animal Crossing: New Horizons*.'
+      parameters:
+        - in: path
+          name: item
+          required: true
+          schema:
+            type: string
+          description: The name of the photo or poster you wish to retrieve information about.
+        - in: header
+          name: X-API-KEY
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: 'Your UUID secret key, granted to you by the Nookipedia team. Required for accessing the API.'
+        - in: header
+          name: Accept-Version
+          required: true
+          schema:
+            type: string
+          description: 'The version of the API you are calling, written as `1.0.0`. This is specified as required as good practice, but it is not actually enforced by the API. If you do not specify a version, you will be served the latest version, which may eventually result in breaking changes.'
+        - in: query
+          name: thumbsize
+          required: false
+          schema:
+            type: integer
+          description: 'Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL.'
+      responses:
+        '200':
+          description: A JSON object describing the photo or poster.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NHPhoto'
         '401':
           description: Failed to authenticate user from `X-API-KEY`.
           content:
@@ -1192,7 +1280,7 @@ paths:
           description: 'The version of the API you are calling, written as `1.0.0`. This is specified as required as good practice, but it is not actually enforced by the API. If you do not specify a version, you will be served the latest version, which may eventually result in breaking changes.'
       responses:
         '200':
-          description: A JSON array of interior items.
+          description: A JSON array of items.
           content:
             application/json:
               schema:
@@ -1243,7 +1331,7 @@ paths:
           description: 'Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL.'
       responses:
         '200':
-          description: A JSON array of interior items.
+          description: A JSON object describing the item.
           content:
             application/json:
               schema:
