@@ -1111,8 +1111,8 @@ paths:
                 $ref: '#/components/schemas/Error500'
   /nh/items:
     get:
-      summary: Miscellaneous New Horizons items, such as materials, star fragments, fruits, fences, and plants.
-      description: 'Get a list of all miscellaneous items and their details in *Animal Crossing: New Horizons*.'
+      summary: Miscellaneous New Horizons items
+      description: 'Get a list of all miscellaneous items (such as materials, star fragments, fruits, fences, and plants) and their details in *Animal Crossing: New Horizons*.'
       parameters:
         - in: header
           name: X-API-KEY
@@ -1150,7 +1150,7 @@ paths:
                 $ref: '#/components/schemas/Error500'
   /nh/items/{item}:
     get:
-      summary: Single New Horizons item
+      summary: Single New Horizons miscellaneous item
       description: 'Retrieve information about a miscellaneous item (such as materials, star fragments, fruits, fences, and plants) in *Animal Crossing: New Horizons*.'
       parameters:
         - in: path
