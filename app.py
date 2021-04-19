@@ -1208,8 +1208,8 @@ def format_clothing(data):
     # Booleans
     format_as_type(data, as_bool, 'vill_equip', 'unlocked')
 
-    # Turn label[1-5] into a list called label
-    coalesce_fields_as_list(data, 5, 'label', 'label{}')
+    # Turn label[1-5] into a list called label_themes
+    coalesce_fields_as_list(data, 5, 'label_themes', 'label{}')
 
     coalesce_fields_as_list(data, 2, 'styles', 'style{}')
 
@@ -1244,9 +1244,9 @@ def get_clothing_list(limit,tables,fields):
         else:
             abort(400, description=error_response('Invalid arguments','Cannot have more than two styles'))
 
-    if 'label' in request.args:
+    if 'labeltheme' in request.args:
         label_list = ['comfy', 'everyday', 'fairy tale', 'formal', 'goth', 'outdoorsy', 'party', 'sporty', 'theatrical', 'vacation', 'work']
-        label = request.args.get('label').lower()
+        label = request.args.get('labeltheme').lower()
         if label not in label_list:
             abort(400, description=error_response('Could not recognize provided Label theme.','Ensure Label theme is either comfy, everyday, fairy tale, formal, goth, outdoorsy, party, sporty, theatrical, vacation, or work.'))
         where.append('(label1 = "{0}" OR label2 = "{0}" OR label3 = "{0}" OR label4 = "{0}" OR label5 = "{0}")'.format(label))
