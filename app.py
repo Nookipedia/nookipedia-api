@@ -1553,7 +1553,7 @@ def get_nh_fish_all():
 @app.route('/nh/fish/<string:fish>', methods=['GET'])
 def get_nh_fish(fish):
     authorize(DB_KEYS, request)
-    fish = fish.replace('_', ' ')
+    fish = requests.utils.unquote(fish).replace('_', ' ')
     limit = '1'
     tables = 'nh_fish'
     fields = 'name,_pageName=url,number,image_url,render_url,catchphrase,catchphrase2,catchphrase3,location,shadow_size,rarity,total_catch,sell_nook,sell_cj,tank_width,tank_length,time,time_n_availability=time_n_months,time_s_availability=time_s_months,time2,time2_n_availability=time2_n_months,time2_s_availability=time2_s_months,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,n_m1_time,n_m2_time,n_m3_time,n_m4_time,n_m5_time,n_m6_time,n_m7_time,n_m8_time,n_m9_time,n_m10_time,n_m11_time,n_m12_time,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,s_m1_time,s_m2_time,s_m3_time,s_m4_time,s_m5_time,s_m6_time,s_m7_time,s_m8_time,s_m9_time,s_m10_time,s_m11_time,s_m12_time'
@@ -1590,7 +1590,7 @@ def get_nh_bug_all():
 def get_nh_bug(bug):
     authorize(DB_KEYS, request)
 
-    bug = bug.replace('_', ' ')
+    bug = requests.utils.unquote(bug).replace('_', ' ')
     limit = '1'
     tables = 'nh_bug'
     fields = 'name,_pageName=url,number,image_url,render_url,catchphrase,catchphrase2,location,rarity,total_catch,sell_nook,sell_flick,tank_width,tank_length,time,time_n_availability=time_n_months,time_s_availability=time_s_months,time2,time2_n_availability=time2_n_months,time2_s_availability=time2_s_months,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,n_m1_time,n_m2_time,n_m3_time,n_m4_time,n_m5_time,n_m6_time,n_m7_time,n_m8_time,n_m9_time,n_m10_time,n_m11_time,n_m12_time,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,s_m1_time,s_m2_time,s_m3_time,s_m4_time,s_m5_time,s_m6_time,s_m7_time,s_m8_time,s_m9_time,s_m10_time,s_m11_time,s_m12_time'
@@ -1627,7 +1627,7 @@ def get_nh_sea_all():
 def get_nh_sea(sea):
     authorize(DB_KEYS, request)
 
-    sea = sea.replace('_', ' ')
+    sea = requests.utils.unquote(sea).replace('_', ' ')
     limit = '1'
     tables = 'nh_sea_creature'
     fields = 'name,_pageName=url,number,image_url,render_url,catchphrase,catchphrase2,shadow_size,shadow_movement,rarity,total_catch,sell_nook,tank_width,tank_length,time,time_n_availability=time_n_months,time_s_availability=time_s_months,time2,time2_n_availability=time2_n_months,time2_s_availability=time2_s_months,n_availability,n_m1,n_m2,n_m3,n_m4,n_m5,n_m6,n_m7,n_m8,n_m9,n_m10,n_m11,n_m12,n_m1_time,n_m2_time,n_m3_time,n_m4_time,n_m5_time,n_m6_time,n_m7_time,n_m8_time,n_m9_time,n_m10_time,n_m11_time,n_m12_time,s_availability,s_m1,s_m2,s_m3,s_m4,s_m5,s_m6,s_m7,s_m8,s_m9,s_m10,s_m11,s_m12,s_m1_time,s_m2_time,s_m3_time,s_m4_time,s_m5_time,s_m6_time,s_m7_time,s_m8_time,s_m9_time,s_m10_time,s_m11_time,s_m12_time'
@@ -1648,7 +1648,7 @@ def get_nh_sea(sea):
 def get_nh_art(art):
     authorize(DB_KEYS, request)
 
-    art = art.replace('_', ' ')
+    art = requests.utils.unquote(art).replace('_', ' ')
     limit = '1'
     tables = 'nh_art'
     fields = 'name,_pageName=url,image_url,has_fake,fake_image_url,art_name,author,year,art_style,description,buy_price=buy,sell,availability,authenticity,width,length'
@@ -1925,7 +1925,7 @@ def get_nh_tool_all():
 def get_nh_interior(interior):
     authorize(DB_KEYS, request)
 
-    interior = interior.replace('_', ' ')
+    interior = requests.utils.unquote(interior).replace('_', ' ')
     limit = '1'
     tables = 'nh_interior'
     fields = '_pageName=url,en_name=name,image_url,category,item_series,item_set,theme1,theme2,hha_category,tag,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,grid_size,color1,color2,version_added,unlocked,notes'
@@ -1954,7 +1954,7 @@ def get_nh_interior_all():
 def get_nh_item(item):
     authorize(DB_KEYS, request)
 
-    item = item.replace('_', ' ')
+    item = requests.utils.unquote(item).replace('_', ' ')
     limit = '1'
     tables = 'nh_item'
     fields = '_pageName=url,en_name=name,image_url,stack,hha_base,buy1_price,buy1_currency,sell,is_fence,material_type,material_seasonality,material_sort,material_name_sort,material_seasonality_sort,edible,plant_type,availability1,availability1_note,availability2,availability2_note,availability3,availability3_note,version_added,unlocked,notes'
