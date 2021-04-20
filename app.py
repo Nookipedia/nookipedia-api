@@ -1721,7 +1721,7 @@ def get_nh_event_all():
 def get_nh_furniture(furniture):
     authorize(DB_KEYS, request)
 
-    furniture = furniture.replace('_',' ')
+    furniture = requests.utils.unquote(furniture).replace('_', ' ')
     furniture_limit = '1'
     furniture_tables = 'nh_furniture'
     furniture_fields = 'identifier,_pageName=url,en_name=name,category,item_series,item_set,theme1,theme2,hha_category,tag,hha_base,lucky,lucky_season,function1,function2,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,availability3,availability3_note,variation_total,pattern_total,customizable,custom_kits,custom_kit_type,custom_body_part,custom_pattern_part,grid_size,height,door_decor,version_added,unlocked,notes'#'
@@ -1772,7 +1772,7 @@ def get_nh_furniture_all():
 def get_nh_clothing(clothing):
     authorize(DB_KEYS, request)
 
-    clothing = clothing.replace('_',' ')
+    clothing = requests.utils.unquote(clothing).replace('_', ' ')
     clothing_limit = '1'
     clothing_tables = 'nh_clothing'
     clothing_fields = 'identifier,_pageName=url,en_name=name,category,style1,style2,label1,label2,label3,label4,label5,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,variation_total,vill_equip,seasonality,version_added,unlocked,notes'
@@ -1823,7 +1823,7 @@ def get_nh_clothing_all():
 def get_nh_photo(photo):
     authorize(DB_KEYS, request)
 
-    photo = photo.replace('_',' ')
+    photo = requests.utils.unquote(photo).replace('_', ' ')
     photo_limit = '1'
     photo_tables = 'nh_photo'
     photo_fields = 'identifier,_pageName=url,en_name=name,category,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,customizable,custom_kits,custom_body_part,grid_size,interactable,version_added,unlocked'
@@ -1874,7 +1874,7 @@ def get_nh_photo_all():
 def get_nh_tool(tool):
     authorize(DB_KEYS, request)
 
-    tool = tool.replace('_',' ')
+    tool = requests.utils.unquote(tool).replace('_', ' ')
     tool_limit = '1'
     tool_tables = 'nh_tool'
     tool_fields = 'identifier,_pageName=url,en_name=name,uses,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,availability3,availability3_note,customizable,custom_kits,custom_body_part,version_added,unlocked,notes'
