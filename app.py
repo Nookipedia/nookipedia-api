@@ -1884,8 +1884,8 @@ def get_nh_tool(tool):
     variation_tables = 'nh_tool_variation'
     variation_fields = 'identifier,variation,image_url'
     variation_where = f'en_name = "{tool}"'
-    variation_params = { 'action': 'cargoquery', 'format': 'json', 'tables': variation_tables, 'fields': variation_fields, 'where': variation_where, 'order_by': variation_orderby, 'limit': variation_limit }
     variation_orderby = 'variation_number'
+    variation_params = { 'action': 'cargoquery', 'format': 'json', 'tables': variation_tables, 'fields': variation_fields, 'where': variation_where, 'order_by': variation_orderby, 'limit': variation_limit }
 
     cargo_results = call_cargo(tool_params, request.args)
     if len(cargo_results) == 0:
