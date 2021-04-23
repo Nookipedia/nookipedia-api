@@ -1712,7 +1712,7 @@ def get_nh_event_all():
     limit = '1200'
     tables = 'nh_calendar'
     fields = 'event,date,type,link=url'
-    orderby = 'date'
+    orderby = 'date,event'
 
     return get_event_list(limit, tables, fields, orderby)
 
