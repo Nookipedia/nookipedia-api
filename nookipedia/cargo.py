@@ -713,14 +713,6 @@ def get_furniture_variation_list(limit, tables, fields, orderby):
                 description=error_response("Invalid arguments", "Cannot have more than two colors"),
             )
 
-    if "pattern" in request.args:
-        pattern = request.args["pattern"]
-        where.append(f'pattern = "{pattern}"')
-
-    if "variation" in request.args:
-        variation = request.args["variation"]
-        where.append(f'variation = "{variation}"')
-
     params = {
         "action": "cargoquery",
         "format": "json",
@@ -787,7 +779,7 @@ def get_clothing_list(limit, tables, fields):
                 description=error_response("Invalid arguments", "Cannot have more than two styles"),
             )
 
-    if "label" in request.args:
+    if "labeltheme" in request.args:
         label_list = [
             "comfy",
             "everyday",
@@ -801,7 +793,7 @@ def get_clothing_list(limit, tables, fields):
             "vacation",
             "work",
         ]
-        label = request.args.get("label").lower()
+        label = request.args.get("labeltheme").lower()
         if label not in label_list:
             abort(
                 400,

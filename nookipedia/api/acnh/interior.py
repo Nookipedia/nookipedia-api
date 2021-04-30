@@ -14,10 +14,10 @@ router = Blueprint("interior", __name__)
 def get_nh_interior(interior):
     authorize(DB_KEYS, request)
 
-    interior = interior.replace("_", " ")
+    interior = requests.utils.unquote(interior).replace("_", " ")
     limit = "1"
     tables = "nh_interior"
-    fields = "_pageName=url,en_name=name,image_url,category,item_series,item_set,theme1,theme2,hha_category,tag,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,grid_size,vfx,color1,color2,version_added,unlocked,notes"
+    fields = "_pageName=url,en_name=name,image_url,category,item_series,item_set,theme1,theme2,hha_category,tag,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,grid_size,color1,color2,version_added,unlocked,notes"
     where = f'en_name="{interior}"'
     params = {
         "action": "cargoquery",
@@ -47,6 +47,6 @@ def get_nh_interior_all():
 
     limit = "650"
     tables = "nh_interior"
-    fields = "_pageName=url,en_name=name,image_url,category,item_series,item_set,theme1,theme2,hha_category,tag,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,grid_size,vfx,color1,color2,version_added,unlocked,notes"
+    fields = "_pageName=url,en_name=name,image_url,category,item_series,item_set,theme1,theme2,hha_category,tag,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,grid_size,color1,color2,version_added,unlocked,notes"
 
     return get_interior_list(limit, tables, fields)

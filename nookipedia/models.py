@@ -408,8 +408,8 @@ def format_clothing(data):
     # Booleans
     format_as_type(data, as_bool, "vill_equip", "unlocked")
 
-    # Turn label[1-5] into a list called label
-    coalesce_fields_as_list(data, 5, "label", "label{}")
+    # Turn label[1-5] into a list called label_themes
+    coalesce_fields_as_list(data, 5, "label_themes", "label{}")
 
     coalesce_fields_as_list(data, 2, "styles", "style{}")
 
@@ -427,7 +427,7 @@ def format_clothing(data):
 
 def format_photo(data):
     # Integers
-    format_as_type(data, int, "hha_base", "sell", "custom_kits")
+    format_as_type(data, as_int, "hha_base", "sell", "custom_kits")
 
     # Booleans
     format_as_type(data, as_bool, "customizable", "interactable", "unlocked")
@@ -456,7 +456,7 @@ def format_interior(data):
     format_as_type(data, as_int, "hha_base", "sell")
 
     # Booleans
-    format_as_type(data, as_bool, "vfx", "unlocked")
+    format_as_type(data, as_bool, "unlocked")
 
     if data["grid_size"]:
         grid_width, grid_length = data["grid_size"].split(

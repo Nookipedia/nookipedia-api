@@ -14,7 +14,7 @@ router = Blueprint("items", __name__)
 def get_nh_item(item):
     authorize(DB_KEYS, request)
 
-    item = item.replace("_", " ")
+    item = requests.utils.unquote(item).replace("_", " ")
     limit = "1"
     tables = "nh_item"
     fields = "_pageName=url,en_name=name,image_url,stack,hha_base,buy1_price,buy1_currency,sell,is_fence,material_type,material_seasonality,material_sort,material_name_sort,material_seasonality_sort,edible,plant_type,availability1,availability1_note,availability2,availability2_note,availability3,availability3_note,version_added,unlocked,notes"

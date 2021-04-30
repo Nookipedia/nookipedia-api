@@ -14,7 +14,7 @@ router = Blueprint("photos", __name__)
 def get_nh_photo(photo):
     authorize(DB_KEYS, request)
 
-    photo = photo.replace("_", " ")
+    photo = requests.utils.unquote(photo).replace("_", " ")
     photo_limit = "1"
     photo_tables = "nh_photo"
     photo_fields = "identifier,_pageName=url,en_name=name,category,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,customizable,custom_kits,custom_body_part,grid_size,interactable,version_added,unlocked"

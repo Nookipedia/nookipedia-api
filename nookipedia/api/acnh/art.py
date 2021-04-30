@@ -14,7 +14,7 @@ router = Blueprint("art", __name__)
 def get_nh_art(art):
     authorize(DB_KEYS, request)
 
-    art = art.replace("_", " ")
+    art = requests.utils.unquote(art).replace("_", " ")
     limit = "1"
     tables = "nh_art"
     fields = "name,_pageName=url,image_url,has_fake,fake_image_url,art_name,author,year,art_style,description,buy_price=buy,sell,availability,authenticity,width,length"

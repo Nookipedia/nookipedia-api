@@ -14,7 +14,7 @@ router = Blueprint("clothing", __name__)
 def get_nh_clothing(clothing):
     authorize(DB_KEYS, request)
 
-    clothing = clothing.replace("_", " ")
+    clothing = requests.utils.unquote(clothing).replace("_", " ")
     clothing_limit = "1"
     clothing_tables = "nh_clothing"
     clothing_fields = "identifier,_pageName=url,en_name=name,category,style1,style2,label1,label2,label3,label4,label5,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,variation_total,vill_equip,seasonality,version_added,unlocked,notes"

@@ -14,7 +14,7 @@ router = Blueprint("furniture", __name__)
 def get_nh_furniture(furniture):
     authorize(DB_KEYS, request)
 
-    furniture = furniture.replace("_", " ")
+    furniture = requests.utils.unquote(furniture).replace("_", " ")
     furniture_limit = "1"
     furniture_tables = "nh_furniture"
     furniture_fields = "identifier,_pageName=url,en_name=name,category,item_series,item_set,theme1,theme2,hha_category,tag,hha_base,lucky,lucky_season,function1,function2,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,availability3,availability3_note,variation_total,pattern_total,customizable,custom_kits,custom_kit_type,custom_body_part,custom_pattern_part,grid_size,height,door_decor,version_added,unlocked,notes"  #'

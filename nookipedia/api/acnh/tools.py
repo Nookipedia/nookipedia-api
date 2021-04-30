@@ -14,7 +14,7 @@ router = Blueprint("tools", __name__)
 def get_nh_tool(tool):
     authorize(DB_KEYS, request)
 
-    tool = tool.replace("_", " ")
+    tool = requests.utils.unquote(tool).replace("_", " ")
     tool_limit = "1"
     tool_tables = "nh_tool"
     tool_fields = "identifier,_pageName=url,en_name=name,uses,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,availability3,availability3_note,customizable,custom_kits,custom_body_part,version_added,unlocked,notes"
@@ -31,6 +31,7 @@ def get_nh_tool(tool):
     variation_tables = "nh_tool_variation"
     variation_fields = "identifier,variation,image_url"
     variation_where = f'en_name = "{tool}"'
+    variation_orderby = "variation_number"
     variation_params = {
         "action": "cargoquery",
         "format": "json",
@@ -40,7 +41,6 @@ def get_nh_tool(tool):
         "order_by": variation_orderby,
         "limit": variation_limit,
     }
-    variation_orderby = "variation_number"
 
     cargo_results = call_cargo(tool_params, request.args)
     if len(cargo_results) == 0:
