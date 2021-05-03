@@ -35,6 +35,7 @@ This application requires Python 3 and [venv](https://packaging.python.org/guide
 This application has the following dependencies from `apt get`:
 * `software-properties-common`
 * `memcached`
+* `libmemcached-dev`
 * `sqlite3`
 
 Before running this application:
