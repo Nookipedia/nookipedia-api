@@ -1,0 +1,25 @@
+# Runs a Black check (https://github.com/psf/black) on every push and automatically commits formatting fixes if needed.
+
+name: autoblack
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Install Black
+        run: pip install black
+      - name: Run Black check
+        run: black --check -l 100 .
+      - name: Commit formatting fixes if needed
+        if: failure()
+        run: |
+          black -l 100 .
+          git config --global user.name 'zzrrbbit'
+          git config --global user.email 'zzrrbbit@users.noreply.github.com'
+          git commit -am "[Automated] Formatting Python with Black"
+          git push
