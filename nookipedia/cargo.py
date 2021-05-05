@@ -18,7 +18,10 @@ from nookipedia.models import (
     format_tool,
     format_interior,
     format_other_item,
+    format_fossil,
+    format_fossil_group,
 )
+
 
 
 # Login to MediaWiki as a bot account:
@@ -1016,3 +1019,35 @@ def get_other_item_list(limit, tables, fields):
         for item in cargo_results:
             results_array.append(format_other_item(item))
     return jsonify(results_array)
+
+
+def get_fossil_group_list(limit, tables, fields):
+    where = []
+
+    params = {
+        "action": "cargoquery",
+        "format": "json",
+        "tables": tables,
+        "fields": fields,
+        "limit": limit,
+    }
+    params_where(params, where)
+
+    cargo_results = call_cargo(params, request.args)
+    return [format_fossil_group(_) for _ in cargo_results]
+
+
+def get_fossil_list(limit, tables, fields):
+    where = []
+
+    params = {
+        "action": "cargoquery",
+        "format": "json",
+        "tables": tables,
+        "fields": fields,
+        "limit": limit,
+    }
+    params_where(params, where)
+
+    cargo_results = call_cargo(params, request.args)
+    return [format_fossil(_) for _ in cargo_results]
