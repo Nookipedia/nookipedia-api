@@ -13,4 +13,5 @@ from nookipedia.api.acnh import (
     recipes,
     sea,
     tools,
+    fossils,
 )

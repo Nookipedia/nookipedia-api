@@ -571,3 +571,36 @@ def stitch_variation(item, variations):
         del variation["identifier"]
     del item["identifier"]
     return item
+
+
+def format_fossil_group(data):
+    format_as_type(data, as_int, "room")
+    return data
+
+
+def format_fossil(data):
+    format_as_type(data, as_bool, "interactable")
+    format_as_type(data, as_int, "sell", "hha_base")
+    format_as_type(data, as_float, "width", "length")
+
+    coalesce_fields_as_list(data, 2, "colors", "color{}")
+    data["colors"] = set(data["colors"])
+    data["colors"].discard("None")
+    data["colors"] = list(data["colors"])
+
+    return data
+
+
+def stitch_fossil_group_list(groups, fossils):
+    ret = {_["name"]: _ for _ in groups}
+
+    for key in ret:
+        ret[key]["fossils"] = []
+
+    for fossil in fossils:
+        if fossil["fossil_group"] in ret:
+            ret[fossil["fossil_group"]]["fossils"].append(fossil)
+            del fossil["fossil_group"]
+
+    ret = [_ for _ in ret.values() if _["fossils"]]
+    return ret
