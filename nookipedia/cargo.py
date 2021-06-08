@@ -23,7 +23,6 @@ from nookipedia.models import (
 )
 
 
-
 # Login to MediaWiki as a bot account:
 def mw_login():
     try:
