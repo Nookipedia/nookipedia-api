@@ -156,7 +156,7 @@ def call_cargo(parameters, request_args):  # Request args are passed in just for
 
     try:
         data = []
-        
+
         # Remove duplicate objects to resolve Cargo duplicate issues:
         results = []
         for obj in cargoquery:
