@@ -69,7 +69,7 @@ def get_nh_tool_all():
             ),
         )
 
-    tool_limit = "100"
+    tool_limit = "150"
     tool_tables = "nh_tool"
     tool_fields = "identifier,_pageName=url,en_name=name,uses,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,availability3,availability3_note,customizable,custom_kits,custom_body_part,version_added,unlocked,notes"
     variation_limit = "300"
