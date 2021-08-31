@@ -1,3 +1,4 @@
+import requests
 from flask import abort, jsonify, request, Blueprint
 
 from nookipedia.config import DB_KEYS

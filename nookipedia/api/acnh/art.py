@@ -1,6 +1,6 @@
+import requests
 from flask import abort, jsonify, request, Blueprint
 
-import requests
 from nookipedia.config import DB_KEYS
 from nookipedia.middlewares import authorize
 from nookipedia.cargo import call_cargo, get_art_list
