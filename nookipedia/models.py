@@ -543,14 +543,14 @@ def format_variation(data):
 
 def stitch_variation_list(items, variations):
     ret = {
-        _["identifier"]: _ for _ in items
-    }  # Turn the list of items into a dictionary with the identifier as the key
-    for identifier in ret:
-        ret[identifier]["variations"] = []  # Initialize every variations list
+        _["name"]: _ for _ in items
+    }  # Turn the list of items into a dictionary with the name as the key
+    for name in ret:
+        ret[name]["variations"] = []  # Initialize every variations list
     for variation in variations:
-        if variation["identifier"] in ret:
-            ret[variation["identifier"]]["variations"].append(format_variation(variation))
-            del variation["identifier"]
+        if variation["name"] in ret:
+            ret[variation["name"]]["variations"].append(format_variation(variation))
+            del variation["name"]
 
     # Drop the keys, basically undo what we did at the start
     ret = list(ret.values())
@@ -559,7 +559,6 @@ def stitch_variation_list(items, variations):
     for piece in ret:
         if len(piece["variations"]) == 0:  # If we filtered out all the variations, skip this piece
             continue
-        del piece["identifier"]
         processed.append(piece)
     return processed
 
@@ -568,8 +567,6 @@ def stitch_variation(item, variations):
     item["variations"] = []
     for variation in variations:
         item["variations"].append(format_variation(variation))
-        del variation["identifier"]
-    del item["identifier"]
     return item
 
 

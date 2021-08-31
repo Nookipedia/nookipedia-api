@@ -1,3 +1,4 @@
+import requests
 from flask import abort, jsonify, request, Blueprint
 
 from nookipedia.config import DB_KEYS
@@ -17,7 +18,7 @@ def get_nh_photo(photo):
     photo = requests.utils.unquote(photo).replace("_", " ")
     photo_limit = "1"
     photo_tables = "nh_photo"
-    photo_fields = "identifier,_pageName=url,en_name=name,category,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,customizable,custom_kits,custom_body_part,grid_size,interactable,version_added,unlocked"
+    photo_fields = "_pageName=url,en_name=name,category,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,customizable,custom_kits,custom_body_part,grid_size,interactable,version_added,unlocked"
     photo_where = f'en_name = "{photo}"'
     photo_params = {
         "action": "cargoquery",
@@ -29,7 +30,7 @@ def get_nh_photo(photo):
     }
     variation_limit = "10"
     variation_tables = "nh_photo_variation"
-    variation_fields = "identifier,variation,image_url,color1,color2"
+    variation_fields = "en_name=name,variation,image_url,color1,color2"
     variation_where = f'en_name = "{photo}"'
     variation_orderby = "variation_number"
     variation_params = {
@@ -71,10 +72,10 @@ def get_nh_photo_all():
 
     photo_limit = "900"
     photo_tables = "nh_photo"
-    photo_fields = "identifier,_pageName=url,en_name=name,category,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,customizable,custom_kits,custom_body_part,grid_size,interactable,version_added,unlocked"
+    photo_fields = "_pageName=url,en_name=name,category,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,customizable,custom_kits,custom_body_part,grid_size,interactable,version_added,unlocked"
     variation_limit = "3700"
     variation_tables = "nh_photo_variation"
-    variation_fields = "identifier,variation,image_url,color1,color2"
+    variation_fields = "en_name=name,variation,image_url,color1,color2"
     variation_orderby = "variation_number"
 
     photo_list = get_photo_list(photo_limit, photo_tables, photo_fields)
