@@ -156,8 +156,15 @@ def call_cargo(parameters, request_args):  # Request args are passed in just for
 
     try:
         data = []
-        # Check if user requested specific image size and modify accordingly:
+
+        # Remove duplicate objects to resolve Cargo duplicate issues:
+        results = []
         for obj in cargoquery:
+            if obj not in results:
+                results.append(obj)
+
+        # Check if user requested specific image size and modify accordingly:
+        for obj in results:
             item = {}
 
             # Replace all spaces in keys with underscores
