@@ -3865,6 +3865,21 @@ components:
           type: array
           items:
             type: string
+            enum:
+              - Aqua
+              - Beige
+              - Black
+              - Blue
+              - Brown
+              - Colorful
+              - Gray
+              - Green
+              - Orange
+              - Pink
+              - Purple
+              - Red
+              - White
+              - Yellow
           example:
             - Brown
     NHFossilGroup:
@@ -3944,6 +3959,21 @@ components:
                 type: array
                 items:
                   type: string
+                  enum:
+                  - Aqua
+                  - Beige
+                  - Black
+                  - Blue
+                  - Brown
+                  - Colorful
+                  - Gray
+                  - Green
+                  - Orange
+                  - Pink
+                  - Purple
+                  - Red
+                  - White
+                  - Yellow
           example:
             - name: 'Spino Skull'
               url: 'https://nookipedia.com/wiki/Spinosaurus'
@@ -4023,6 +4053,21 @@ components:
                 type: array
                 items:
                   type: string
+                  enum:
+                  - Aqua
+                  - Beige
+                  - Black
+                  - Blue
+                  - Brown
+                  - Colorful
+                  - Gray
+                  - Green
+                  - Orange
+                  - Pink
+                  - Purple
+                  - Red
+                  - White
+                  - Yellow
           example:
             - name: 'Spino Skull'
               url: 'https://nookipedia.com/wiki/Spinosaurus'
