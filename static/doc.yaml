@@ -1,11 +1,12 @@
 openapi: 3.0.0
 info:
   title: Nookipedia
-  description: 'The Nookipedia API provides endpoints for retrieving *Animal Crossing* data pulled from the [Nookipedia wiki](https://nookipedia.com/wiki/Main_Page). A couple of the key benefits of using the Nookipedia API is access to data spanning the entire *Animal Crossing* series, as well as information that is constantly updated and expanding as editors work on the wiki.<br><br>Access to the Nookipedia API requires obtaining a key. This is so we can manage our scale and provide better support for our users. To request access to the API, please fill out [this form](https://forms.gle/wLwtXLerKhfDrRLY8).<br><br>This API is ''version 2'' of our [original API](https://nookipedia.com/api/). While the previous API scraped information directly from the wiki, this new edition of the API pulls data from a structured and constrained database, resulting in higher-quality data, better searching, and support for filtering.'  version: 1.4.0
+  description: 'The Nookipedia API provides endpoints for retrieving *Animal Crossing* data pulled from the [Nookipedia wiki](https://nookipedia.com/wiki/Main_Page). A couple of the key benefits of using the Nookipedia API is access to data spanning the entire *Animal Crossing* series, as well as information that is constantly updated and expanding as editors work on the wiki.<br><br>Access to the Nookipedia API requires obtaining a key. This is so we can manage our scale and provide better support for our users. To request access to the API, please fill out [this form](https://forms.gle/wLwtXLerKhfDrRLY8).<br><br>This API is ''version 2'' of our [original API](https://nookipedia.com/api/). While the previous API scraped information directly from the wiki, this new edition of the API pulls data from a structured and constrained database, resulting in higher-quality data, better searching, and support for filtering.'
+  version: 1.4.0
 servers:
   - url: 'https://api.nookipedia.com/'
 paths:
-  /villagers:
+  '/villagers':
     get:
       summary: Villagers
       description: 'This endpoint retrieves villager information from the entire *Animal Crossing* series, with the option to filter by species, personality, game, and/or birthday. Filters use the AND operator (e.g. asking for villagers who have species `frog` and personality `smug` will return all smug frogs). Note that villagers only include the animals that act as residents. Special characters, such as Tom Nook and Isabelle, are not accessed through this endpoint.'
@@ -163,7 +164,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error500'
-  /nh/fish:
+  '/nh/fish':
     get:
       summary: All New Horizons fish
       description: Get a list of all fish and their details in *New Horizons*.
@@ -275,7 +276,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error500'
-  /nh/bugs:
+  '/nh/bugs':
     get:
       summary: All New Horizons bugs
       description: 'Get a list of all bugs and their details in *Animal Crossing: New Horizons*.'
@@ -387,7 +388,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error500'
-  /nh/sea:
+  '/nh/sea':
     get:
       summary: All New Horizons sea creatures
       description: 'Get a list of all sea creatures and their details in *Animal Crossing: New Horizons*.'
@@ -499,7 +500,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error500'
-  /nh/events:
+  '/nh/events':
     get:
       summary: All New Horizons events
       description: 'Get a list of events and dates in *Animal Crossing: New Horizons*, filterable to specific years, months, or days. Data is available for the current and next year.'
@@ -562,7 +563,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error500'
-  /nh/art:
+  '/nh/art':
     get:
       summary: All New Horizons artwork
       description: 'Get a list of all artwork and their details in *Animal Crossing: New Horizons*.'
@@ -668,7 +669,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error500'
-  /nh/furniture:
+  '/nh/furniture':
     get:
       summary: All New Horizons furniture
       description: 'Get a list of all furniture and their details in *Animal Crossing: New Horizons*.'
@@ -746,7 +747,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error500'
-  /nh/furniture/{furniture}:
+  '/nh/furniture/{furniture}':
     get:
       summary: Single New Horizons furniture
       description: 'Retrieve information about a specific furniture in *Animal Crossing: New Horizons*.'
@@ -795,7 +796,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error500'
-  /nh/clothing:
+  '/nh/clothing':
     get:
       summary: All New Horizons clothing
       description: 'Get a list of all clothing items and their details in *Animal Crossing: New Horizons*.'
@@ -912,7 +913,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error500'
-  /nh/clothing/{clothing}:
+  '/nh/clothing/{clothing}':
     get:
       summary: Single New Horizons clothing
       description: 'Retrieve information about a specific clothing item in *Animal Crossing: New Horizons*.'
@@ -961,7 +962,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error500'
-  /nh/interior:
+  '/nh/interior':
     get:
       summary: All New Horizons interior items
       description: 'Get a list of all interior items (flooring, wallpaper, and rugs) and their details in *Animal Crossing: New Horizons*.'
@@ -1029,7 +1030,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error500'
-  /nh/interior/{item}:
+  '/nh/interior/{item}':
     get:
       summary: Single New Horizons interior item
       description: 'Retrieve information about a specific interior item in *Animal Crossing: New Horizons*.'
@@ -1101,7 +1102,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error500'
-  /nh/tools:
+  '/nh/tools':
     get:
       summary: All New Horizons tools
       description: 'Get a list of all tools and their details in *Animal Crossing: New Horizons*.'
@@ -1146,7 +1147,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error500'
-  /nh/tools/{tool}:
+  '/nh/tools/{tool}':
     get:
       summary: Single New Horizons tool
       description: 'Retrieve information about a specific tool in *Animal Crossing: New Horizons*.'
@@ -1195,7 +1196,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error500'
-  /nh/photos:
+  '/nh/photos':
     get:
       summary: All New Horizons photos and posters
       description: 'Get a list of all character photos+posters and their details in *Animal Crossing: New Horizons*.'
@@ -1240,7 +1241,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error500'
-  /nh/photos/{item}:
+  '/nh/photos/{item}':
     get:
       summary: Single New Horizons photo or poster
       description: 'Retrieve information about a character photo or poster in *Animal Crossing: New Horizons*.'
@@ -1289,7 +1290,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error500'
-  /nh/items:
+  '/nh/items':
     get:
       summary: Miscellaneous New Horizons items
       description: 'Get a list of all miscellaneous items (such as materials, star fragments, fruits, fences, and plants) and their details in *Animal Crossing: New Horizons*.'
@@ -1334,7 +1335,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error500'
-  /nh/items/{item}:
+  '/nh/items/{item}':
     get:
       summary: Single New Horizons miscellaneous item
       description: 'Retrieve information about a miscellaneous item (such as materials, star fragments, fruits, fences, and plants) in *Animal Crossing: New Horizons*.'
@@ -1383,7 +1384,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error500'
-  /nh/recipes:
+  '/nh/recipes':
     get:
       summary: All New Horizons recipes
       description: 'Get a list of all recipes and their details in *Animal Crossing: New Horizons*.'
@@ -1477,6 +1478,288 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NHRecipe'
+        '401':
+          description: Failed to authenticate user from `X-API-KEY`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '500':
+          description: There was an error fetching the requested data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error500'
+  '/nh/fossils/individuals':
+    get:
+      summary: All New Horizons fossils
+      description: 'Get a list of all the individual fossils in *Animal Crossing: New Horizons*.'
+      parameters:
+        - in: header
+          name: X-API-KEY
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: 'Your UUID secret key, granted to you by the Nookipedia team. Required for accessing the API.'
+        - in: header
+          name: Accept-Version
+          required: true
+          schema:
+            type: string
+          description: 'The version of the API you are calling, written as `1.0.0`. This is specified as required as good practice, but it is not actually enforced by the API. If you do not specify a version, you will be served the latest version, which may eventually result in breaking changes.'
+        - in: query
+          name: thumbsize
+          required: false
+          schema:
+            type: integer
+          description: 'Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL.'
+      responses:
+        '200':
+          description: A JSON array of individual fossils.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NHIndividualFossil'
+        '401':
+          description: Failed to authenticate user from `X-API-KEY`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '500':
+          description: There was an error fetching the requested data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error500'
+  '/nh/fossils/individuals/{fossil}':
+    get:
+      summary: Single New Horizons fossil
+      description: 'Retrieve information about a specific individual fossil in *Animal Crossing: New Horizons*.'
+      parameters:
+        - in: path
+          name: fossil
+          required: true
+          schema:
+            type: string
+          description: The name of the individual fossil you wish to retrieve fossil information about.
+        - in: header
+          name: X-API-KEY
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: 'Your UUID secret key, granted to you by the Nookipedia team. Required for accessing the API.'
+        - in: header
+          name: Accept-Version
+          required: true
+          schema:
+            type: string
+          description: 'The version of the API you are calling, written as `1.0.0`. This is specified as required as good practice, but it is not actually enforced by the API. If you do not specify a version, you will be served the latest version, which may eventually result in breaking changes.'
+        - in: query
+          name: thumbsize
+          required: false
+          schema:
+            type: integer
+          description: 'Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL.'
+      responses:
+        '200':
+          description: A JSON object describing the individual fossil.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NHIndividualFossil'
+        '401':
+          description: Failed to authenticate user from `X-API-KEY`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '500':
+          description: There was an error fetching the requested data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error500'
+  '/nh/fossils/groups':
+    get:
+      summary: All New Horizons fossil groups
+      description: 'Get a list of all the fossil groups in *Animal Crossing: New Horizons*.'
+      parameters:
+        - in: header
+          name: X-API-KEY
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: 'Your UUID secret key, granted to you by the Nookipedia team. Required for accessing the API.'
+        - in: header
+          name: Accept-Version
+          required: true
+          schema:
+            type: string
+          description: 'The version of the API you are calling, written as `1.0.0`. This is specified as required as good practice, but it is not actually enforced by the API. If you do not specify a version, you will be served the latest version, which may eventually result in breaking changes.'
+        - in: query
+          name: thumbsize
+          required: false
+          schema:
+            type: integer
+          description: 'Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL.'
+      responses:
+        '200':
+          description: A JSON array of fossil groups.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NHFossilGroup'
+        '401':
+          description: Failed to authenticate user from `X-API-KEY`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '500':
+          description: There was an error fetching the requested data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error500'
+  '/nh/fossils/groups/{fossil_group}':
+    get:
+      summary: Single New Horizons fossil group
+      description: 'Retrieve information about a specific fossil group in *Animal Crossing: New Horizons*.'
+      parameters:
+        - in: path
+          name: fossil_group
+          required: true
+          schema:
+            type: string
+          description: The name of the fossil group you wish to retrieve information about.
+        - in: header
+          name: X-API-KEY
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: 'Your UUID secret key, granted to you by the Nookipedia team. Required for accessing the API.'
+        - in: header
+          name: Accept-Version
+          required: true
+          schema:
+            type: string
+          description: 'The version of the API you are calling, written as `1.0.0`. This is specified as required as good practice, but it is not actually enforced by the API. If you do not specify a version, you will be served the latest version, which may eventually result in breaking changes.'
+        - in: query
+          name: thumbsize
+          required: false
+          schema:
+            type: integer
+          description: 'Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL.'
+      responses:
+        '200':
+          description: A JSON object describing the fossil group.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NHFossilGroup'
+        '401':
+          description: Failed to authenticate user from `X-API-KEY`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '500':
+          description: There was an error fetching the requested data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error500'
+  '/nh/fossils/all':
+    get:
+      summary: All New Horizons fossil groups or individual fossil
+      description: 'Get a list of all the fossil groups with their respective individual fossils in *Animal Crossing: New Horizons*.'
+      parameters:
+        - in: header
+          name: X-API-KEY
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: 'Your UUID secret key, granted to you by the Nookipedia team. Required for accessing the API.'
+        - in: header
+          name: Accept-Version
+          required: true
+          schema:
+            type: string
+          description: 'The version of the API you are calling, written as `1.0.0`. This is specified as required as good practice, but it is not actually enforced by the API. If you do not specify a version, you will be served the latest version, which may eventually result in breaking changes.'
+        - in: query
+          name: thumbsize
+          required: false
+          schema:
+            type: integer
+          description: 'Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL.'
+      responses:
+        '200':
+          description: A JSON array of fossil groups.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NHFossilGroupWithIndividualFossilsNoMatched'
+        '401':
+          description: Failed to authenticate user from `X-API-KEY`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '500':
+          description: There was an error fetching the requested data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error500'
+  '/nh/fossils/all/{fossil}':
+    get:
+      summary: Single New Horizons fossil group with individual fossils
+      description: 'Retrieve information about a specific fossil group with their respective individual fossils in *Animal Crossing: New Horizons*.'
+      parameters:
+        - in: path
+          name: fossil
+          required: true
+          schema:
+            type: string
+          description: The name of the fossil OR fossil group you wish to retrieve information about. If a fossil is provided, a fossil group that the specified fossil belongs to will be returned.
+        - in: header
+          name: X-API-KEY
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: 'Your UUID secret key, granted to you by the Nookipedia team. Required for accessing the API.'
+        - in: header
+          name: Accept-Version
+          required: true
+          schema:
+            type: string
+          description: 'The version of the API you are calling, written as `1.0.0`. This is specified as required as good practice, but it is not actually enforced by the API. If you do not specify a version, you will be served the latest version, which may eventually result in breaking changes.'
+        - in: query
+          name: thumbsize
+          required: false
+          schema:
+            type: integer
+          description: 'Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL.'
+      responses:
+        '200':
+          description: A JSON object describing the fossil group.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NHFossilGroupWithIndividualFossils'
         '401':
           description: Failed to authenticate user from `X-API-KEY`.
           content:
@@ -2705,7 +2988,7 @@ components:
           type: string
           example: ""
           description: If the item has variations, this is the name of the furniture part that changes. For example, for many bamboo items, the custom body part is "Bamboo" as the bamboo color is able to be customized.
-        custom_pattern_part: 
+        custom_pattern_part:
           type: string
           example: ""
           description: If the item's pattern can be customized, this is the name of the furniture part that can have a pattern applied to it. For example, for the Baby Chair, the custom pattern part is "Cushion" as the cushion on the chair may have a pattern applied.
@@ -3539,3 +3822,236 @@ components:
             - name: Stone
               count: 1
           description: The list of materials required to craft the item.
+    NHIndividualFossil:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Spino Skull
+          description: The name of the fossil.
+        url:
+          type: string
+          example: 'https://nookipedia.com/wiki/Spinosaurus'
+          description: Link to the respective Nookipedia article.
+        image_url:
+          type: string
+          example: 'https://dodo.ac/np/images/7/7b/Spino_Skull_NH_Icon.png'
+          description: Image of the fossil's icon. dodo.ac is Nookipedia's CDN server.
+        fossil_group:
+          type: string
+          example: 'Spinosaurus'
+          description: The name of the group that the fossil belongs to.
+        interactable:
+          type: boolean
+          example: false
+          description: Whether or not the item can be interacted with.
+        sell:
+          type: integer
+          example: 4000
+          description: The number of bells the item can be sold to Nook's store for.
+        hha_base:
+          type: integer
+          example: 87
+          description: The base value that the item provides to a player's Happy Home Academy score when placed in their home.
+        width:
+          type: integer
+          example: 2
+          description: The width of the fossil.
+        length:
+          type: integer
+          example: 2
+          description: The length of the fossil.
+        colors:
+          type: array
+          items:
+            type: string
+          example:
+            - Brown
+    NHFossilGroup:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Spinosaurus
+          description: The name of the fossil group.
+        url:
+          type: string
+          example: 'https://nookipedia.com/wiki/Spinosaurus'
+          description: Link to the respective Nookipedia article.
+        room:
+          type: integer
+          example: 2
+          description: The floor where the fossil group can be found in the museum's fossil section.
+        description:
+          type: string
+          example: 'Ahem. Yes. The Spinosaurus was a very large, carnivorous dinosaur, roughly the size of a T. Rex. Unlike its more famous cousin, however, Spinosaurus seems to have spent a great deal of time in water. Similar to modern crocodiles, this creature lived on a diet of fish AND land-dwelling animals. Personally, I am simply relieved that it did not seek FLYING prey.'
+          description: A description of the fossil group.
+    NHFossilGroupWithIndividualFossils:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Spinosaurus
+          description: The name of the fossil group.
+        url:
+          type: string
+          example: 'https://nookipedia.com/wiki/Spinosaurus'
+          description: Link to the respective Nookipedia article.
+        room:
+          type: integer
+          example: 2
+          description: The floor where the fossil group can be found in the museum's fossil section.
+        description:
+          type: string
+          example: 'Ahem. Yes. The Spinosaurus was a very large, carnivorous dinosaur, roughly the size of a T. Rex. Unlike its more famous cousin, however, Spinosaurus seems to have spent a great deal of time in water. Similar to modern crocodiles, this creature lived on a diet of fish AND land-dwelling animals. Personally, I am simply relieved that it did not seek FLYING prey.'
+          description: A description of the fossil group.
+        matched:
+          type: object
+          properties:
+            type:
+              type: string
+              example: individual
+              description: If the query given was a fossil group, `group` would be returned. Otherwise, `individual` is returned.
+            name:
+              type: string
+              example: Spino Skull
+              description: The name of the fossil or fossil group that matched the given query.
+        fossils:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                example: Spino Skull
+              url:
+                type: string
+              image_url:
+                type: string
+              fossil_group:
+                type: string
+              interactable:
+                type: boolean
+              sell:
+                type: integer
+              hha_base:
+                type: integer
+              width:
+                type: integer
+              length:
+                type: integer
+              colors:
+                type: array
+                items:
+                  type: string
+          example:
+            - name: 'Spino Skull'
+              url: 'https://nookipedia.com/wiki/Spinosaurus'
+              image_url: 'https://dodo.ac/np/images/7/7b/Spino_Skull_NH_Icon.png'
+              interactable: true
+              sell: 4000
+              hha_base: 87
+              width: 2
+              length: 2
+              colors:
+                - Brown
+            - name: 'Spino Tail'
+              url: 'https://nookipedia.com/wiki/Spinosaurus'
+              image_url: 'https://dodo.ac/np/images/4/40/Spino_Tail_NH_Icon.png'
+              interactable: true
+              sell: 2500
+              hha_base: 87
+              width: 2
+              length: 2
+              colors:
+                - Brown
+            - name: 'Spino Torso'
+              url: 'https://nookipedia.com/wiki/Spinosaurus'
+              image_url: 'https://dodo.ac/np/images/9/92/Spino_Torso_NH_Icon.png'
+              interactable: true
+              sell: 3000
+              hha_base: 87
+              width: 2
+              length: 2
+              colors:
+                - Brown
+          description: An array of objects, each object representing a fossil that belongs to the given group.
+    NHFossilGroupWithIndividualFossilsNoMatched:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Spinosaurus
+          description: The name of the fossil group.
+        url:
+          type: string
+          example: 'https://nookipedia.com/wiki/Spinosaurus'
+          description: Link to the respective Nookipedia article.
+        room:
+          type: integer
+          example: 2
+          description: The floor where the fossil group can be found in the museum's fossil section.
+        description:
+          type: string
+          example: 'Ahem. Yes. The Spinosaurus was a very large, carnivorous dinosaur, roughly the size of a T. Rex. Unlike its more famous cousin, however, Spinosaurus seems to have spent a great deal of time in water. Similar to modern crocodiles, this creature lived on a diet of fish AND land-dwelling animals. Personally, I am simply relieved that it did not seek FLYING prey.'
+          description: A description of the fossil group.
+        fossils:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                example: Spino Skull
+              url:
+                type: string
+              image_url:
+                type: string
+              fossil_group:
+                type: string
+              interactable:
+                type: boolean
+              sell:
+                type: integer
+              hha_base:
+                type: integer
+              width:
+                type: integer
+              length:
+                type: integer
+              colors:
+                type: array
+                items:
+                  type: string
+          example:
+            - name: 'Spino Skull'
+              url: 'https://nookipedia.com/wiki/Spinosaurus'
+              image_url: 'https://dodo.ac/np/images/7/7b/Spino_Skull_NH_Icon.png'
+              interactable: true
+              sell: 4000
+              hha_base: 87
+              width: 2
+              length: 2
+              colors:
+                - Brown
+            - name: 'Spino Tail'
+              url: 'https://nookipedia.com/wiki/Spinosaurus'
+              image_url: 'https://dodo.ac/np/images/4/40/Spino_Tail_NH_Icon.png'
+              interactable: true
+              sell: 2500
+              hha_base: 87
+              width: 2
+              length: 2
+              colors:
+                - Brown
+            - name: 'Spino Torso'
+              url: 'https://nookipedia.com/wiki/Spinosaurus'
+              image_url: 'https://dodo.ac/np/images/9/92/Spino_Torso_NH_Icon.png'
+              interactable: true
+              sell: 3000
+              hha_base: 87
+              width: 2
+              length: 2
+              colors:
+                - Brown
+          description: An array of objects, each object representing a fossil that belongs to the given group.
