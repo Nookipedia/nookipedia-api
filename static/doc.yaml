@@ -3896,7 +3896,7 @@ components:
         room:
           type: integer
           example: 2
-          description: The floor where the fossil group can be found in the museum's fossil section.
+          description: The room where the fossil group can be found in the museum's fossil section.
         description:
           type: string
           example: 'Ahem. Yes. The Spinosaurus was a very large, carnivorous dinosaur, roughly the size of a T. Rex. Unlike its more famous cousin, however, Spinosaurus seems to have spent a great deal of time in water. Similar to modern crocodiles, this creature lived on a diet of fish AND land-dwelling animals. Personally, I am simply relieved that it did not seek FLYING prey.'
@@ -3915,7 +3915,7 @@ components:
         room:
           type: integer
           example: 2
-          description: The floor where the fossil group can be found in the museum's fossil section.
+          description: The room where the fossil group can be found in the museum's fossil section.
         description:
           type: string
           example: 'Ahem. Yes. The Spinosaurus was a very large, carnivorous dinosaur, roughly the size of a T. Rex. Unlike its more famous cousin, however, Spinosaurus seems to have spent a great deal of time in water. Similar to modern crocodiles, this creature lived on a diet of fish AND land-dwelling animals. Personally, I am simply relieved that it did not seek FLYING prey.'
