@@ -6,6 +6,7 @@ from nookipedia.middlewares import authorize
 from nookipedia.cargo import call_cargo, get_clothing_list, get_variation_list
 from nookipedia.errors import error_response
 from nookipedia.models import format_clothing, stitch_variation, stitch_variation_list
+from nookipedia.utility import generate_fields
 
 
 router = Blueprint("clothing", __name__)
@@ -18,7 +19,33 @@ def get_nh_clothing(clothing):
     clothing = requests.utils.unquote(clothing).replace("_", " ")
     clothing_limit = "1"
     clothing_tables = "nh_clothing"
-    clothing_fields = "_pageName=url,en_name=name,category,style1,style2,label1,label2,label3,label4,label5,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,variation_total,vill_equip,seasonality,version_added,unlocked,notes"
+    clothing_fields = generate_fields(
+        "_pageName=url",
+        "en_name=name",
+        "category",
+        "style1",
+        "style2",
+        "label1",
+        "label2",
+        "label3",
+        "label4",
+        "label5",
+        "buy1_price",
+        "buy1_currency",
+        "buy2_price",
+        "buy2_currency",
+        "sell",
+        "availability1",
+        "availability1_note",
+        "availability2",
+        "availability2_note",
+        "variation_total",
+        "vill_equip",
+        "seasonality",
+        "version_added",
+        "unlocked",
+        "notes",
+    )
     clothing_where = f'en_name = "{clothing}"'
     clothing_params = {
         "action": "cargoquery",
@@ -30,7 +57,7 @@ def get_nh_clothing(clothing):
     }
     variation_limit = "10"
     variation_tables = "nh_clothing_variation"
-    variation_fields = "en_name=name,variation,image_url,color1,color2"
+    variation_fields = generate_fields("en_name=name", "variation", "image_url", "color1", "color2")
     variation_where = f'en_name = "{clothing}"'
     variation_orderby = "variation_number"
     variation_params = {
@@ -72,10 +99,36 @@ def get_nh_clothing_all():
 
     clothing_limit = "1350"
     clothing_tables = "nh_clothing"
-    clothing_fields = "_pageName=url,en_name=name,category,style1,style2,label1,label2,label3,label4,label5,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,variation_total,vill_equip,seasonality,version_added,unlocked,notes"
+    clothing_fields = generate_fields(
+        "_pageName=url",
+        "en_name=name",
+        "category",
+        "style1",
+        "style2",
+        "label1",
+        "label2",
+        "label3",
+        "label4",
+        "label5",
+        "buy1_price",
+        "buy1_currency",
+        "buy2_price",
+        "buy2_currency",
+        "sell",
+        "availability1",
+        "availability1_note",
+        "availability2",
+        "availability2_note",
+        "variation_total",
+        "vill_equip",
+        "seasonality",
+        "version_added",
+        "unlocked",
+        "notes",
+    )
     variation_limit = "5000"
     variation_tables = "nh_clothing_variation"
-    variation_fields = "en_name=name,variation,image_url,color1,color2"
+    variation_fields = generate_fields("en_name=name", "variation", "image_url", "color1", "color2")
     variation_orderby = "variation_number"
 
     clothing_list = get_clothing_list(clothing_limit, clothing_tables, clothing_fields)

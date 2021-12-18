@@ -6,6 +6,7 @@ from nookipedia.middlewares import authorize
 from nookipedia.cargo import call_cargo, get_variation_list, get_tool_list
 from nookipedia.errors import error_response
 from nookipedia.models import format_tool, stitch_variation, stitch_variation_list
+from nookipedia.utility import generate_fields
 
 
 router = Blueprint("tools", __name__)
@@ -18,7 +19,29 @@ def get_nh_tool(tool):
     tool = requests.utils.unquote(tool).replace("_", " ")
     tool_limit = "1"
     tool_tables = "nh_tool"
-    tool_fields = "_pageName=url,en_name=name,uses,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,availability3,availability3_note,customizable,custom_kits,custom_body_part,version_added,unlocked,notes"
+    tool_fields = generate_fields(
+        "_pageName=url",
+        "en_name=name",
+        "uses",
+        "hha_base",
+        "buy1_price",
+        "buy1_currency",
+        "buy2_price",
+        "buy2_currency",
+        "sell",
+        "availability1",
+        "availability1_note",
+        "availability2",
+        "availability2_note",
+        "availability3",
+        "availability3_note",
+        "customizable",
+        "custom_kits",
+        "custom_body_part",
+        "version_added",
+        "unlocked",
+        "notes",
+    )
     tool_where = f'en_name = "{tool}"'
     tool_params = {
         "action": "cargoquery",
@@ -30,7 +53,7 @@ def get_nh_tool(tool):
     }
     variation_limit = "10"
     variation_tables = "nh_tool_variation"
-    variation_fields = "en_name=name,variation,image_url"
+    variation_fields = generate_fields("en_name=name", "variation", "image_url")
     variation_where = f'en_name = "{tool}"'
     variation_orderby = "variation_number"
     variation_params = {
@@ -72,10 +95,32 @@ def get_nh_tool_all():
 
     tool_limit = "150"
     tool_tables = "nh_tool"
-    tool_fields = "_pageName=url,en_name=name,uses,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,availability3,availability3_note,customizable,custom_kits,custom_body_part,version_added,unlocked,notes"
+    tool_fields = generate_fields(
+        "_pageName=url",
+        "en_name=name",
+        "uses",
+        "hha_base",
+        "buy1_price",
+        "buy1_currency",
+        "buy2_price",
+        "buy2_currency",
+        "sell",
+        "availability1",
+        "availability1_note",
+        "availability2",
+        "availability2_note",
+        "availability3",
+        "availability3_note",
+        "customizable",
+        "custom_kits",
+        "custom_body_part",
+        "version_added",
+        "unlocked",
+        "notes",
+    )
     variation_limit = "300"
     variation_tables = "nh_tool_variation"
-    variation_fields = "en_name=name,variation,image_url"
+    variation_fields = generate_fields("en_name=name", "variation", "image_url")
     variation_orderby = "variation_number"
 
     tool_list = get_tool_list(tool_limit, tool_tables, tool_fields)

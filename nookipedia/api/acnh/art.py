@@ -6,7 +6,7 @@ from nookipedia.middlewares import authorize
 from nookipedia.cargo import call_cargo, get_art_list
 from nookipedia.errors import error_response
 from nookipedia.models import format_art
-
+from nookipedia.utility import generate_fields
 
 router = Blueprint("art", __name__)
 
@@ -18,7 +18,24 @@ def get_nh_art(art):
     art = requests.utils.unquote(art).replace("_", " ")
     limit = "1"
     tables = "nh_art"
-    fields = "name,_pageName=url,image_url,has_fake,fake_image_url,art_name,author,year,art_style,description,buy_price=buy,sell,availability,authenticity,width,length"
+    fields = generate_fields(
+        "name",
+        "_pageName=url",
+        "image_url",
+        "has_fake",
+        "fake_image_url",
+        "art_name",
+        "author",
+        "year",
+        "art_style",
+        "description",
+        "buy_price=buy",
+        "sell",
+        "availability",
+        "authenticity",
+        "width",
+        "length",
+    )
     where = f'name="{art}"'
     params = {
         "action": "cargoquery",
