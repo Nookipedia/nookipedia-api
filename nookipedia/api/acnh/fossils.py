@@ -14,6 +14,7 @@ from nookipedia.models import (
     format_fossil_group,
     stitch_fossil_group_list,
 )
+from nookipedia.utility import generate_fields
 
 router = Blueprint("fossils", __name__, url_prefix="/nh/fossils")
 
@@ -24,7 +25,7 @@ def get_nh_fossil_group_all():
 
     limit = "50"
     tables = "nh_fossil_group"
-    fields = "name,_pageName=url,room,description"
+    fields = generate_fields("name", "_pageName=url", "room", "description")
 
     ret = get_fossil_group_list(limit, tables, fields)
     if request.args.get("excludedetails") == "true":
@@ -39,7 +40,19 @@ def get_nh_fossil_individual_all():
 
     limit = "100"
     tables = "nh_fossil"
-    fields = "name,_pageName=url,image_url,fossil_group,interactable,sell,color1,color2,hha_base,width,length"
+    fields = generate_fields(
+        "name",
+        "_pageName=url",
+        "image_url",
+        "fossil_group",
+        "interactable",
+        "sell",
+        "color1",
+        "color2",
+        "hha_base",
+        "width",
+        "length",
+    )
 
     ret = get_fossil_list(limit, tables, fields)
     if request.args.get("excludedetails") == "true":
@@ -54,10 +67,22 @@ def get_nh_fossil_all_all():  # What a good name
 
     group_limit = "50"
     group_tables = "nh_fossil_group"
-    group_fields = "name,_pageName=url,room,description"
+    group_fields = generate_fields("name", "_pageName=url", "room", "description")
     fossil_limit = "100"
     fossil_tables = "nh_fossil"
-    fossil_fields = "name,_pageName=url,image_url,fossil_group,interactable,sell,color1,color2,hha_base,width,length"
+    fossil_fields = generate_fields(
+        "name",
+        "_pageName=url",
+        "image_url",
+        "fossil_group",
+        "interactable",
+        "sell",
+        "color1",
+        "color2",
+        "hha_base",
+        "width",
+        "length",
+    )
 
     groups = get_fossil_group_list(group_limit, group_tables, group_fields)
     fossils = get_fossil_list(fossil_limit, fossil_tables, fossil_fields)
@@ -80,7 +105,7 @@ def get_nh_fossil_group(name):
 
     limit = "1"
     tables = "nh_fossil_group"
-    fields = "name,_pageName=url,room,description"
+    fields = generate_fields("name", "_pageName=url", "room", "description")
     where = f'name = "{name}"'
 
     params = {
@@ -115,7 +140,19 @@ def get_nh_fossil_individual(name):
     name = requests.utils.unquote(name).replace("_", " ")
     limit = "1"
     tables = "nh_fossil"
-    fields = "name,_pageName=url,image_url,fossil_group,interactable,sell,color1,color2,hha_base,width,length"
+    fields = generate_fields(
+        "name",
+        "_pageName=url",
+        "image_url",
+        "fossil_group",
+        "interactable",
+        "sell",
+        "color1",
+        "color2",
+        "hha_base",
+        "width",
+        "length",
+    )
     where = f'name = "{name}"'
 
     params = {
@@ -151,7 +188,7 @@ def get_nh_fossil_all(name):
 
     group_limit = "1"
     group_tables = "nh_fossil_group"
-    group_fields = "name,_pageName=url,room,description"
+    group_fields = generate_fields("name", "_pageName=url", "room", "description")
 
     # fossil_fields = "name,_pageName=url,image_url,fossil_group,interactable,sell,color1,color2,hha_base,width,length"
 
@@ -160,7 +197,7 @@ def get_nh_fossil_all(name):
         "format": "json",
         "limit": "1",
         "tables": "nh_fossil",
-        "fields": "name,fossil_group",
+        "fields": generate_fields("name", "fossil_group"),
         "where": f'name = "{name}"',
     }
 
@@ -169,7 +206,7 @@ def get_nh_fossil_all(name):
         "format": "json",
         "limit": "1",
         "tables": "nh_fossil_group",
-        "fields": "name,_pageName=url,room,description",
+        "fields": generate_fields("name", "_pageName=url", "room", "description"),
     }
 
     fossil_check = call_cargo(fossil_params, request.args)
@@ -201,9 +238,19 @@ def get_nh_fossil_all(name):
 
     fossil_params["where"] = f'fossil_group = "{group["name"]}"'
     fossil_params["limit"] = "10"
-    fossil_params[
-        "fields"
-    ] = "name,_pageName=url,image_url,fossil_group,interactable,sell,color1,color2,hha_base,width,length"
+    fossil_params["fields"] = generate_fields(
+        "name",
+        "_pageName=url",
+        "image_url",
+        "fossil_group",
+        "interactable",
+        "sell",
+        "color1",
+        "color2",
+        "hha_base",
+        "width",
+        "length",
+    )
     #          Technically don't need this ^^^ but it syncs the /all and /all/name caches
     fossils = call_cargo(fossil_params, request.args)
     group["fossils"] = [format_fossil(_) for _ in fossils]

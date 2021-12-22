@@ -6,6 +6,7 @@ from nookipedia.middlewares import authorize
 from nookipedia.cargo import call_cargo, get_variation_list, get_photo_list
 from nookipedia.errors import error_response
 from nookipedia.models import format_photo, stitch_variation, stitch_variation_list
+from nookipedia.utility import generate_fields
 
 
 router = Blueprint("photos", __name__)
@@ -18,7 +19,28 @@ def get_nh_photo(photo):
     photo = requests.utils.unquote(photo).replace("_", " ")
     photo_limit = "1"
     photo_tables = "nh_photo"
-    photo_fields = "_pageName=url,en_name=name,category,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,customizable,custom_kits,custom_body_part,grid_size,interactable,version_added,unlocked"
+    photo_fields = generate_fields(
+        "_pageName=url",
+        "en_name=name",
+        "category",
+        "hha_base",
+        "buy1_price",
+        "buy1_currency",
+        "buy2_price",
+        "buy2_currency",
+        "sell",
+        "availability1",
+        "availability1_note",
+        "availability2",
+        "availability2_note",
+        "customizable",
+        "custom_kits",
+        "custom_body_part",
+        "grid_size",
+        "interactable",
+        "version_added",
+        "unlocked",
+    )
     photo_where = f'en_name = "{photo}"'
     photo_params = {
         "action": "cargoquery",
@@ -30,7 +52,7 @@ def get_nh_photo(photo):
     }
     variation_limit = "10"
     variation_tables = "nh_photo_variation"
-    variation_fields = "en_name=name,variation,image_url,color1,color2"
+    variation_fields = generate_fields("en_name=name", "variation", "image_url", "color1", "color2")
     variation_where = f'en_name = "{photo}"'
     variation_orderby = "variation_number"
     variation_params = {
@@ -72,10 +94,31 @@ def get_nh_photo_all():
 
     photo_limit = "900"
     photo_tables = "nh_photo"
-    photo_fields = "_pageName=url,en_name=name,category,hha_base,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,availability1,availability1_note,availability2,availability2_note,customizable,custom_kits,custom_body_part,grid_size,interactable,version_added,unlocked"
+    photo_fields = generate_fields(
+        "_pageName=url",
+        "en_name=name",
+        "category",
+        "hha_base",
+        "buy1_price",
+        "buy1_currency",
+        "buy2_price",
+        "buy2_currency",
+        "sell",
+        "availability1",
+        "availability1_note",
+        "availability2",
+        "availability2_note",
+        "customizable",
+        "custom_kits",
+        "custom_body_part",
+        "grid_size",
+        "interactable",
+        "version_added",
+        "unlocked",
+    )
     variation_limit = "3700"
     variation_tables = "nh_photo_variation"
-    variation_fields = "en_name=name,variation,image_url,color1,color2"
+    variation_fields = generate_fields("en_name=name", "variation", "image_url", "color1", "color2")
     variation_orderby = "variation_number"
 
     photo_list = get_photo_list(photo_limit, photo_tables, photo_fields)

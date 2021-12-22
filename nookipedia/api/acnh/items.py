@@ -6,6 +6,7 @@ from nookipedia.middlewares import authorize
 from nookipedia.cargo import call_cargo, get_other_item_list
 from nookipedia.errors import error_response
 from nookipedia.models import format_other_item
+from nookipedia.utility import generate_fields
 
 
 router = Blueprint("items", __name__)
@@ -18,7 +19,33 @@ def get_nh_item(item):
     item = requests.utils.unquote(item).replace("_", " ")
     limit = "1"
     tables = "nh_item"
-    fields = "_pageName=url,en_name=name,image_url,stack,hha_base,buy1_price,buy1_currency,sell,is_fence,material_type,material_seasonality,material_sort,material_name_sort,material_seasonality_sort,edible,plant_type,availability1,availability1_note,availability2,availability2_note,availability3,availability3_note,version_added,unlocked,notes"
+    fields = generate_fields(
+        "_pageName=url",
+        "en_name=name",
+        "image_url",
+        "stack",
+        "hha_base",
+        "buy1_price",
+        "buy1_currency",
+        "sell",
+        "is_fence",
+        "material_type",
+        "material_seasonality",
+        "material_sort",
+        "material_name_sort",
+        "material_seasonality_sort",
+        "edible",
+        "plant_type",
+        "availability1",
+        "availability1_note",
+        "availability2",
+        "availability2_note",
+        "availability3",
+        "availability3_note",
+        "version_added",
+        "unlocked",
+        "notes",
+    )
     where = f'en_name="{item}"'
     params = {
         "action": "cargoquery",
@@ -48,6 +75,32 @@ def get_nh_item_all():
 
     limit = "400"
     tables = "nh_item"
-    fields = "_pageName=url,en_name=name,image_url,stack,hha_base,buy1_price,buy1_currency,sell,is_fence,material_type,material_seasonality,material_sort,material_name_sort,material_seasonality_sort,edible,plant_type,availability1,availability1_note,availability2,availability2_note,availability3,availability3_note,version_added,unlocked,notes"
+    fields = generate_fields(
+        "_pageName=url",
+        "en_name=name",
+        "image_url",
+        "stack",
+        "hha_base",
+        "buy1_price",
+        "buy1_currency",
+        "sell",
+        "is_fence",
+        "material_type",
+        "material_seasonality",
+        "material_sort",
+        "material_name_sort",
+        "material_seasonality_sort",
+        "edible",
+        "plant_type",
+        "availability1",
+        "availability1_note",
+        "availability2",
+        "availability2_note",
+        "availability3",
+        "availability3_note",
+        "version_added",
+        "unlocked",
+        "notes",
+    )
 
     return get_other_item_list(limit, tables, fields)

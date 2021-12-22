@@ -229,3 +229,7 @@ def params_where(params, where):
     `where` is a list of condition strings"""
     if where:
         params["where"] = " AND ".join(where)
+
+
+def generate_fields(*fields):
+    return ",".join(fields)

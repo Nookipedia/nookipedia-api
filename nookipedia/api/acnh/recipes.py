@@ -5,6 +5,7 @@ from nookipedia.middlewares import authorize
 from nookipedia.cargo import call_cargo, get_recipe_list
 from nookipedia.errors import error_response
 from nookipedia.models import format_recipe
+from nookipedia.utility import generate_fields
 
 
 router = Blueprint("recipes", __name__)
@@ -17,7 +18,34 @@ def get_nh_recipe(recipe):
     recipe = recipe.replace("_", " ")
     limit = "1"
     tables = "nh_recipe"
-    fields = "_pageName=url,en_name=name,image_url,serial_id,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,recipes_to_unlock,diy_availability1,diy_availability1_note,diy_availability2,diy_availability2_note,material1,material1_num,material2,material2_num,material3,material3_num,material4,material4_num,material5,material5_num,material6,material6_num"
+    fields = generate_fields(
+        "_pageName=url",
+        "en_name=name",
+        "image_url",
+        "serial_id",
+        "buy1_price",
+        "buy1_currency",
+        "buy2_price",
+        "buy2_currency",
+        "sell",
+        "recipes_to_unlock",
+        "diy_availability1",
+        "diy_availability1_note",
+        "diy_availability2",
+        "diy_availability2_note",
+        "material1",
+        "material1_num",
+        "material2",
+        "material2_num",
+        "material3",
+        "material3_num",
+        "material4",
+        "material4_num",
+        "material5",
+        "material5_num",
+        "material6",
+        "material6_num",
+    )
     where = f'en_name="{recipe}"'
     params = {
         "action": "cargoquery",
@@ -47,6 +75,33 @@ def get_nh_recipe_all():
 
     limit = "800"
     tables = "nh_recipe"
-    fields = "_pageName=url,en_name=name,image_url,serial_id,buy1_price,buy1_currency,buy2_price,buy2_currency,sell,recipes_to_unlock,diy_availability1,diy_availability1_note,diy_availability2,diy_availability2_note,material1,material1_num,material2,material2_num,material3,material3_num,material4,material4_num,material5,material5_num,material6,material6_num"
+    fields = generate_fields(
+        "_pageName=url",
+        "en_name=name",
+        "image_url",
+        "serial_id",
+        "buy1_price",
+        "buy1_currency",
+        "buy2_price",
+        "buy2_currency",
+        "sell",
+        "recipes_to_unlock",
+        "diy_availability1",
+        "diy_availability1_note",
+        "diy_availability2",
+        "diy_availability2_note",
+        "material1",
+        "material1_num",
+        "material2",
+        "material2_num",
+        "material3",
+        "material3_num",
+        "material4",
+        "material4_num",
+        "material5",
+        "material5_num",
+        "material6",
+        "material6_num",
+    )
 
     return get_recipe_list(limit, tables, fields)
