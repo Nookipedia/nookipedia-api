@@ -744,7 +744,7 @@ def get_clothing_list(limit, tables, fields):
             "tops",
             "bottoms",
             "dress-up",
-            "headware",
+            "headwear",
             "accessories",
             "socks",
             "shoes",
@@ -757,7 +757,7 @@ def get_clothing_list(limit, tables, fields):
                 400,
                 description=error_response(
                     "Could not recognize provided category.",
-                    "Ensure category is either tops, bottoms, dress-up, headware, accessories, socks, shoes, bags, or umbrellas.",
+                    "Ensure category is either tops, bottoms, dress-up, headwear, accessories, socks, shoes, bags, or umbrellas.",
                 ),
             )
         where.append('category = "{0}"'.format(category))
