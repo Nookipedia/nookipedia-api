@@ -74,7 +74,7 @@ def get_nh_interior(interior):
 def get_nh_interior_all():
     authorize(DB_KEYS, request)
 
-    limit = "650"
+    limit = "750"
     tables = "nh_interior"
     fields = generate_fields(
         "_pageName=url",
