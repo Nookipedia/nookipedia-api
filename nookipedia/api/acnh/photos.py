@@ -92,7 +92,7 @@ def get_nh_photo_all():
             ),
         )
 
-    photo_limit = "900"
+    photo_limit = "1000"
     photo_tables = "nh_photo"
     photo_fields = generate_fields(
         "_pageName=url",
@@ -116,7 +116,7 @@ def get_nh_photo_all():
         "version_added",
         "unlocked",
     )
-    variation_limit = "3700"
+    variation_limit = "4500"
     variation_tables = "nh_photo_variation"
     variation_fields = generate_fields("en_name=name", "variation", "image_url", "color1", "color2")
     variation_orderby = "variation_number"
