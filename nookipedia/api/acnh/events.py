@@ -13,7 +13,7 @@ router = Blueprint("events", __name__)
 def get_nh_event_all():
     authorize(DB_KEYS, request)
 
-    limit = "1200"
+    limit = "1500"
     tables = "nh_calendar"
     fields = generate_fields("event", "date", "type", "link=url")
     orderby = "date"
