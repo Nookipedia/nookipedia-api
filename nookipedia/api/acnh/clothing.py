@@ -97,7 +97,7 @@ def get_nh_clothing_all():
             ),
         )
 
-    clothing_limit = "1350"
+    clothing_limit = "1600"
     clothing_tables = "nh_clothing"
     clothing_fields = generate_fields(
         "_pageName=url",
@@ -126,7 +126,7 @@ def get_nh_clothing_all():
         "unlocked",
         "notes",
     )
-    variation_limit = "5000"
+    variation_limit = "6000"
     variation_tables = "nh_clothing_variation"
     variation_fields = generate_fields("en_name=name", "variation", "image_url", "color1", "color2")
     variation_orderby = "variation_number"
