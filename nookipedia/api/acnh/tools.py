@@ -118,7 +118,7 @@ def get_nh_tool_all():
         "unlocked",
         "notes",
     )
-    variation_limit = "300"
+    variation_limit = "350"
     variation_tables = "nh_tool_variation"
     variation_fields = generate_fields("en_name=name", "variation", "image_url")
     variation_orderby = "variation_number"
