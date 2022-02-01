@@ -73,7 +73,7 @@ def get_nh_recipe(recipe):
 def get_nh_recipe_all():
     authorize(DB_KEYS, request)
 
-    limit = "800"
+    limit = "1000"
     tables = "nh_recipe"
     fields = generate_fields(
         "_pageName=url",
