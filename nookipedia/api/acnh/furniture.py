@@ -112,7 +112,7 @@ def get_nh_furniture_all():
             ),
         )
 
-    furniture_limit = "1300"
+    furniture_limit = "2000"
     furniture_tables = "nh_furniture"
     furniture_fields = generate_fields(
         "_pageName=url",
@@ -154,7 +154,7 @@ def get_nh_furniture_all():
         "unlocked",
         "notes",
     )
-    variation_limit = "6000"
+    variation_limit = "13000"
     variation_tables = "nh_furniture_variation"
     variation_fields = generate_fields(
         "en_name=name", "variation", "pattern", "image_url", "color1", "color2"
