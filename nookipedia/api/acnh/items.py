@@ -73,7 +73,7 @@ def get_nh_item(item):
 def get_nh_item_all():
     authorize(DB_KEYS, request)
 
-    limit = "400"
+    limit = "500"
     tables = "nh_item"
     fields = generate_fields(
         "_pageName=url",
