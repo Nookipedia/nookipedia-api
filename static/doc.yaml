@@ -2118,10 +2118,6 @@ components:
           type: string
           example: 'https://dodo.ac/np/images/c/c0/Cherry_Salmon_NH.png'
           description: Render of the fish. dodo.ac is Nookipedia's CDN server.
-        time:
-          type: string
-          example: 4 PM – 9 AM
-          description: 'The time(s) the fish is available. If all day, string will be `"All day"`.'
         location:
           type: string
           example: River (clifftop)
@@ -2350,10 +2346,6 @@ components:
           type: string
           example: 'https://dodo.ac/np/images/1/1d/Grasshopper_NH.png'
           description: Render of the bug. dodo.ac is Nookipedia's CDN server.
-        time:
-          type: string
-          example: 8 AM – 5 PM
-          description: 'The time(s) the bug is available. If all day, string will be `"All day"`.'
         location:
           type: string
           example: On the ground
@@ -2556,10 +2548,6 @@ components:
           type: string
           example: 'https://dodo.ac/np/images/2/27/Octopus_NH.png'
           description: Render of the sea creature. dodo.ac is Nookipedia's CDN server.
-        time:
-          type: string
-          example: All day
-          description: 'The time(s) the sea creature is available. If all day, string will be `"All day"`.'
         shadow_size:
           type: string
           example: Medium
