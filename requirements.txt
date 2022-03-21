@@ -22,5 +22,5 @@ six==1.15.0
 SQLAlchemy==1.4.3
 tzlocal==2.1
 urllib3==1.26.5
-waitress==1.4.4
+waitress==2.1.1
 Werkzeug==1.0.1
