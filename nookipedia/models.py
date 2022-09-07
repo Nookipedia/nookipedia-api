@@ -315,6 +315,27 @@ def format_art(data):
 
     # Floats
     format_as_type(data, as_float, "width", "length")
+
+    if minimum_version("1.6"):
+        data["real_info"] = {
+            "image_url": data["image_url"],
+            "texture_url": data["texture_url"],
+            "description": data["description"],
+        }
+        if data["has_fake"]:
+            data["fake_info"] = {
+                "image_url": data["fake_image_url"],
+                "texture_url": data["fake_texture_url"],
+                "description": data["authenticity"],
+            }
+        else:
+            data["fake_info"] = None
+        del data["image_url"]
+        del data["texture_url"]
+        del data["description"]
+        del data["fake_image_url"]
+        del data["fake_texture_url"]
+        del data["authenticity"]
     return data
 
 
