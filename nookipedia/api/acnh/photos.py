@@ -1,7 +1,7 @@
 import requests
 from flask import abort, jsonify, request, Blueprint
 
-from nookipedia.config import DB_KEYS
+from nookipedia.config import DB_KEYS, PHOTO_LIMIT, PHOTO_VARIATION_LIMIT
 from nookipedia.middlewares import authorize
 from nookipedia.cargo import call_cargo, get_variation_list, get_photo_list
 from nookipedia.errors import error_response
@@ -92,7 +92,7 @@ def get_nh_photo_all():
             ),
         )
 
-    photo_limit = "1000"
+    photo_limit = PHOTO_LIMIT
     photo_tables = "nh_photo"
     photo_fields = generate_fields(
         "_pageName=url",
@@ -116,7 +116,7 @@ def get_nh_photo_all():
         "version_added",
         "unlocked",
     )
-    variation_limit = "4500"
+    variation_limit = PHOTO_VARIATION_LIMIT
     variation_tables = "nh_photo_variation"
     variation_fields = generate_fields("en_name=name", "variation", "image_url", "color1", "color2")
     variation_orderby = "variation_number"

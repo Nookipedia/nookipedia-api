@@ -1,7 +1,7 @@
 import requests
 from flask import abort, jsonify, request, Blueprint
 
-from nookipedia.config import DB_KEYS
+from nookipedia.config import DB_KEYS, ART_LIMIT
 from nookipedia.middlewares import authorize
 from nookipedia.cargo import call_cargo, get_art_list
 from nookipedia.errors import error_response
@@ -66,7 +66,7 @@ def get_nh_art(art):
 def get_nh_art_all():
     authorize(DB_KEYS, request)
 
-    limit = "50"
+    limit = ART_LIMIT
     tables = "nh_art"
     if request.args.get("excludedetails") == "true":
         fields = "name"

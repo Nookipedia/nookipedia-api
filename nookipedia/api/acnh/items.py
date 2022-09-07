@@ -1,7 +1,7 @@
 import requests
 from flask import abort, jsonify, request, Blueprint
 
-from nookipedia.config import DB_KEYS
+from nookipedia.config import DB_KEYS, ITEMS_LIMIT
 from nookipedia.middlewares import authorize
 from nookipedia.cargo import call_cargo, get_other_item_list
 from nookipedia.errors import error_response
@@ -73,7 +73,7 @@ def get_nh_item(item):
 def get_nh_item_all():
     authorize(DB_KEYS, request)
 
-    limit = "500"
+    limit = ITEMS_LIMIT
     tables = "nh_item"
     fields = generate_fields(
         "_pageName=url",

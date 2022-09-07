@@ -1,6 +1,6 @@
 from flask import request, Blueprint
 
-from nookipedia.config import DB_KEYS
+from nookipedia.config import DB_KEYS, VILLAGER_LIMIT
 from nookipedia.middlewares import authorize
 from nookipedia.cargo import get_villager_list
 
@@ -12,7 +12,7 @@ router = Blueprint("villagers", __name__)
 def get_villager_all():
     authorize(DB_KEYS, request)
 
-    limit = "500"
+    limit = VILLAGER_LIMIT
     tables = "villager"
     join = ""
     if request.args.get("excludedetails") == "true":

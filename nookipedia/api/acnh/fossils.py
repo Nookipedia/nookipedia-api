@@ -1,7 +1,7 @@
 import requests
 from flask import abort, jsonify, request, Blueprint
 
-from nookipedia.config import DB_KEYS
+from nookipedia.config import DB_KEYS, FOSSIL_GROUP_LIMIT, FOSSIL_INDIVIDUAL_LIMIT
 from nookipedia.middlewares import authorize
 from nookipedia.cargo import (
     call_cargo,
@@ -23,7 +23,7 @@ router = Blueprint("fossils", __name__, url_prefix="/nh/fossils")
 def get_nh_fossil_group_all():
     authorize(DB_KEYS, request)
 
-    limit = "50"
+    limit = FOSSIL_GROUP_LIMIT
     tables = "nh_fossil_group"
     fields = generate_fields("name", "_pageName=url", "room", "description")
 
@@ -38,7 +38,7 @@ def get_nh_fossil_group_all():
 def get_nh_fossil_individual_all():
     authorize(DB_KEYS, request)
 
-    limit = "100"
+    limit = FOSSIL_INDIVIDUAL_LIMIT
     tables = "nh_fossil"
     fields = generate_fields(
         "name",
@@ -65,10 +65,10 @@ def get_nh_fossil_individual_all():
 def get_nh_fossil_all_all():  # What a good name
     authorize(DB_KEYS, request)
 
-    group_limit = "50"
+    group_limit = FOSSIL_GROUP_LIMIT
     group_tables = "nh_fossil_group"
     group_fields = generate_fields("name", "_pageName=url", "room", "description")
-    fossil_limit = "100"
+    fossil_limit = FOSSIL_INDIVIDUAL_LIMIT
     fossil_tables = "nh_fossil"
     fossil_fields = generate_fields(
         "name",

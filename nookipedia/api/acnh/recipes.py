@@ -1,6 +1,6 @@
 from flask import abort, jsonify, request, Blueprint
 
-from nookipedia.config import DB_KEYS
+from nookipedia.config import DB_KEYS, RECIPE_LIMIT
 from nookipedia.middlewares import authorize
 from nookipedia.cargo import call_cargo, get_recipe_list
 from nookipedia.errors import error_response
@@ -73,7 +73,7 @@ def get_nh_recipe(recipe):
 def get_nh_recipe_all():
     authorize(DB_KEYS, request)
 
-    limit = "1000"
+    limit = RECIPE_LIMIT
     tables = "nh_recipe"
     fields = generate_fields(
         "_pageName=url",

@@ -1,7 +1,7 @@
 import requests
 from flask import abort, jsonify, request, Blueprint
 
-from nookipedia.config import DB_KEYS
+from nookipedia.config import DB_KEYS, BUG_LIMIT
 from nookipedia.middlewares import authorize
 from nookipedia.cargo import call_cargo, get_critter_list
 from nookipedia.errors import error_response
@@ -17,7 +17,7 @@ router = Blueprint("bugs", __name__)
 def get_nh_bug_all():
     authorize(DB_KEYS, request)
 
-    limit = "100"
+    limit = BUG_LIMIT
     tables = "nh_bug"
     if request.args.get("excludedetails") == "true":
         fields = generate_fields(
