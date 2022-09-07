@@ -316,7 +316,7 @@ def format_art(data):
     # Floats
     format_as_type(data, as_float, "width", "length")
 
-    if minimum_version("1.6"):
+    if minimum_version("1.5.1"):
         data["real_info"] = {
             "image_url": data["image_url"],
             "texture_url": data["texture_url"],
