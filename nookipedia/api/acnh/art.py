@@ -21,6 +21,8 @@ def get_nh_art(art):
     fields = generate_fields(
         "name",
         "_pageName=url",
+        "item_page",
+        "item_page_fake",
         "image_url",
         "has_fake",
         "fake_image_url",
@@ -68,6 +70,6 @@ def get_nh_art_all():
     if request.args.get("excludedetails") == "true":
         fields = "name"
     else:
-        fields = "name,_pageName=url,image_url,has_fake,fake_image_url,art_name,author,year,art_style,description,buy_price=buy,sell,availability,authenticity,width,length"
+        fields = "name,_pageName=url,item_page,item_page_fake,image_url,has_fake,fake_image_url,art_name,author,year,art_style,description,buy_price=buy,sell,availability,authenticity,width,length"
 
     return get_art_list(limit, tables, fields)
