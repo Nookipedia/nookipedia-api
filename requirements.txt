@@ -23,4 +23,4 @@ SQLAlchemy==1.4.3
 tzlocal==2.1
 urllib3==1.26.5
 waitress==1.4.4
-Werkzeug==1.0.1
+Werkzeug==2.2.3
