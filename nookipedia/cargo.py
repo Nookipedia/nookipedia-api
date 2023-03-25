@@ -2,6 +2,7 @@ from datetime import datetime
 from dateutil import parser
 from flask import abort, jsonify, request
 import requests
+import urllib.parse
 from nookipedia.cache import cache
 from nookipedia.utility import deep_unescape, params_where, month_to_string, month_to_int
 from nookipedia.config import BASE_URL_API, BASE_URL_WIKI, BOT_USERNAME, BOT_PASS
@@ -175,7 +176,7 @@ def call_cargo(parameters, request_args):  # Request args are passed in just for
 
             # Create url to page
             if "url" in item:
-                item["url"] = "https://nookipedia.com/wiki/" + item["url"].replace(" ", "_")
+                item["url"] = "https://nookipedia.com/wiki/" + urllib.parse.quote(item["url"])
 
             if request.args.get("thumbsize"):
                 # If image, fetch the CDN thumbnail URL:
