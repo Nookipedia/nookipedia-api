@@ -79,6 +79,7 @@ def format_villager(data):
                     "house_flooring": obj["nh_flooring"],
                     "house_music": obj["nh_music"],
                     "house_music_note": obj["nh_music_note"],
+                    "umbrella": obj["nh_umbrella"],
                 }
                 if obj["nh_fav_style1"]:
                     obj["nh_details"]["fav_styles"].append(obj["nh_fav_style1"])
@@ -107,6 +108,7 @@ def format_villager(data):
             del obj["nh_flooring"]
             del obj["nh_music"]
             del obj["nh_music_note"]
+            del obj["nh_umbrella"]
 
         # Place game appearances in array:
         games_array = []
