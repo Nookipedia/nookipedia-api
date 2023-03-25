@@ -2205,6 +2205,10 @@ components:
               type: string
               example: ''
               description: 'Any notes about the villager''s music. If populated, this is usually "Does not contain a stereo initially", meaning that the villager''s house will not play music unless provided with a stereo.'
+            umbrella:
+              type: string
+              example: bat umbrella
+              description: The name of the umbrella used by the villager.
     NHFish:
       type: object
       properties:
