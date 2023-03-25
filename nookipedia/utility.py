@@ -133,6 +133,19 @@ def format_coalesced_list(data, formatter, name):
     data[name] = [formatter(_) for _ in data[name]]
 
 
+def separate_grid_sizes(data):
+    if data["grid_size"]:
+        grid_width, grid_length = data["grid_size"].split(
+            "\u00d7"
+        )  # \u00d7 is the multiplication sign, so 1.0x1.0 => [1.0,1.0]
+        data["grid_width"] = float(grid_width)
+        data["grid_length"] = float(grid_length)
+    else:
+        data["grid_width"] = ""
+        data["grid_length"] = ""
+    del data["grid_size"]
+
+
 def coalesce_fields_as_object_list(data, elements, output_name, *fields):
     names = [_[0] for _ in fields]
     keys = [tuple(_[1].format(i) for _ in fields) for i in range(1, elements + 1)]
