@@ -39,6 +39,7 @@ paths:
               - alligator
               - anteater
               - bear
+              - bear cub
               - bird
               - bull
               - cat
@@ -67,6 +68,7 @@ paths:
               - pig
               - rabbit
               - rhino
+              - rhinoceros
               - sheep
               - squirrel
               - tiger
@@ -78,14 +80,15 @@ paths:
           schema:
             type: string
             enum:
-              - lazy
-              - jock
+              - big sister
               - cranky
-              - smug
+              - jock
+              - lazy
               - normal
               - peppy
-              - snooty
               - sisterly
+              - smug
+              - snooty
           description: 'Retrieve villagers with a certain personality. For ''sisterly'', note that the community often also calls it ''uchi'' or ''big sister''.'
         - in: query
           name: game
@@ -1861,10 +1864,10 @@ components:
             - Alligator
             - Anteater
             - Bear
+            - Bear cub
             - Bird
             - Bull
             - Cat
-            - Cub
             - Chicken
             - Cow
             - Deer
@@ -1888,7 +1891,7 @@ components:
             - Penguin
             - Pig
             - Rabbit
-            - Rhino
+            - Rhinoceros
             - Sheep
             - Squirrel
             - Tiger
@@ -1898,12 +1901,12 @@ components:
           example: Jock
           description: 'The villager''s personality. Note that there are no official in-game personality names; these are names that are commonly used by the community. In the case of ''sisterly'', other common names include ''big sis'' and ''uchi''.'
           enum:
+            - Big sister
             - Cranky
             - Jock
             - Lazy
             - Normal
             - Peppy
-            - Sisterly
             - Smug
             - Snooty
         gender:
