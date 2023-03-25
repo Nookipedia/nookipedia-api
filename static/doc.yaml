@@ -1,8 +1,8 @@
 openapi: 3.0.0
 info:
   title: Nookipedia
-  description: 'The Nookipedia API provides endpoints for retrieving *Animal Crossing* data pulled from the [Nookipedia wiki](https://nookipedia.com/wiki/Main_Page). A couple of the key benefits of using the Nookipedia API is access to data spanning the entire *Animal Crossing* series, as well as information that is constantly updated and expanding as editors work on the wiki.<br><br>Access to the Nookipedia API requires obtaining a key. This is so we can manage our scale and provide better support for our users. To request access to the API, please fill out [this form](https://forms.gle/wLwtXLerKhfDrRLY8).<br><br>This API is ''version 2'' of our [original API](https://nookipedia.com/api/). While the previous API scraped information directly from the wiki, this new edition of the API pulls data from a structured and constrained database, resulting in higher-quality data, better searching, and support for filtering.'
-  version: 1.5.0
+  description: 'The Nookipedia API provides endpoints for retrieving *Animal Crossing* data pulled from the [Nookipedia wiki](https://nookipedia.com/wiki/Main_Page). A couple of the key benefits of using the Nookipedia API is access to data spanning the entire *Animal Crossing* series, as well as information that is constantly updated and expanding as editors work on the wiki.<br><br>Access to the Nookipedia API requires obtaining a key. This is so we can manage our scale and provide better support for our users. To request access to the API, please fill out [this form](https://forms.gle/wLwtXLerKhfDrRLY8).'
+  version: 1.6.0
 servers:
   - url: 'https://api.nookipedia.com/'
 paths:
@@ -1855,7 +1855,7 @@ components:
         image_url:
           type: string
           example: 'https://dodo.ac/np/images/9/94/Ribbot_NH.png'
-          description: Image of the villager from the latest game the villager appeared in. dodo.ac is Nookipedia's CDN server.
+          description: Image of the villager from the latest game the villager appeared in.
         species:
           type: string
           example: Frog
@@ -2116,11 +2116,11 @@ components:
         image_url:
           type: string
           example: 'https://dodo.ac/np/images/d/db/Cherry_Salmon_NH_Icon.png'
-          description: Image of the fish. dodo.ac is Nookipedia's CDN server.
+          description: Image of the fish.
         render_url:
           type: string
           example: 'https://dodo.ac/np/images/c/c0/Cherry_Salmon_NH.png'
-          description: Render of the fish. dodo.ac is Nookipedia's CDN server.
+          description: Render of the fish.
         location:
           type: string
           example: River (clifftop)
@@ -2344,11 +2344,11 @@ components:
         image_url:
           type: string
           example: 'https://dodo.ac/np/images/3/37/Grasshopper_NH_Icon.png'
-          description: Image of the bug. dodo.ac is Nookipedia's CDN server.
+          description: Image of the bug.
         render_url:
           type: string
           example: 'https://dodo.ac/np/images/1/1d/Grasshopper_NH.png'
-          description: Render of the bug. dodo.ac is Nookipedia's CDN server.
+          description: Render of the bug.
         location:
           type: string
           example: On the ground
@@ -2546,11 +2546,11 @@ components:
         image_url:
           type: string
           example: 'https://dodo.ac/np/images/5/58/Octopus_NH_Icon.png'
-          description: Image of the sea creature. dodo.ac is Nookipedia's CDN server.
+          description: Image of the sea creature.
         render_url:
           type: string
           example: 'https://dodo.ac/np/images/2/27/Octopus_NH.png'
-          description: Render of the sea creature. dodo.ac is Nookipedia's CDN server.
+          description: Render of the sea creature.
         shadow_size:
           type: string
           example: Medium
@@ -2798,22 +2798,21 @@ components:
           type: string
           example: 'https://nookipedia.com/wiki/Academic_Painting'
           description: Link to the respective Nookipedia article.
-        image_url:
-          type: string
-          example: 'https://dodo.ac/np/images/e/e8/Academic_Painting_NH_Icon.png'
-          description: Image of the real artwork. dodo.ac is Nookipedia's CDN server.
         has_fake:
           type: boolean
           example: true
           description: Whether the artwork has a fake or not.
-        fake_image_url:
-          type: string
-          example: 'https://dodo.ac/np/images/1/13/Academic_Painting_%28Forgery%29_NH_Icon.png'
-          description: 'Image of the fake artwork, if it exists.'
         art_name:
           type: string
           example: Vitruvian Man
           description: The name of the real-life analog to the artwork.
+        art_type:
+          type: string
+          example: Painting
+          description: The type of artwork (either a painting or statue).
+          enum:
+            - Painting
+            - Statue
         author:
           type: string
           example: Leonardo da Vinci
@@ -2821,15 +2820,11 @@ components:
         year:
           type: string
           example: circa 1487
-          description: The year that the real-life analog was made.
+          description: The year that the real-life analog was made. May be an exact year, an estimate ("circa"), or a range.
         art_style:
           type: string
           example: Pen and ink on paper
           description: The art style of the artwork.
-        description:
-          type: string
-          example: 'This drawing is based on the &quot;ideal&quot; human-body ratio, as stated in &quot;De architectura.&quot; &quot;De architectura&quot; was a treatise by Vitruvius, an architect from the early 1st century BCE.'
-          description: The description of the artwork.
         buy:
           type: integer
           example: 4980
@@ -2842,10 +2837,6 @@ components:
           type: string
           example: Jolly Redd's Treasure Trawler
           description: The availability of the artwork.
-        authenticity:
-          type: string
-          example: 'If there is a coffee stain in the top right corner, it is fake. If there is no stain, it is genuine. The forgery has a key taped to the back of the canvas.'
-          description: 'The description of the difference between real and fake, if there is one'
         width:
           type: number
           format: float
@@ -2856,6 +2847,38 @@ components:
           format: float
           example: 1
           description: The length of the artwork.
+        real_info:
+          type: object
+          description: Information about the genuine version of the artwork.
+          properties:
+            image_url:
+              type: string
+              example: 'https://dodo.ac/np/images/e/e8/Academic_Painting_NH_Icon.png'
+              description: Image of the real artwork.
+            texture_url:
+              type: string
+              example: 'https://dodo.ac/np/images/f/f6/Academic_Painting_NH_Texture.png'
+              description: The texture of the artwork. Note that statues will not have a texture (value will be empty string).
+            description:
+              type: string
+              example: 'This drawing is based on the "ideal" human-body ratio, as stated in "De architectura." "De architectura" was a treatise by Vitruvius, an architect from the early 1st century BCE.'
+              description: The description of the artwork.
+        fake_info:
+          type: object
+          description: Information about the fake version of the artwork. If there is no fake, `fake_info`'s value will be `null`.
+          properties:
+            image_url:
+              type: string
+              example: 'https://dodo.ac/np/images/4/46/Academic_Painting_%28Fake%29_NH_Icon.png'
+              description: Image of the fake artwork.
+            texture_url:
+              type: string
+              example: 'https://dodo.ac/np/images/0/03/Academic_Painting_%28Fake%29_NH_Texture.png'
+              description: The texture of the artwork. Note that statues will not have a texture (value will be empty string).
+            description:
+              type: string
+              example: 'In the forgery, there is a coffee stain in the top right corner. The forgery also has a key taped to the back of the canvas. If there is no stain and key, it is genuine.'
+              description: A description of how to identify the fake artwork.
     NHFurniture:
       type: object
       properties:
@@ -3510,7 +3533,7 @@ components:
         image_url:
           type: string
           example: 'https://dodo.ac/np/images/2/2d/Abstract_Wall_NH_Icon.png'
-          description: Image of the interior. dodo.ac is Nookipedia's CDN server.
+          description: Image of the interior.
         category:
           type: string
           example: Wallpaper
@@ -3634,7 +3657,7 @@ components:
         image_url:
           type: string
           example: 'https://dodo.ac/np/images/9/9f/Acorn_NH_Icon.png'
-          description: Image of the interior. dodo.ac is Nookipedia's CDN server.
+          description: Image of the interior.
         stack:
           type: integer
           example: 30
@@ -3757,7 +3780,7 @@ components:
         image_url:
           type: string
           example: 'https://dodo.ac/np/images/a/ac/Flimsy_Axe_NH_DIY_Icon.png'
-          description: Image of the item the recipe crafts. dodo.ac is Nookipedia's CDN server.
+          description: Image of the item the recipe crafts.
         serial_id:
           type: integer
           example: 100
@@ -3827,7 +3850,7 @@ components:
         image_url:
           type: string
           example: 'https://dodo.ac/np/images/7/7b/Spino_Skull_NH_Icon.png'
-          description: Image of the fossil's icon. dodo.ac is Nookipedia's CDN server.
+          description: Image of the fossil's icon.
         fossil_group:
           type: string
           example: 'Spinosaurus'
