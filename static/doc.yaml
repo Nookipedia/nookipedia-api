@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Nookipedia
   description: 'The Nookipedia API provides endpoints for retrieving *Animal Crossing* data pulled from the [Nookipedia wiki](https://nookipedia.com/wiki/Main_Page). A couple of the key benefits of using the Nookipedia API is access to data spanning the entire *Animal Crossing* series, as well as information that is constantly updated and expanding as editors work on the wiki.<br><br>Access to the Nookipedia API requires obtaining a key. This is so we can manage our scale and provide better support for our users. To request access to the API, please fill out [this form](https://forms.gle/wLwtXLerKhfDrRLY8).'
-  version: 1.6.1
+  version: 1.7.0
 servers:
   - url: 'https://api.nookipedia.com/'
 paths:
@@ -1775,6 +1775,113 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error500'
+  '/nh/gyroids':
+    get:
+      summary: All New Horizons gyroids
+      description: 'Get a list of all gyroid items and their details in *Animal Crossing: New Horizons*.'
+      parameters:
+        - in: header
+          name: X-API-KEY
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: 'Your UUID secret key, granted to you by the Nookipedia team. Required for accessing the API.'
+        - in: header
+          name: Accept-Version
+          required: true
+          schema:
+            type: string
+          description: 'The version of the API you are calling, written as `1.0.0`. This is specified as required as good practice, but it is not actually enforced by the API. If you do not specify a version, you will be served the latest version, which may eventually result in breaking changes.'
+        - in: query
+          name: sound
+          required: false
+          schema:
+            type: string
+            enum:
+              - crash
+              - drum set
+              - hi-hat
+              - kick
+              - melody
+              - snare
+          description: Specify the sound of the gyroid.
+        - in: query
+          name: excludedetails
+          required: false
+          schema:
+            type: string
+          description: 'When set to `true`, only gyroid names are returned. Instead of an array of objects with all details, the return will be an array of strings.'
+      responses:
+        '200':
+          description: A JSON array of gyroids.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NHGyroid'
+        '401':
+          description: Failed to authenticate user from `X-API-KEY`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '500':
+          description: There was an error fetching the requested data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error500'
+  '/nh/gyroids/{gyroid}':
+    get:
+      summary: Single New Horizons gyroid
+      description: 'Retrieve information about a specific gyroid item in *Animal Crossing: New Horizons*.'
+      parameters:
+        - in: path
+          name: gyroid
+          required: true
+          schema:
+            type: string
+          description: The name of the gyroid you wish to retrieve information about.
+        - in: header
+          name: X-API-KEY
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: 'Your UUID secret key, granted to you by the Nookipedia team. Required for accessing the API.'
+        - in: header
+          name: Accept-Version
+          required: true
+          schema:
+            type: string
+          description: 'The version of the API you are calling, written as `1.0.0`. This is specified as required as good practice, but it is not actually enforced by the API. If you do not specify a version, you will be served the latest version, which may eventually result in breaking changes.'
+        - in: query
+          name: thumbsize
+          required: false
+          schema:
+            type: integer
+          description: 'Specify the desired width of returned image URLs. When unspecified, the linked image(s) returned by the API will be full-resolution. Note that images can only be reduced in size; specifying a width greater than than the maximum size will return the default full-size image URL.'
+      responses:
+        '200':
+          description: A JSON object describing the gyroid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NHGyroid'
+        '401':
+          description: Failed to authenticate user from `X-API-KEY`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        '500':
+          description: There was an error fetching the requested data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error500'
 components:
   schemas:
     Error400:
@@ -3523,6 +3630,157 @@ components:
                 - Colorful
                 - Black
           description: An array of objects, each object representing a variation of the clothing. Clothing that has no variations (only one version) will have a single variation object with the image URL and colors, but the `variation` field will be empty. Clothing with multiple variations will have the `variation` fields defined with the name of each variation.
+    NHGyroid:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Aluminoid
+          description: The name of the gyroid.
+        url:
+          type: string
+          example: https://nookipedia.com/wiki/Item:Aluminoid_(New_Horizons)
+          description: Link to the respective Nookipedia article.
+        hha_base:
+          type: integer
+          example: 207
+          description: The base value that the item provides to a player's Happy Home Academy score when placed in their home.
+        sell:
+          type: integer
+          example: 828
+          description: The number of Bells the gyroid can be sold to the store for.
+        customizable:
+          type: boolean
+          example: true
+          description: Whether or not the item is customizable via a crafting table.
+        custom_kits:
+          type: integer
+          example: 1
+          description: The number of `custom_kit_type`s (e.g. Customization Kits) that are needed to customize this item. Value is 0 if the item is not customizable.
+        custom_kit_type:
+          type: string
+          example: "Customization Kit"
+          description: The item that needs to be consumed to customize this item. The vast majority are "Customization Kit", but a small selection of items will require a different item, such as items in the Spooky Series requiring pumpkins.
+        custom_body_part:
+          type: string
+          example: "Color"
+          description: If the item has variations, this is the name of the furniture part that changes. For example, for many bamboo items, the custom body part is "Bamboo" as the bamboo color is able to be customized.
+        cyrus_price:
+          type: integer
+          example: 1000
+          description: How much Cyrus will charge to customize this gyroid. Currently it's a flat rate of 1,000 bells for every gyroid.
+        variation_total:
+          type: integer
+          example: 4
+          description: The total number of variations the gyroid has, between 0 and 7.
+          enum:
+            - 0
+            - 1
+            - 2
+            - 3
+            - 4
+            - 5
+            - 6
+            - 7
+        grid_width:
+          type: number
+          format: float
+          example: 1.0
+          description: The number of widthwise grid spaces this item takes up.
+        grid_length:
+          type: number
+          format: float
+          example: 1.0
+          description: The number of lengthwise grid spaces this item takes up.
+        sound:
+          type: string
+          example: "Drum set"
+          description: The type of sound this gyroid makes.
+          enum:
+            - Crash
+            - Drum set
+            - Hi-hat
+            - Kick
+            - Melody
+            - Snare
+        version_added:
+          type: string
+          example: "2.0.0"
+          description: The version of *New Horizons* that the item was added. Items that were included at the game's launch have version "1.0.0".
+        unlocked:
+          type: boolean
+          example: true
+          description: Whether the item is available through legitimate gameplay. Some items are added to the game files in an update, but aren't actually made available until a subsequent update unlocks them.
+        notes:
+          type: string
+          example: ""
+          description: Any additional miscellaneous information about the gyroid, such as a name change from a past update.
+        availability:
+            type: array
+            items:
+              type: object
+              properties:
+                from:
+                  type: string
+                note:
+                  type: string
+            example:
+              - from: dig spot
+                note: ""
+            description: Where the gyroid may be obtained from (could be multiple sources). `from` is a brief description of the source; `note`, when provided, provides additional details.
+        buy:
+          type: array
+          items:
+            type: object
+            properties:
+              price:
+                type: integer
+              currency:
+                type: string
+          example:
+            - price: 490
+              currency: Bells
+          description: 'An array of prices, for when the item may be purchased with Bells, Nook Miles, etc..'
+        variations:
+          type: array
+          items:
+            type: object
+            properties:
+              variation:
+                type: string
+              image_url:
+                type: string
+              colors:
+                type: array
+                items:
+                  type: string
+                  enum:
+                    - Aqua
+                    - Beige
+                    - Black
+                    - Blue
+                    - Brown
+                    - Colorful
+                    - Gray
+                    - Green
+                    - Orange
+                    - Pink
+                    - Purple
+                    - Red
+                    - White
+                    - Yellow
+          example:
+            - variation: Black
+              image_url: https://dodo.ac/np/images/6/64/Aluminoid_%28Black%29_NH_Icon.png
+              colors:
+                - Black
+                - Gray
+            - variation: Blue
+              image_url: https://dodo.ac/np/images/5/52/Aluminoid_%28Blue%29_NH_Icon.png
+              colors:
+                - Blue
+                - Aqua
+          description: An array of objects, each object representing a variation of the gyroid. Gyroids that has no variations (only one version) will have a single variation object with the image URL and colors, but the `variation` field will be empty. Gyroids with multiple variations will have the `variation` fields defined with the name of each variation.
     NHInterior:
       type: object
       properties:

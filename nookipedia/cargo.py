@@ -21,6 +21,7 @@ from nookipedia.models import (
     format_other_item,
     format_fossil,
     format_fossil_group,
+    format_gyroid,
 )
 
 
@@ -829,6 +830,42 @@ def get_clothing_list(limit, tables, fields):
 
     cargo_results = call_cargo(params, request.args)
     ret = [format_clothing(_) for _ in cargo_results]
+    return ret
+
+def get_gyroid_list(limit, tables, fields):
+    where = []
+
+    if "sound" in request.args:
+        sound_list = [
+            "crash",
+            "drum set",
+            "hi-hat",
+            "kick",
+            "melody",
+            "snare",
+        ]
+        sound = request.args.get("sound").lower()
+        if sound not in sound_list:
+            abort(
+                400,
+                description=error_response(
+                    "Could not recognize provided sound.",
+                    "Ensure sound is either crash, drum set, hi-hat, kick, melody, or snare.",
+                ),
+            )
+        where.append('sound = "{0}"'.format(sound))
+
+    params = {
+        "action": "cargoquery",
+        "format": "json",
+        "tables": tables,
+        "fields": fields,
+        "limit": limit,
+    }
+    params_where(params, where)
+
+    cargo_results = call_cargo(params, request.args)
+    ret = [format_gyroid(_) for _ in cargo_results]
     return ret
 
 
