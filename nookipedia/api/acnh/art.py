@@ -1,7 +1,7 @@
 import requests
 from flask import abort, jsonify, request, Blueprint
 
-from nookipedia.config import DB_KEYS
+from nookipedia.config import DB_KEYS, ART_LIMIT
 from nookipedia.middlewares import authorize
 from nookipedia.cargo import call_cargo, get_art_list
 from nookipedia.errors import error_response
@@ -24,7 +24,10 @@ def get_nh_art(art):
         "image_url",
         "has_fake",
         "fake_image_url",
+        "texture_url",
+        "fake_texture_url",
         "art_name",
+        "art_type",
         "author",
         "year",
         "art_style",
@@ -63,11 +66,31 @@ def get_nh_art(art):
 def get_nh_art_all():
     authorize(DB_KEYS, request)
 
-    limit = "50"
+    limit = ART_LIMIT
     tables = "nh_art"
     if request.args.get("excludedetails") == "true":
         fields = "name"
     else:
-        fields = "name,_pageName=url,image_url,has_fake,fake_image_url,art_name,author,year,art_style,description,buy_price=buy,sell,availability,authenticity,width,length"
+        fields = generate_fields(
+            "name",
+            "_pageName=url",
+            "image_url",
+            "has_fake",
+            "fake_image_url",
+            "texture_url",
+            "fake_texture_url",
+            "art_name",
+            "art_type",
+            "author",
+            "year",
+            "art_style",
+            "description",
+            "buy_price=buy",
+            "sell",
+            "availability",
+            "authenticity",
+            "width",
+            "length",
+        )
 
     return get_art_list(limit, tables, fields)

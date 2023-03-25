@@ -1,7 +1,7 @@
 import requests
 from flask import abort, jsonify, request, Blueprint
 
-from nookipedia.config import DB_KEYS
+from nookipedia.config import DB_KEYS, CLOTHING_LIMIT, CLOTHING_VARIATION_LIMIT
 from nookipedia.middlewares import authorize
 from nookipedia.cargo import call_cargo, get_clothing_list, get_variation_list
 from nookipedia.errors import error_response
@@ -97,7 +97,7 @@ def get_nh_clothing_all():
             ),
         )
 
-    clothing_limit = "1600"
+    clothing_limit = CLOTHING_LIMIT
     clothing_tables = "nh_clothing"
     clothing_fields = generate_fields(
         "_pageName=url",
@@ -126,7 +126,7 @@ def get_nh_clothing_all():
         "unlocked",
         "notes",
     )
-    variation_limit = "6000"
+    variation_limit = CLOTHING_VARIATION_LIMIT
     variation_tables = "nh_clothing_variation"
     variation_fields = generate_fields("en_name=name", "variation", "image_url", "color1", "color2")
     variation_orderby = "variation_number"

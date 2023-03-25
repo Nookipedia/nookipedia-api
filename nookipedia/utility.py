@@ -176,9 +176,10 @@ def between_version(minimum, maximum):
     version = request.headers.get("Accept-Version", "latest")
     if version == "latest":
         return maximum is None
-    version_match = re.match(r"^(\d+)(?:\.(\d+)(?:\.(\d+))?)?$", version)
-    minimum_match = re.match(r"^(\d+)(?:\.(\d+)(?:\.(\d+))?)?$", minimum or "")
-    maximum_match = re.match(r"^(\d+)(?:\.(\d+)(?:\.(\d+))?)?$", maximum or "")
+    pattern = r"^(\d+)(?:\.(\d+)(?:\.(\d+))?)?$"
+    version_match = re.match(pattern, version)
+    minimum_match = re.match(pattern, minimum or "")
+    maximum_match = re.match(pattern, maximum or "")
     if version_match is None:
         abort(
             400,
@@ -205,20 +206,15 @@ def between_version(minimum, maximum):
         )
     else:
         version_numbers = version_match.groups()
-        minimum_numbers = minimum_match.groups() if minimum is not None else ("0", "0", "0")
-        maximum_numbers = maximum_match.groups() if maximum is not None else ("999", "999", "999")
-        for version_number, minimum_number, maximum_number in zip(
-            version_numbers, minimum_numbers, maximum_numbers
-        ):
-            if maximum_number is None:
+        minimum_numbers = minimum_match.groups() if minimum is not None else (None, None, None)
+        maximum_numbers = maximum_match.groups() if maximum is not None else (None, None, None)
+        for val, min_val, max_val in zip(version_numbers, minimum_numbers, maximum_numbers):
+            if val is None:
                 return True
-            if minimum_number is None:
-                return True
-            if version_number is None:
-                return True
-            if int(version_number) < int(minimum_number):
+            v = int(val)
+            if max_val is not None and v > int(max_val):
                 return False
-            if int(version_number) > int(maximum_number):
+            if min_val is not None and v < int(min_val):
                 return False
         return True
 

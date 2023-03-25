@@ -1,7 +1,7 @@
 import requests
 from flask import abort, jsonify, request, Blueprint
 
-from nookipedia.config import DB_KEYS
+from nookipedia.config import DB_KEYS, INTERIOR_LIMIT
 from nookipedia.middlewares import authorize
 from nookipedia.cargo import call_cargo, get_interior_list
 from nookipedia.errors import error_response
@@ -74,7 +74,7 @@ def get_nh_interior(interior):
 def get_nh_interior_all():
     authorize(DB_KEYS, request)
 
-    limit = "750"
+    limit = INTERIOR_LIMIT
     tables = "nh_interior"
     fields = generate_fields(
         "_pageName=url",

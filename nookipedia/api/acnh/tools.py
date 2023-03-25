@@ -1,7 +1,7 @@
 import requests
 from flask import abort, jsonify, request, Blueprint
 
-from nookipedia.config import DB_KEYS
+from nookipedia.config import DB_KEYS, TOOL_LIMIT, TOOL_VARIATION_LIMIT
 from nookipedia.middlewares import authorize
 from nookipedia.cargo import call_cargo, get_variation_list, get_tool_list
 from nookipedia.errors import error_response
@@ -93,7 +93,7 @@ def get_nh_tool_all():
             ),
         )
 
-    tool_limit = "150"
+    tool_limit = TOOL_LIMIT
     tool_tables = "nh_tool"
     tool_fields = generate_fields(
         "_pageName=url",
@@ -118,7 +118,7 @@ def get_nh_tool_all():
         "unlocked",
         "notes",
     )
-    variation_limit = "350"
+    variation_limit = TOOL_VARIATION_LIMIT
     variation_tables = "nh_tool_variation"
     variation_fields = generate_fields("en_name=name", "variation", "image_url")
     variation_orderby = "variation_number"

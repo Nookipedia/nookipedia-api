@@ -1,7 +1,7 @@
 import requests
 from flask import abort, jsonify, request, Blueprint
 
-from nookipedia.config import DB_KEYS
+from nookipedia.config import DB_KEYS, FURNITURE_LIMIT, FURNITURE_VARIATION_LIMIT
 from nookipedia.middlewares import authorize
 from nookipedia.cargo import call_cargo, get_furniture_list, get_furniture_variation_list
 from nookipedia.errors import error_response
@@ -112,7 +112,7 @@ def get_nh_furniture_all():
             ),
         )
 
-    furniture_limit = "2000"
+    furniture_limit = FURNITURE_LIMIT
     furniture_tables = "nh_furniture"
     furniture_fields = generate_fields(
         "_pageName=url",
@@ -154,7 +154,7 @@ def get_nh_furniture_all():
         "unlocked",
         "notes",
     )
-    variation_limit = "13000"
+    variation_limit = FURNITURE_VARIATION_LIMIT
     variation_tables = "nh_furniture_variation"
     variation_fields = generate_fields(
         "en_name=name", "variation", "pattern", "image_url", "color1", "color2"
