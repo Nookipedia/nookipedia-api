@@ -169,7 +169,6 @@ def months_to_array(data):
 def format_critters(data):
     # Create arrays that hold times by month per hemisphere:
     for obj in data:
-
         if minimum_version("1.2"):
             # Convert tank width/length to floats:
             format_as_type(obj, as_float, "tank_width", "tank_length")
