@@ -441,10 +441,13 @@ def format_clothing(data):
     format_coalesced_object_list(data, as_int, "buy", "price")
 
     return data
-    
+
+
 def format_gyroid(data):
     # Integers
-    format_as_type(data, as_int, "hha_base", "sell", "variation_total", "custom_kits", "cyrus_price")
+    format_as_type(
+        data, as_int, "hha_base", "sell", "variation_total", "custom_kits", "cyrus_price"
+    )
 
     # Booleans
     format_as_type(data, as_bool, "customizable", "unlocked")
