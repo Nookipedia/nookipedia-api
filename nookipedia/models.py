@@ -5,6 +5,7 @@ from nookipedia.utility import (
     maximum_version,
     exact_version,
     format_as_type,
+    separate_grid_sizes,
     as_bool,
     as_float,
     as_int,
@@ -400,12 +401,7 @@ def format_furniture(data):
     # elif data['lighting'] == '1':
     #     data['lighting'] = True
 
-    grid_width, grid_length = data["grid_size"].split(
-        "\u00d7"
-    )  # \u00d7 is the multiplication sign, so 1.0x1.0 => [1.0,1.0]
-    data["grid_width"] = float(grid_width)
-    data["grid_length"] = float(grid_length)
-    del data["grid_size"]
+    separate_grid_sizes(data)
 
     coalesce_fields_as_list(data, 2, "themes", "theme{}")
 
@@ -445,6 +441,26 @@ def format_clothing(data):
     format_coalesced_object_list(data, as_int, "buy", "price")
 
     return data
+    
+def format_gyroid(data):
+    # Integers
+    format_as_type(data, as_int, "hha_base", "sell", "variation_total", "custom_kits", "cyrus_price")
+
+    # Booleans
+    format_as_type(data, as_bool, "customizable", "unlocked")
+
+    separate_grid_sizes(data)
+
+    coalesce_fields_as_object_list(
+        data, 2, "availability", ("from", "availability{}"), ("note", "availability{}_note")
+    )
+
+    coalesce_fields_as_object_list(
+        data, 2, "buy", ("price", "buy{}_price"), ("currency", "buy{}_currency")
+    )
+    format_coalesced_object_list(data, as_int, "buy", "price")
+
+    return data
 
 
 def format_photo(data):
@@ -454,12 +470,7 @@ def format_photo(data):
     # Booleans
     format_as_type(data, as_bool, "customizable", "interactable", "unlocked")
 
-    grid_width, grid_length = data["grid_size"].split(
-        "\u00d7"
-    )  # \u00d7 is the multiplication sign, so 1.0x1.0 => [1.0,1.0]
-    data["grid_width"] = float(grid_width)
-    data["grid_length"] = float(grid_length)
-    del data["grid_size"]
+    separate_grid_sizes(data)
 
     coalesce_fields_as_object_list(
         data, 2, "availability", ("from", "availability{}"), ("note", "availability{}_note")
@@ -480,16 +491,7 @@ def format_interior(data):
     # Booleans
     format_as_type(data, as_bool, "unlocked")
 
-    if data["grid_size"]:
-        grid_width, grid_length = data["grid_size"].split(
-            "\u00d7"
-        )  # \u00d7 is the multiplication sign, so 1.0x1.0 => [1.0,1.0]
-        data["grid_width"] = float(grid_width)
-        data["grid_length"] = float(grid_length)
-    else:
-        data["grid_width"] = ""
-        data["grid_length"] = ""
-    del data["grid_size"]
+    separate_grid_sizes(data)
 
     coalesce_fields_as_list(data, 2, "themes", "theme{}")
 
