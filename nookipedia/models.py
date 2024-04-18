@@ -455,7 +455,7 @@ def format_gyroid(data):
     separate_grid_sizes(data)
 
     coalesce_fields_as_object_list(
-        data, 2, "availability", ("from", "availability{}"), ("note", "availability{}_note")
+        data, 3, "availability", ("from", "availability{}"), ("note", "availability{}_note")
     )
 
     coalesce_fields_as_object_list(
