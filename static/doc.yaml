@@ -2464,6 +2464,10 @@ components:
           type: string
           example: On the ground
           description: Short descriptor of where the bug can be found.
+        weather:
+          type: string
+          example: Any except rain
+          description: Short descriptor of what type of weather the bug can be found in.
         rarity:
           type: string
           example: Uncommon
