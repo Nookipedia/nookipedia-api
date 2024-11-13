@@ -699,7 +699,7 @@ paths:
               - Housewares
               - Miscellaneous
               - Wall-mounted
-          description: Specify the category of furniture to return (houswares, miscellaneous, or wall-mounted).
+          description: Specify the category of furniture to return (housewares, miscellaneous, or wall-mounted).
         - in: query
           name: color
           required: false
@@ -983,6 +983,16 @@ paths:
           schema:
             type: string
           description: 'The version of the API you are calling, written as `1.0.0`. This is specified as required as good practice, but it is not actually enforced by the API. If you do not specify a version, you will be served the latest version, which may eventually result in breaking changes.'
+        - in: query
+          name: category
+          required: false
+          schema:
+            type: string
+            enum:
+              - Rugs
+              - Wallpaper
+              - Floors
+          description: Specify the category of interior items to return (rugs, wallpaper, or floors).
         - in: query
           name: color
           required: false

@@ -982,6 +982,19 @@ def get_tool_list(limit, tables, fields):
 def get_interior_list(limit, tables, fields):
     where = []
 
+    if "category" in request.args:
+        categories_list = ["rugs", "wallpaper", "floors"]
+        category = request.args.get("category").lower()
+        if category not in categories_list:
+            abort(
+                400,
+                description=error_response(
+                    "Could not recognize provided category.",
+                    "Ensure category is either rugs, wallpaper, or floors.",
+                ),
+            )
+        where.append('category = "{0}"'.format(category))
+
     if "color" in request.args:
         colors_list = [
             "aqua",
