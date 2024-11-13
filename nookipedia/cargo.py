@@ -654,14 +654,14 @@ def get_furniture_list(limit, tables, fields):
     where = []
 
     if "category" in request.args:
-        categories_list = ["housewares", "miscellaneous", "wall-mounted"]
+        categories_list = ["housewares", "miscellaneous", "wall-mounted", "ceiling decor"]
         category = request.args.get("category").lower()
         if category not in categories_list:
             abort(
                 400,
                 description=error_response(
                     "Could not recognize provided category.",
-                    "Ensure category is either housewares, miscellaneous, or wall-mounted.",
+                    "Ensure category is either housewares, miscellaneous, wall-mounted, or ceiling decor.",
                 ),
             )
         where.append('category = "{0}"'.format(category))

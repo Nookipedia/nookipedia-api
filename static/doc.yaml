@@ -190,7 +190,7 @@ paths:
           required: false
           schema:
             type: string
-          description: 'Retrive only the fish that are available in a specific month. Value may be the month''s name (`jan`, `january`), the integer representing the month (`01`, `1`), or `current` for the current month. When `current` is specified, the return body will be an object with two arrays inside, one called `north` and the other `south` containing the fish available in each respective hemisphere. Note that the current month is calculated based off the API server''s time, so it may be slightly off for you at the beginning or end of the month.'
+          description: 'Retrieve only the fish that are available in a specific month. Value may be the month''s name (`jan`, `january`), the integer representing the month (`01`, `1`), or `current` for the current month. When `current` is specified, the return body will be an object with two arrays inside, one called `north` and the other `south` containing the fish available in each respective hemisphere. Note that the current month is calculated based off the API server''s time, so it may be slightly off for you at the beginning or end of the month.'
         - in: query
           name: excludedetails
           required: false
@@ -302,7 +302,7 @@ paths:
           required: false
           schema:
             type: string
-          description: 'Retrive only the bug that are available in a specific month. Value may be the month''s name (`jan`, `january`), the integer representing the month (`01`, `1`), or `current` for the current month. When `current` is specified, the return body will be an object with two arrays inside, one called `north` and the other `south` containing the bug available in each respective hemisphere. Note that the current month is calculated based off the API server''s time, so it may be slightly off for you at the beginning or end of the month.'
+          description: 'Retrieve only the bug that are available in a specific month. Value may be the month''s name (`jan`, `january`), the integer representing the month (`01`, `1`), or `current` for the current month. When `current` is specified, the return body will be an object with two arrays inside, one called `north` and the other `south` containing the bug available in each respective hemisphere. Note that the current month is calculated based off the API server''s time, so it may be slightly off for you at the beginning or end of the month.'
         - in: query
           name: excludedetails
           required: false
@@ -414,7 +414,7 @@ paths:
           required: false
           schema:
             type: string
-          description: 'Retrive only the sea creature that are available in a specific month. Value may be the month''s name (`jan`, `january`), the integer representing the month (`01`, `1`), or `current` for the current month. When `current` is specified, the return body will be an object with two arrays inside, one called `north` and the other `south` containing the sea creature available in each respective hemisphere. Note that the current month is calculated based off the API server''s time, so it may be slightly off for you at the beginning or end of the month.'
+          description: 'Retrieve only the sea creature that are available in a specific month. Value may be the month''s name (`jan`, `january`), the integer representing the month (`01`, `1`), or `current` for the current month. When `current` is specified, the return body will be an object with two arrays inside, one called `north` and the other `south` containing the sea creature available in each respective hemisphere. Note that the current month is calculated based off the API server''s time, so it may be slightly off for you at the beginning or end of the month.'
         - in: query
           name: excludedetails
           required: false
@@ -699,7 +699,8 @@ paths:
               - Housewares
               - Miscellaneous
               - Wall-mounted
-          description: Specify the category of furniture to return (housewares, miscellaneous, or wall-mounted).
+              - Ceiling decor
+          description: Specify the category of furniture to return (housewares, miscellaneous, wall-mounted, or ceiling decor).
         - in: query
           name: color
           required: false
