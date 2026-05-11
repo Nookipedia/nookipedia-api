@@ -5,7 +5,7 @@ from nookipedia.config import DB_KEYS, PLANT_LIMIT
 from nookipedia.middlewares import authorize
 from nookipedia.cargo import call_cargo, get_plants_list
 from nookipedia.errors import error_response
-from nookipedia.models import format_plant_item
+from nookipedia.models import format_plant
 from nookipedia.utility import generate_fields
 
 
@@ -55,7 +55,7 @@ def get_nh_plant(plant):
             ),
         )
     else:
-        return jsonify(format_other_item(cargo_results[0]))
+        return jsonify(format_plant(cargo_results[0]))
 
 
 @router.route("/nh/plants", methods=["GET"])
