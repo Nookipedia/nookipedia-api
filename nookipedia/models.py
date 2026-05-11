@@ -531,6 +531,24 @@ def format_tool(data):
     return data
 
 
+def format_plant(data):
+    # Integers
+    format_as_type(
+        data,
+        as_int,
+        "sell",
+    )
+
+    # Booleans
+    format_as_type(data, as_bool, "unlocked")
+
+    coalesce_fields_as_object_list(
+        data, 3, "availability", ("from", "availability{}"), ("note", "availability{}_note")
+    )
+
+    return data
+
+
 def format_other_item(data):
     # Integers
     format_as_type(
