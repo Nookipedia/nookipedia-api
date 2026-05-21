@@ -29,7 +29,7 @@ from nookipedia.models import (
 def mw_login():
     try:
         params = {"action": "query", "meta": "tokens", "type": "login", "format": "json"}
-        r = requests.get(url=BASE_URL_API, params=params)
+        r = requests.get(url=BASE_URL_API, params=params, timeout=10)
         try:
             login_token = r.json()["query"]["tokens"]["logintoken"]
         except:
@@ -45,7 +45,7 @@ def mw_login():
                 "format": "json",
             }
             r = requests.post(
-                url=BASE_URL_API, data=data, cookies=requests.utils.dict_from_cookiejar(r.cookies)
+                url=BASE_URL_API, data=data, cookies=requests.utils.dict_from_cookiejar(r.cookies), timeout=10
             )
             rJson = r.json()
 
@@ -111,6 +111,7 @@ def call_cargo(parameters, request_args):  # Request args are passed in just for
                     params=nestedparameters,
                     headers={"Authorization": "Bearer " + session["token"]},
                     cookies=session["cookie"],
+                    timeout=10,
                 )
                 if "error" in r.json():
                     # Error may be due to invalid token; re-try login:
@@ -121,17 +122,18 @@ def call_cargo(parameters, request_args):  # Request args are passed in just for
                             params=nestedparameters,
                             headers={"Authorization": "Bearer " + session["token"]},
                             cookies=session["cookie"],
+                            timeout=10,
                         )
 
                         # If it errors again, make request without auth:
                         if "error" in r.json():
                             del nestedparameters["assert"]
-                            r = requests.get(url=BASE_URL_API, params=nestedparameters)
+                            r = requests.get(url=BASE_URL_API, params=nestedparameters, timeout=10)
                     else:
                         del nestedparameters["assert"]
-                        r = requests.get(url=BASE_URL_API, params=nestedparameters)
+                        r = requests.get(url=BASE_URL_API, params=nestedparameters, timeout=10)
             else:
-                r = requests.get(url=BASE_URL_API, params=nestedparameters)
+                r = requests.get(url=BASE_URL_API, params=nestedparameters, timeout=10)
 
             cargochunk = r.json()["cargoquery"]
             if len(cargochunk) == 0:  # If nothing was returned, break
@@ -189,7 +191,8 @@ def call_cargo(parameters, request_args):  # Request args are passed in just for
                             + "Special:FilePath/"
                             + item["image_url"].rsplit("/", 1)[-1]
                             + "?width="
-                            + request.args.get("thumbsize")
+                            + request.args.get("thumbsize"),
+                            timeout=10,
                         )
                         item["image_url"] = r.url
 
@@ -200,7 +203,8 @@ def call_cargo(parameters, request_args):  # Request args are passed in just for
                             + "Special:FilePath/"
                             + item["fake_image_url"].rsplit("/", 1)[-1]
                             + "?width="
-                            + request.args.get("thumbsize")
+                            + request.args.get("thumbsize"),
+                            timeout=10,
                         )
                         item["fake_image_url"] = r.url
 
@@ -211,7 +215,8 @@ def call_cargo(parameters, request_args):  # Request args are passed in just for
                             + "Special:FilePath/"
                             + item["render_url"].rsplit("/", 1)[-1]
                             + "?width="
-                            + request.args.get("thumbsize")
+                            + request.args.get("thumbsize"),
+                            timeout=10,
                         )
                         item["render_url"] = r.url
                 except:
