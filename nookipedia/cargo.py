@@ -45,7 +45,10 @@ def mw_login():
                 "format": "json",
             }
             r = requests.post(
-                url=BASE_URL_API, data=data, cookies=requests.utils.dict_from_cookiejar(r.cookies), timeout=10
+                url=BASE_URL_API,
+                data=data,
+                cookies=requests.utils.dict_from_cookiejar(r.cookies),
+                timeout=10,
             )
             rJson = r.json()
 
