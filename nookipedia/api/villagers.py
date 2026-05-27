@@ -26,8 +26,7 @@ LANG_FIELDS = (
     "villager.zh_name=zh_simplified,"
     "villager.zh_name_r=zh_simplified_romanized,"
     "villager.zht_name=zh_traditional,"
-    "villager.zht_name_r=zh_traditional_romanized",
-    "villager.test"
+    "villager.zht_name_r=zh_traditional_romanized"
 )
 
 
