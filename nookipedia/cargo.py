@@ -164,10 +164,10 @@ def call_cargo(parameters, request_args):  # Request args are passed in just for
             if ("warnings" not in r.json()) and (len(cargochunk) < cargolimit):
                 break
 
-        if 'r' in locals() and r is not None:
+        if "r" in locals() and r is not None:
             print("Return: {}".format(str(r)))
     except:
-        if 'r' in locals() and r is not None:
+        if "r" in locals() and r is not None:
             print("Return: {}".format(str(r)))
         else:
             print("Return: Unassigned or request failed")
