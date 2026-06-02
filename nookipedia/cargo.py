@@ -60,9 +60,12 @@ def mw_login():
                 return False
             if rJson["login"]["result"] == "Success":
                 print("Successfully logged into MediaWiki API.")
-                cache.set(
-                    "session", {"token": login_token, "cookie": r.cookies}, 2592000
-                )  # Expiration set to max of 30 days
+                try:
+                    cache.set(
+                        "session", {"token": login_token, "cookie": r.cookies}, 2592000
+                    )  # Expiration set to max of 30 days
+                except Exception:
+                    print("Warning: could not persist MediaWiki session to cache.")
                 return True
             else:
                 print("Failed to login to MediaWiki (POST to login failed): " + str(rJson))
@@ -101,30 +104,43 @@ def call_cargo(parameters, request_args):  # Request args are passed in just for
             # Check if we should authenticate to the wiki (500 is limit for unauthenticated queries):
             if BOT_USERNAME and int(parameters.get("limit", "50")) > 500:
                 nestedparameters["assert"] = "bot"
-                session = cache.get("session")  # Get session from memcache
+                try:
+                    session = cache.get("session")  # Get session from memcache
+                except Exception:
+                    session = None
 
-                # Session may be null from startup or cache explusion:
-                if not session:
+                # Session may be null from startup or cache expulsion:
+                if not session or not isinstance(session, dict) or "token" not in session:
                     mw_login()
-                    session = cache.get("session")
+                    try:
+                        session = cache.get("session")
+                    except Exception:
+                        session = None
+                    if not session or not isinstance(session, dict):
+                        session = {"token": "", "cookie": None}
 
                 # Make authorized request:
                 r = requests.get(
                     url=BASE_URL_API,
                     params=nestedparameters,
-                    headers={"Authorization": "Bearer " + session["token"]},
-                    cookies=session["cookie"],
+                    headers={"Authorization": "Bearer " + session.get("token", "")},
+                    cookies=session.get("cookie"),
                     timeout=10,
                 )
                 if "error" in r.json():
                     # Error may be due to invalid token; re-try login:
                     if mw_login():
-                        session = cache.get("session")
+                        try:
+                            session = cache.get("session")
+                        except Exception:
+                            session = None
+                        if not isinstance(session, dict):
+                            session = {"token": "", "cookie": None}
                         r = requests.get(
                             url=BASE_URL_API,
                             params=nestedparameters,
-                            headers={"Authorization": "Bearer " + session["token"]},
-                            cookies=session["cookie"],
+                            headers={"Authorization": "Bearer " + session.get("token", "")},
+                            cookies=session.get("cookie"),
                             timeout=10,
                         )
 
@@ -147,9 +163,15 @@ def call_cargo(parameters, request_args):  # Request args are passed in just for
             # If queried items are < limit and there are no warnings, we've received everything:
             if ("warnings" not in r.json()) and (len(cargochunk) < cargolimit):
                 break
-        print("Return: {}".format(str(r)))
+
+        if 'r' in locals() and r is not None:
+            print("Return: {}".format(str(r)))
     except:
-        print("Return: {}".format(str(r)))
+        if 'r' in locals() and r is not None:
+            print("Return: {}".format(str(r)))
+        else:
+            print("Return: Unassigned or request failed")
+
         abort(
             500,
             description=error_response(

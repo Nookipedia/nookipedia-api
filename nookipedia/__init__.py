@@ -20,7 +20,10 @@ def teardown(exception):
 
 cache.init_app(app)
 
-cache.set("session", None)
+try:
+    cache.set("session", None)
+except Exception:
+    pass
 
 configure_dashboard(app)
 

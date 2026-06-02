@@ -19,7 +19,7 @@ def configure_dashboard(app):
             [request_uuid],
             one=True,
         )
-        
+
         # If project details exist, use that as group_by; else, just use UUID
         if row and row[2]:
             return str(row[2] + " (" + row[0] + ")")
