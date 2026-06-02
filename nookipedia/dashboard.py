@@ -1,3 +1,6 @@
+import os
+import sqlite3
+
 from flask import request
 import flask_monitoringdashboard as dashboard
 from nookipedia import db
@@ -30,4 +33,16 @@ def configure_dashboard(app):
 
     dashboard.config.group_by = group_by_user
     dashboard.config.init_from(file=DASHBOARD_CONFIGS)
+    dashboard.config.excluded_paths = ["home.static_index", "home.static_doc"]
     dashboard.bind(app)
+
+    # Switch to WAL journal mode for multiple workers
+    try:
+        db_path = getattr(dashboard.config, "database_name", "flask_monitoringdashboard.db")
+        if not os.path.isabs(db_path):
+            db_path = os.path.join(os.getcwd(), db_path)
+        with sqlite3.connect(db_path) as _conn:
+            _conn.execute("PRAGMA journal_mode=WAL")
+            _conn.execute("PRAGMA busy_timeout=5000")
+    except Exception:
+        pass
