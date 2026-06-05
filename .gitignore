@@ -5,4 +5,5 @@ __pycache__
 # for database files and configuration
 dashboard-config.cfg
 *.db
-*.ini
+config.ini
+app.ini
