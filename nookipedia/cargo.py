@@ -1,6 +1,8 @@
 from datetime import datetime
 from dateutil import parser
 from flask import abort, jsonify, request
+import hashlib
+import json
 import requests
 import urllib.parse
 from nookipedia.cache import cache
@@ -78,8 +80,17 @@ def mw_login():
         return False
 
 
-@cache.memoize(43200)
-def call_cargo(parameters, request_args):  # Request args are passed in just for the sake of caching
+def call_cargo(parameters, request_args):
+    cache_key = "cargo:" + hashlib.md5(
+        (str(sorted(parameters.items())) + str(request_args.get("thumbsize", ""))).encode()
+    ).hexdigest()
+    try:
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return json.loads(cached)
+    except Exception:
+        pass
+
     # cargoquery holds all queried items
     cargoquery = []
 
@@ -181,6 +192,10 @@ def call_cargo(parameters, request_args):  # Request args are passed in just for
         )
 
     if not cargoquery:
+        try:
+            cache.set(cache_key, json.dumps([]), timeout=43200)
+        except Exception:
+            pass
         return []
 
     try:
@@ -254,6 +269,11 @@ def call_cargo(parameters, request_args):  # Request args are passed in just for
                     )
 
             data.append(item)
+
+        try:
+            cache.set(cache_key, json.dumps(data), timeout=43200)
+        except Exception:
+            pass
 
         return data
     except:
