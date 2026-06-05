@@ -81,9 +81,12 @@ def mw_login():
 
 
 def call_cargo(parameters, request_args):
-    cache_key = "cargo:" + hashlib.md5(
-        (str(sorted(parameters.items())) + str(request_args.get("thumbsize", ""))).encode()
-    ).hexdigest()
+    cache_key = (
+        "cargo:"
+        + hashlib.md5(
+            (str(sorted(parameters.items())) + str(request_args.get("thumbsize", ""))).encode()
+        ).hexdigest()
+    )
     try:
         cached = cache.get(cache_key)
         if cached is not None:
