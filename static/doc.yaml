@@ -135,6 +135,12 @@ paths:
             type: string
           description: 'When set to `true`, only villager names are returned. Instead of an array of objects with all details, the return will be an array of strings.'
         - in: query
+          name: langnames
+          required: false
+          schema:
+            type: string
+          description: 'When set to `true`, a `name_translations` object will be included containing the villager''s name in all available languages and regional variants. Has no effect when `excludedetails` is set to `true`.'
+        - in: query
           name: thumbsize
           required: false
           schema:
@@ -2220,6 +2226,105 @@ components:
               type: string
               example: bat umbrella
               description: The name of the umbrella used by the villager.
+        name_translations:
+          type: object
+          nullable: true
+          description: 'An object containing the villager''s name in all available languages and regional variants. Only present when `langnames=true` is set on the request. Fields are `null` if no official localization exists for that language.'
+          properties:
+            no_localization:
+              type: boolean
+              example: false
+              description: 'When `true`, this villager has no official name in any language other than Japanese.'
+            en_gb:
+              type: string
+              nullable: true
+              example: null
+              description: 'The villager''s name in English (United Kingdom). `null` if no regional variant exists.'
+            de:
+              type: string
+              nullable: true
+              example: Jens
+              description: The villager's name in German.
+            es_eu:
+              type: string
+              nullable: true
+              example: "Arándano"
+              description: 'The villager''s name in Spanish (Europe).'
+            es_la:
+              type: string
+              nullable: true
+              example: null
+              description: 'The villager''s name in Spanish (Latin America). `null` if no regional variant exists.'
+            fr_eu:
+              type: string
+              nullable: true
+              example: Robert
+              description: 'The villager''s name in French (Europe).'
+            fr_ca:
+              type: string
+              nullable: true
+              example: null
+              description: 'The villager''s name in French (Canada). `null` if no regional variant exists.'
+            it:
+              type: string
+              nullable: true
+              example: Bob
+              description: The villager's name in Italian.
+            ja:
+              type: string
+              nullable: true
+              example: "ニコバン"
+              description: The villager's name in Japanese.
+            ja_romanized:
+              type: string
+              nullable: true
+              example: Nikoban
+              description: Romanized transliteration of the villager's Japanese name using the Hepburn system.
+            ko:
+              type: string
+              nullable: true
+              example: "히죽"
+              description: The villager's name in Korean.
+            ko_romanized:
+              type: string
+              nullable: true
+              example: Hijuk
+              description: Romanized transliteration of the villager's Korean name using the Revised Romanization of Korean.
+            nl:
+              type: string
+              nullable: true
+              example: Bob
+              description: The villager's name in Dutch.
+            ru:
+              type: string
+              nullable: true
+              example: "Боб"
+              description: The villager's name in Russian.
+            ru_romanized:
+              type: string
+              nullable: true
+              example: Bob
+              description: Romanized transliteration of the villager's Russian name using the GOST 7.79-2000 standard.
+            zh_simplified:
+              type: string
+              nullable: true
+              example: "阿判"
+              description: The villager's name in Chinese (Simplified).
+            zh_simplified_romanized:
+              type: string
+              nullable: true
+              example: "Āpàn"
+              description: Romanized transliteration of the villager's Simplified Chinese name using the Pinyin system.
+            zh_traditional:
+              type: string
+              nullable: true
+              example: "阿判"
+              description: The villager's name in Chinese (Traditional).
+            zh_traditional_romanized:
+              type: string
+              nullable: true
+              example: "Āpàn"
+              description: Romanized transliteration of the villager's Traditional Chinese name using the Pinyin system.
     NHFish:
       type: object
       properties:
