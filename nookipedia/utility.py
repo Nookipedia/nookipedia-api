@@ -152,25 +152,27 @@ def coalesce_fields_as_object_list(data, elements, output_name, *fields):
     data[output_name] = []
     # Go through and create a JSON object list
     for key_group in keys:
-        if len(data[key_group[0]]) == 0:
+        if key_group[0] not in data or len(data[key_group[0]]) == 0:
             break
         obj = {names[i]: data[key] for i, key in enumerate(key_group)}
         data[output_name].append(obj)
     # Delete the elements afterwards
     for key_group in keys:
         for key in key_group:
-            del data[key]
+            if key in data:
+                del data[key]
 
 
 def coalesce_fields_as_list(data, elements, name, field_format):
     data[name] = []
     keys = [field_format.format(_) for _ in range(1, elements + 1)]
     for key in keys:
-        if (len(data[key])) == 0:
+        if key not in data or len(data[key]) == 0:
             break
         data[name].append(data[key])
     for key in keys:
-        del data[key]
+        if key in data:
+            del data[key]
 
 
 def minimum_version(version):
