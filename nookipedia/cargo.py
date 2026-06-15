@@ -214,9 +214,9 @@ def call_cargo(parameters, request_args):
         for obj in results:
             item = {}
 
-            # Replace all spaces in keys with underscores
+            # Strip table prefix (e.g. "villager debut" -> "debut") from Cargo field names
             for key in obj["title"]:
-                item[key.replace(" ", "_")] = obj["title"][key]
+                item[key.split(" ")[-1]] = obj["title"][key]
 
             item = deep_unescape(item)
 
