@@ -64,7 +64,12 @@ def mw_login():
                 print("Successfully logged into MediaWiki API.")
                 try:
                     cache.set(
-                        "session", {"token": login_token, "cookie": requests.utils.dict_from_cookiejar(r.cookies)}, 2592000
+                        "session",
+                        {
+                            "token": login_token,
+                            "cookie": requests.utils.dict_from_cookiejar(r.cookies),
+                        },
+                        2592000,
                     )  # Expiration set to max of 30 days
                 except Exception:
                     print("Warning: could not persist MediaWiki session to cache.")
