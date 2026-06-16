@@ -177,7 +177,9 @@ def call_cargo(parameters, request_args):
                             # If it errors again, make request without auth:
                             if "error" in r.json():
                                 del nestedparameters["assert"]
-                                r = requests.get(url=BASE_URL_API, params=nestedparameters, timeout=10)
+                                r = requests.get(
+                                    url=BASE_URL_API, params=nestedparameters, timeout=10
+                                )
                         else:
                             del nestedparameters["assert"]
                             r = requests.get(url=BASE_URL_API, params=nestedparameters, timeout=10)
