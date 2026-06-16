@@ -184,6 +184,7 @@ def call_cargo(parameters, request_args):
                 else:
                     r = requests.get(url=BASE_URL_API, params=nestedparameters, timeout=10)
 
+                print("Cargo request: {}".format(r.url))
                 rjson = r.json()
                 cargochunk = rjson["cargoquery"]
                 if len(cargochunk) == 0:  # If nothing was returned, break
@@ -195,14 +196,7 @@ def call_cargo(parameters, request_args):
                 if ("warnings" not in rjson) and (len(cargochunk) < cargolimit):
                     break
 
-            if "r" in locals() and r is not None:
-                print("Return: {}".format(str(r)))
         except:
-            if "r" in locals() and r is not None:
-                print("Return: {}".format(str(r)))
-            else:
-                print("Return: Unassigned or request failed")
-
             abort(
                 500,
                 description=error_response(
@@ -739,7 +733,7 @@ def get_event_list(limit, tables, fields, orderby):
     cargo_results = call_cargo(params, request.args)
 
     for event in cargo_results:
-        del event["precision"]
+        event.pop("precision", None)
 
     return jsonify(cargo_results)
 
