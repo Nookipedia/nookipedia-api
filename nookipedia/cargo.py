@@ -117,6 +117,7 @@ def call_cargo(parameters, request_args):
         # Copy the passed-in parameters:
         nestedparameters = parameters.copy()
         cargoquery = []
+        raw_responses = []
 
         try:
             while True:
@@ -188,6 +189,7 @@ def call_cargo(parameters, request_args):
 
                 print("Cargo request: {}".format(r.url))
                 rjson = r.json()
+                raw_responses.append(rjson)
                 cargochunk = rjson["cargoquery"]
                 if len(cargochunk) == 0:  # If nothing was returned, break
                     break
@@ -254,6 +256,10 @@ def call_cargo(parameters, request_args):
             # Strip table prefix (e.g. "villager debut" -> "debut") from Cargo field names
             for key in obj["title"]:
                 item[key.split(" ")[-1]] = obj["title"][key]
+
+            row_missing = [f for f in expected_fields if f not in item]
+            if row_missing:
+                print("Cargo row missing fields {}: {}".format(row_missing, json.dumps(raw_responses)))
 
             item = deep_unescape(item)
 
