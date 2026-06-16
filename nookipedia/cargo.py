@@ -99,105 +99,141 @@ def call_cargo(parameters, request_args):
     except Exception:
         pass
 
-    # cargoquery holds all queried items
-    cargoquery = []
+    # Check for incomplete responses
+    expected_fields = []
+    for field_spec in parameters.get("fields", "").split(","):
+        field_spec = field_spec.strip()
+        if "=" in field_spec:
+            expected_fields.append(field_spec.split("=", 1)[1].strip())
+        else:
+            expected_fields.append(field_spec.replace(".", " ").split(" ")[-1].strip())
 
-    # Default query size limit is 50 but can be changed by incoming params:
-    cargolimit = int(parameters.get("limit", "50"))
+    MAX_RETRIES = 2
 
-    # Copy the passed-in parameters:
-    nestedparameters = parameters.copy()
+    for attempt in range(MAX_RETRIES + 1):
+        # Default query size limit is 50 but can be changed via param
+        cargolimit = int(parameters.get("limit", "50"))
 
-    try:
-        while True:
-            # Subtract number of queried items from limit:
-            nestedparameters["limit"] = str(cargolimit - len(cargoquery))
+        # Copy the passed-in parameters:
+        nestedparameters = parameters.copy()
+        cargoquery = []
 
-            # If no items are left to query, break
-            if nestedparameters["limit"] == "0":
-                break
+        try:
+            while True:
+                # Subtract number of queried items from limit
+                nestedparameters["limit"] = str(cargolimit - len(cargoquery))
 
-            # Set offset to number of items queried so far:
-            nestedparameters["offset"] = str(len(cargoquery))
+                # Break if no items left
+                if nestedparameters["limit"] == "0":
+                    break
 
-            # Check if we should authenticate to the wiki (500 is limit for unauthenticated queries):
-            if BOT_USERNAME and int(parameters.get("limit", "50")) > 500:
-                nestedparameters["assert"] = "bot"
-                try:
-                    session = cache.get("session")  # Get session from memcache
-                except Exception:
-                    session = None
+                # Set offset
+                nestedparameters["offset"] = str(len(cargoquery))
 
-                # Session may be null from startup or cache expulsion:
-                if not session or not isinstance(session, dict) or "token" not in session:
-                    mw_login()
+                # Check if auth is needed
+                if BOT_USERNAME and int(parameters.get("limit", "50")) > 500:
+                    nestedparameters["assert"] = "bot"
                     try:
-                        session = cache.get("session")
+                        session = cache.get("session")  # Get session from memcache
                     except Exception:
                         session = None
-                    if not session or not isinstance(session, dict):
-                        session = {"token": "", "cookie": None}
 
-                # Make authorized request:
-                r = requests.get(
-                    url=BASE_URL_API,
-                    params=nestedparameters,
-                    headers={"Authorization": "Bearer " + session.get("token", "")},
-                    cookies=session.get("cookie"),
-                    timeout=10,
-                )
-                if "error" in r.json():
-                    # Error may be due to invalid token; re-try login:
-                    if mw_login():
+                    # Session may be null from startup or cache expulsion
+                    if not session or not isinstance(session, dict) or "token" not in session:
+                        mw_login()
                         try:
                             session = cache.get("session")
                         except Exception:
                             session = None
-                        if not isinstance(session, dict):
+                        if not session or not isinstance(session, dict):
                             session = {"token": "", "cookie": None}
-                        r = requests.get(
-                            url=BASE_URL_API,
-                            params=nestedparameters,
-                            headers={"Authorization": "Bearer " + session.get("token", "")},
-                            cookies=session.get("cookie"),
-                            timeout=10,
-                        )
 
-                        # If it errors again, make request without auth:
-                        if "error" in r.json():
+                    # Make authorized request
+                    r = requests.get(
+                        url=BASE_URL_API,
+                        params=nestedparameters,
+                        headers={"Authorization": "Bearer " + session.get("token", "")},
+                        cookies=session.get("cookie"),
+                        timeout=10,
+                    )
+                    if "error" in r.json():
+                        # Error may be due to invalid token
+                        # Re-try login
+                        if mw_login():
+                            try:
+                                session = cache.get("session")
+                            except Exception:
+                                session = None
+                            if not isinstance(session, dict):
+                                session = {"token": "", "cookie": None}
+                            r = requests.get(
+                                url=BASE_URL_API,
+                                params=nestedparameters,
+                                headers={"Authorization": "Bearer " + session.get("token", "")},
+                                cookies=session.get("cookie"),
+                                timeout=10,
+                            )
+
+                            # If it errors again, make request without auth:
+                            if "error" in r.json():
+                                del nestedparameters["assert"]
+                                r = requests.get(url=BASE_URL_API, params=nestedparameters, timeout=10)
+                        else:
                             del nestedparameters["assert"]
                             r = requests.get(url=BASE_URL_API, params=nestedparameters, timeout=10)
-                    else:
-                        del nestedparameters["assert"]
-                        r = requests.get(url=BASE_URL_API, params=nestedparameters, timeout=10)
+                else:
+                    r = requests.get(url=BASE_URL_API, params=nestedparameters, timeout=10)
+
+                rjson = r.json()
+                cargochunk = rjson["cargoquery"]
+                if len(cargochunk) == 0:  # If nothing was returned, break
+                    break
+
+                cargoquery.extend(cargochunk)
+
+                # If queried items are < limit and there are no warnings, we've received everything:
+                if ("warnings" not in rjson) and (len(cargochunk) < cargolimit):
+                    break
+
+            if "r" in locals() and r is not None:
+                print("Return: {}".format(str(r)))
+        except:
+            if "r" in locals() and r is not None:
+                print("Return: {}".format(str(r)))
             else:
-                r = requests.get(url=BASE_URL_API, params=nestedparameters, timeout=10)
+                print("Return: Unassigned or request failed")
 
-            cargochunk = r.json()["cargoquery"]
-            if len(cargochunk) == 0:  # If nothing was returned, break
-                break
+            abort(
+                500,
+                description=error_response(
+                    "Error while calling Nookipedia's Cargo API.",
+                    "MediaWiki Cargo request failed for parameters: {}".format(parameters),
+                ),
+            )
 
-            cargoquery.extend(cargochunk)
-
-            # If queried items are < limit and there are no warnings, we've received everything:
-            if ("warnings" not in r.json()) and (len(cargochunk) < cargolimit):
-                break
-
-        if "r" in locals() and r is not None:
-            print("Return: {}".format(str(r)))
-    except:
-        if "r" in locals() and r is not None:
-            print("Return: {}".format(str(r)))
+        # Check if any expected field is absent
+        all_seen = set()
+        for obj in cargoquery:
+            all_seen.update(k.split(" ")[-1] for k in obj.get("title", {}))
+        missing = [f for f in expected_fields if f not in all_seen]
+        if missing:
+            if attempt < MAX_RETRIES:
+                print(
+                    "Cargo response missing fields {} on attempt {}/{}, retrying...".format(
+                        list(set(missing)), attempt + 1, MAX_RETRIES + 1
+                    )
+                )
+                continue
+            else:
+                print(
+                    "Cargo response still missing fields {} after {} attempts, proceeding with partial data.".format(
+                        list(set(missing)), MAX_RETRIES + 1
+                    )
+                )
+                missing = list(set(missing))  # preserve for cache skip below
         else:
-            print("Return: Unassigned or request failed")
-
-        abort(
-            500,
-            description=error_response(
-                "Error while calling Nookipedia's Cargo API.",
-                "MediaWiki Cargo request failed for parameters: {}".format(parameters),
-            ),
-        )
+            missing = []
+        break
 
     if not cargoquery:
         try:
@@ -278,10 +314,11 @@ def call_cargo(parameters, request_args):
 
             data.append(item)
 
-        try:
-            cache.set(cache_key, json.dumps(data), timeout=43200)
-        except Exception:
-            pass
+        if not missing:
+            try:
+                cache.set(cache_key, json.dumps(data), timeout=43200)
+            except Exception:
+                pass
 
         return data
     except:
@@ -403,7 +440,6 @@ def get_villager_list(limit, tables, join, fields):
     if request.args.get("game"):
         games = request.args.getlist("game")
         for game in games:
-            game = game.replace("_", " ")
             where.append("villager." + game + ' = "1"')
 
     params = {
@@ -585,7 +621,7 @@ def get_recipe_list(limit, tables, fields):
                 ),
             )
         for m in materials:
-            m.replace("_", " ")
+            m = m.replace("_", " ")
             where.append(
                 '(material1 = "{0}" or material2 = "{0}" or material3 = "{0}" or material4 = "{0}" or material5 = "{0}" or material6 = "{0}")'.format(
                     m
@@ -703,7 +739,7 @@ def get_event_list(limit, tables, fields, orderby):
     cargo_results = call_cargo(params, request.args)
 
     for event in cargo_results:
-        del event["date__precision"]
+        del event["precision"]
 
     return jsonify(cargo_results)
 
