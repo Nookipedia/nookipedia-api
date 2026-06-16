@@ -259,7 +259,9 @@ def call_cargo(parameters, request_args):
 
             row_missing = [f for f in expected_fields if f not in item]
             if row_missing:
-                print("Cargo row missing fields {}: {}".format(row_missing, json.dumps(raw_responses)))
+                print(
+                    "Cargo row missing fields {}: {}".format(row_missing, json.dumps(raw_responses))
+                )
 
             item = deep_unescape(item)
 
