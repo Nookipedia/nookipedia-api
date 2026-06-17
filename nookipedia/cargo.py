@@ -100,7 +100,11 @@ def call_cargo(parameters, request_args):
     try:
         cached = cache.get(cache_key)
         if cached is not None:
-            print("Cache hit: key={} table={} path={}".format(cache_key, parameters.get("tables", "?"), request.path))
+            print(
+                "Cache hit: key={} table={} path={}".format(
+                    cache_key, parameters.get("tables", "?"), request.path
+                )
+            )
             return json.loads(cached)
     except Exception:
         pass
