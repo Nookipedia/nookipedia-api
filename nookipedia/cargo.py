@@ -92,9 +92,15 @@ def call_cargo(parameters, request_args):
             (str(sorted(parameters.items())) + str(request_args.get("thumbsize", ""))).encode()
         ).hexdigest()
     )
+    print(
+        "Cache lookup: key={} table={} path={}".format(
+            cache_key, parameters.get("tables", "?"), request.path
+        )
+    )
     try:
         cached = cache.get(cache_key)
         if cached is not None:
+            print("Cache hit: key={} table={} path={}".format(cache_key, parameters.get("tables", "?"), request.path))
             return json.loads(cached)
     except Exception:
         pass
