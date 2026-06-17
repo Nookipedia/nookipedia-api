@@ -233,12 +233,15 @@ def call_cargo(parameters, request_args):
                 )
                 continue
             else:
-                print(
-                    "Cargo response still missing fields {} after {} attempts, proceeding with partial data.".format(
-                        list(set(missing)), MAX_RETRIES + 1
-                    )
+                abort(
+                    500,
+                    description=error_response(
+                        "Incomplete data received from Cargo.",
+                        "Cargo response missing fields {} after {} attempts for parameters: {}.".format(
+                            list(set(missing)), MAX_RETRIES + 1, parameters
+                        ),
+                    ),
                 )
-                missing = list(set(missing))  # preserve for cache skip below
         else:
             missing = []
         break

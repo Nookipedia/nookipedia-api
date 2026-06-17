@@ -4,7 +4,7 @@ from flask_cors import CORS
 from nookipedia.config import config
 from nookipedia.dashboard import configure_dashboard
 from nookipedia import api, db, errors
-from nookipedia.cache import cache
+from nookipedia.cache import cache, mc_client
 
 
 app = Flask(__name__, static_folder="../static")
@@ -19,6 +19,17 @@ def teardown(exception):
 
 
 cache.init_app(app)
+
+# Give each uWSGI worker its own memcached connection
+try:
+    from uwsgidecorators import postfork
+
+    @postfork
+    def reconnect_cache():
+        mc_client.disconnect_all()
+
+except ImportError:
+    pass  # Not running under uWSGI (e.g. local dev)
 
 try:
     cache.set("session", None)
