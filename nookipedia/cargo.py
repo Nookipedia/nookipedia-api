@@ -17,6 +17,7 @@ from nookipedia.models import (
     format_recipe,
     format_furniture,
     format_clothing,
+    format_plant,
     format_photo,
     format_tool,
     format_interior,
@@ -1166,6 +1167,21 @@ def get_interior_list(limit, tables, fields):
             results_array.append(format_interior(interior))
     return jsonify(results_array)
 
+def get_plants_list(limit, tables, fields):
+    where = []
+
+    params = {
+        "action": "cargoquery",
+        "format": "json",
+        "tables": tables,
+        "fields": fields,
+        "limit": limit,
+    }
+    params_where(params, where)
+
+    cargo_results = call_cargo(params, request.args)
+    ret = [format_plant(_) for _ in cargo_results]
+    return ret
 
 def get_other_item_list(limit, tables, fields):
     where = []
