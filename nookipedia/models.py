@@ -119,6 +119,53 @@ def format_villager(data):
             del obj[i]
         obj["appearances"] = games_array
 
+        # Place language name translations in object, if applicable:
+        if request.args.get("langnames") == "true" and request.args.get("excludedetails") != "true":
+            lang_keys = [
+                "no_localization",
+                "en_gb",
+                "de",
+                "es_eu",
+                "es_la",
+                "fr_eu",
+                "fr_ca",
+                "it",
+                "ja",
+                "ja_romanized",
+                "ko",
+                "ko_romanized",
+                "nl",
+                "ru",
+                "ru_romanized",
+                "zh_simplified",
+                "zh_simplified_romanized",
+                "zh_traditional",
+                "zh_traditional_romanized",
+            ]
+            obj["name_translations"] = {
+                "no_localization": as_bool(obj["no_localization"]),
+                "en_gb": obj["en_gb"] or None,
+                "de": obj["de"] or None,
+                "es_eu": obj["es_eu"] or None,
+                "es_la": obj["es_la"] or None,
+                "fr_eu": obj["fr_eu"] or None,
+                "fr_ca": obj["fr_ca"] or None,
+                "it": obj["it"] or None,
+                "ja": obj["ja"] or None,
+                "ja_romanized": obj["ja_romanized"] or None,
+                "ko": obj["ko"] or None,
+                "ko_romanized": obj["ko_romanized"] or None,
+                "nl": obj["nl"] or None,
+                "ru": obj["ru"] or None,
+                "ru_romanized": obj["ru_romanized"] or None,
+                "zh_simplified": obj["zh_simplified"] or None,
+                "zh_simplified_romanized": obj["zh_simplified_romanized"] or None,
+                "zh_traditional": obj["zh_traditional"] or None,
+                "zh_traditional_romanized": obj["zh_traditional_romanized"] or None,
+            }
+            for key in lang_keys:
+                del obj[key]
+
     return data
 
 
