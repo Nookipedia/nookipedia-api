@@ -222,8 +222,9 @@ def call_cargo(parameters, request_args):
         # Check if any expected field is absent
         all_seen = set()
         for obj in cargoquery:
-            all_seen.update(k.split(" ")[-1] for k in obj.get("title", {}))
-        missing = [f for f in expected_fields if f not in all_seen]
+            all_seen.update(k.replace(" ", "_") for k in obj.get("title", {}))
+        # Only check fields when rows came back
+        missing = [f for f in expected_fields if f not in all_seen] if cargoquery else []
         if missing:
             if attempt < MAX_RETRIES:
                 print(
@@ -266,9 +267,11 @@ def call_cargo(parameters, request_args):
         for obj in results:
             item = {}
 
-            # Strip table prefix (e.g. "villager debut" -> "debut") from Cargo field names
+            # Cargo returns unaliased field names with spaces,
+            # so swap them back. Map null to "".
             for key in obj["title"]:
-                item[key.split(" ")[-1]] = obj["title"][key]
+                value = obj["title"][key]
+                item[key.replace(" ", "_")] = "" if value is None else value
 
             row_missing = [f for f in expected_fields if f not in item]
             if row_missing:
