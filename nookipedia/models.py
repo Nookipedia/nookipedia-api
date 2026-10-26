@@ -616,14 +616,17 @@ def format_fossil(data):
 
 
 def stitch_fossil_group_list(groups, fossils):
-    ret = {_["name"]: _ for _ in groups}
+    # Key by lowercase name(e.g. "Amber" vs "amber")
+    ret = {_["name"].lower(): _ for _ in groups}
 
     for key in ret:
         ret[key]["fossils"] = []
 
     for fossil in fossils:
-        if fossil["fossil_group"] in ret:
-            ret[fossil["fossil_group"]]["fossils"].append(fossil)
+        # Account for standalone fossils with no fossil_group
+        group_name = (fossil["fossil_group"] or fossil["name"]).lower()
+        if group_name in ret:
+            ret[group_name]["fossils"].append(fossil)
             del fossil["fossil_group"]
 
     ret = [_ for _ in ret.values() if _["fossils"]]

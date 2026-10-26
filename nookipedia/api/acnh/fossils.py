@@ -212,7 +212,9 @@ def get_nh_fossil_all(name):
     fossil_check = call_cargo(fossil_params, request.args)
     if fossil_check:
         fossil_check = fossil_check[0]
-        group_params["where"] = f'name = "{fossil_check["fossil_group"]}"'
+        # Account for standalone fossils with no fossil group
+        group_name = fossil_check["fossil_group"] or fossil_check["name"]
+        group_params["where"] = f'name = "{group_name}"'
         matched = {"type": "individual", "name": fossil_check["name"]}
     else:
         fossil_check = None
@@ -236,7 +238,9 @@ def get_nh_fossil_all(name):
             ),
         )
 
-    fossil_params["where"] = f'fossil_group = "{group["name"]}"'
+    fossil_params["where"] = (
+        f'fossil_group = "{group["name"]}" OR (fossil_group = "" AND name = "{group["name"]}")'
+    )
     fossil_params["limit"] = "10"
     fossil_params["fields"] = generate_fields(
         "name",
